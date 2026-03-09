@@ -162,6 +162,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
 .msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
 .msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
+.expiry-waiting{font-size:10px;font-weight:700;margin-top:5px;opacity:.55}
+.msg-group.own .expiry-waiting{color:#ffffffaa;text-align:right}
+.msg-group.other .expiry-waiting{color:var(--muted2);text-align:left}
+
+/* READ RECEIPTS */
+.read-receipt{display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap}
+.msg-group.own .read-receipt{justify-content:flex-end}
+.read-receipt-av{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;flex-shrink:0;opacity:.85}
+.read-tick{font-size:11px;font-weight:700;color:#ffffffaa}
+.read-tick.seen{color:#a0d8ff}
+.read-names{font-size:9px;font-weight:700;color:#ffffffaa;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* REACTIONS */
 .bubble-re{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
@@ -671,17 +682,74 @@ function renderMessages(snap){
   if(hasNew&&!document.hidden&&msg&&msg.slotId!==S.slotId)playNotif();
 }
 
+// MESSAGE VIEW TRACKING — read receipts & view-triggered expiry
+const msgViewObserver=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const wrap=entry.target;
+      const msgId=wrap.dataset.msgId;
+      const msg=wrap._msgData;
+      if(msgId&&msg)markMessageViewed(msgId,msg);
+      msgViewObserver.unobserve(wrap);
+    }
+  });
+},{root:null,threshold:0.6});
+
+async function markMessageViewed(msgId,msg){
+  if(!S.roomId||!S.slotId)return;
+  const updates={};
+  // Mark read by this user (if not already)
+  const readBy=msg.readBy||{};
+  if(!readBy[S.slotId]){
+    updates[`readBy.${S.slotId}`]=firebase.firestore.FieldValue.serverTimestamp();
+  }
+  // Start expiry timer — only when viewed by someone OTHER than the sender
+  // (so sender sending a message doesn't start their own timer)
+  if(msg.expirySecs>0&&!msg.expiresAt&&msg.slotId!==S.slotId){
+    updates.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+msg.expirySecs,0);
+  }
+  if(Object.keys(updates).length>0){
+    try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update(updates);}catch(e){}
+  }
+}
+
 function makeBubbleWrap(msg){
   const own=msg.slotId===S.slotId;
   const wrap=document.createElement('div');wrap.className='bubble-wrap';wrap.style.overflow='visible';
+  // Store msg data for IntersectionObserver
+  wrap.dataset.msgId=msg.id;wrap._msgData=msg;
   if(own&&S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
   const b=document.createElement('div');b.className='bubble';
   if(msg.replyTo){const qbar=document.createElement('div');qbar.className='quote-bar';qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;b.appendChild(qbar);}
   const txt=document.createElement('div');txt.textContent=msg.text;b.appendChild(txt);
-  if(msg.expiresAt){const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);}
+  // Expiry badge — shows countdown if running, or "čeká na zobrazení" if pending
+  if(msg.expiresAt){
+    const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);
+    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
+    const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
+  } else if(msg.expirySecs>0){
+    const eb=document.createElement('div');eb.className='expiry-waiting';eb.textContent=`⏱ ${fmtExpiry(msg.expirySecs)} · spustí se při zobrazení`;b.appendChild(eb);
+  }
   const re=document.createElement('div');re.className='bubble-re';const reactions=msg.reactions||{};
   Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{const chip=document.createElement('div');chip.className='re-chip';chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);});
   b.appendChild(re);
+  // Read receipts (for own messages only)
+  if(own){
+    const readBy=msg.readBy||{};
+    const readers=Object.keys(readBy).filter(id=>id!==S.slotId).map(id=>S.slots[id]).filter(Boolean);
+    if(readers.length>0){
+      const rr=document.createElement('div');rr.className='read-receipt';
+      const tick=document.createElement('span');tick.className='read-tick seen';tick.textContent='✓✓';rr.appendChild(tick);
+      readers.slice(0,4).forEach(slot=>{const av=document.createElement('div');av.className='read-receipt-av';av.style.background=slot.color||'#5c6bff';av.title=slot.username;av.textContent=initials(slot.username);rr.appendChild(av);});
+      if(readers.length>0){const nm=document.createElement('span');nm.className='read-names';nm.textContent=readers.map(s=>s.username).join(', ');rr.appendChild(nm);}
+      b.appendChild(rr);
+    } else {
+      // Show single grey tick — sent but not yet read
+      const rr=document.createElement('div');rr.className='read-receipt';
+      const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
+      b.appendChild(rr);
+    }
+  }
   const acts=document.createElement('div');acts.className='bubble-actions';
   const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
   const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
@@ -692,6 +760,8 @@ function makeBubbleWrap(msg){
   wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),400);},{passive:true});
   wrap.addEventListener('touchend',()=>clearTimeout(lpTO),{passive:true});
   wrap.addEventListener('touchmove',()=>clearTimeout(lpTO),{passive:true});
+  // Register for view tracking
+  msgViewObserver.observe(wrap);
   return wrap;
 }
 
@@ -727,9 +797,12 @@ function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show')
 async function sendMsg(){
   const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
   const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
-  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};
+  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{},readBy:{}};
   if(S.replyTo)msgData.replyTo=S.replyTo;
-  if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
+  // Store expirySecs — timer starts when someone views the message, NOT at send time
+  if(expirySecs>0){msgData.expirySecs=expirySecs;msgData.expiresAt=null;}
+  // Mark as read by sender immediately
+  msgData[`readBy.${S.slotId}`]=firebase.firestore.FieldValue.serverTimestamp();
   clearReply();
   try{await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);}
   catch(e){toast('Chyba při odesílání','err');}
