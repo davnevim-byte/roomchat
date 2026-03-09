@@ -607,7 +607,7 @@ function updateCd(){const exp=S.roomData?.expiresAt?.toDate?.();if(exp)$('h-cd')
 async function cleanExpired(){
   if(!S.roomId)return;
   try{
-    const snap=await db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(20).get();
+    const snap=await db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','>',firebase.firestore.Timestamp.fromDate(new Date(0))).where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(20).get();
     const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));if(!snap.empty)await batch.commit();
   }catch(e){}
 }
@@ -800,7 +800,7 @@ async function sendMsg(){
   const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{},readBy:{[S.slotId]:Date.now()}};
   if(S.replyTo)msgData.replyTo=S.replyTo;
   // Store expirySecs — timer starts when someone views the message, NOT at send time
-  if(expirySecs>0){msgData.expirySecs=expirySecs;msgData.expiresAt=null;}
+  if(expirySecs>0){msgData.expirySecs=expirySecs;}
   clearReply();
   try{await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);}
   catch(e){toast('Chyba při odesílání','err');}
