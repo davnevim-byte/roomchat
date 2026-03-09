@@ -611,7 +611,7 @@ async function createRoom(){
   const roomId=rnd(6),color=rndColor(),now=firebase.firestore.Timestamp.now();
   const expiresAt=new firebase.firestore.Timestamp(now.seconds+86400,now.nanoseconds);
   try{
-    await db.collection('rooms').doc(roomId).set({name,password:pass,maxUsers:maxU,inviteOnly:invOnly,createdAt:now,expiresAt,adminSession:S.sid});
+    await db.collection('rooms').doc(roomId).set({name,password:pass,maxUsers:maxU,inviteOnly:invOnly,createdAt:now,expiresAt,adminSession:S.sid,adminKey:ADMIN_HASH});
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
@@ -746,39 +746,62 @@ async function entrySubmit(){
 // ── ROOM SWITCHER ─────────────────────────────────────────────────────────────
 async function showRoomSwitcher(){
   $('loader').style.display='none';
-  const list=getRoomList();
   const container=$('rooms-list');
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
-  const cards=await Promise.all(list.map(async r=>{
-    try{
-      const rd=await db.collection('rooms').doc(r.roomId).get();
-      if(!rd.exists)return null;
-      const d=rd.data();
+  try{
+    // Načíst všechny místnosti z Firestore podle adminKey — funguje na všech zařízeních
+    const snap=await db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get();
+    container.innerHTML='';
+    if(snap.empty){show('s-home');return;}
+    // Aktualizovat lokální seznam
+    const freshList=[];
+    snap.forEach(doc=>{
+      const d=doc.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
-      return{...r,roomData:d,expired};
-    }catch(e){return null;}
-  }));
-  const valid=cards.filter(Boolean);
-  const fresh=valid.filter(r=>!r.expired);
-  saveRoomList(fresh.map(r=>({roomId:r.roomId,slotId:r.slotId,name:r.roomData.name,ts:r.ts})));
-  container.innerHTML='';
-  if(valid.length===0){show('s-home');return;}
-  valid.forEach(r=>{
-    const card=document.createElement('div');
-    card.className='room-card'+(r.expired?' expired':'');
-    const rem=fmtCd(r.roomData.expiresAt.toDate().getTime()-Date.now());
-    const isAdmin=r.roomData.adminSession===S.sid;
-    const adminBadge=isAdmin?'<span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span>':'';
-    card.innerHTML=`<div class="room-card-icon">💬</div>
-      <div class="room-card-info">
-        <div class="room-card-name">${r.roomData.name||r.roomId}${adminBadge}</div>
-        <div class="room-card-meta">${r.expired?'⚠️ vypršela':'zmizí za '+rem+(r.roomData.password?' · 🔒':'')}</div>
-      </div>
-      ${r.expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
-    if(!r.expired)card.onclick=()=>tryRejoin(r.roomId,r.slotId);
-    container.appendChild(card);
-  });
+      if(!expired){
+        // Najít slotId z lokálního cache pokud existuje
+        const local=getRoomList().find(r=>r.roomId===doc.id);
+        freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});
+      }
+      const card=document.createElement('div');
+      card.className='room-card'+(expired?' expired':'');
+      const rem=fmtCd(d.expiresAt.toDate().getTime()-Date.now());
+      card.innerHTML=`<div class="room-card-icon">💬</div>
+        <div class="room-card-info">
+          <div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div>
+          <div class="room-card-meta">${expired?'⚠️ vypršela':'zmizí za '+rem+(d.password?' · 🔒':'')}</div>
+        </div>
+        ${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
+      if(!expired)card.onclick=()=>_adminEnterRoom(doc.id,doc.data());
+      container.appendChild(card);
+    });
+    saveRoomList(freshList);
+  }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba načítání: ${e.message}</div>`;}
+}
+
+async function _adminEnterRoom(roomId,roomData){
+  // Admin vstupuje do místnosti — najít nebo vytvořit svůj slot
+  try{
+    const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
+    if(!slotsSnap.empty){
+      const sdoc=slotsSnap.docs[0],slot=sdoc.data();
+      S.roomId=roomId;S.slotId=sdoc.id;S.username=slot.username;S.color=slot.color;
+      S.isAdmin=true;S.roomData=roomData;
+      addToRoomList(roomId,sdoc.id,roomData.name);
+      $('btn-switch-room').style.display='';
+      enterChat();return;
+    }
+    // Nový slot pro admina na tomto zařízení
+    const saved=localStorage.getItem('rc_username')||'Admin';
+    const color=rndColor(),now=firebase.firestore.Timestamp.now();
+    const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
+    await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
+    S.roomId=roomId;S.slotId=sref.id;S.username=saved;S.color=color;S.isAdmin=true;S.roomData=roomData;
+    addToRoomList(roomId,sref.id,roomData.name);
+    $('btn-switch-room').style.display='';
+    enterChat();
+  }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
 
 function goToRooms(){
