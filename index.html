@@ -162,12 +162,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
 .msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
 .msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
-/* READ RECEIPTS — jen pro vlastní zprávy */
-.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
-.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
-.read-tick.seen{color:#90caf9}
-.read-tick.all{color:#42a5f5}
-.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
 
 /* REACTIONS */
 .bubble-re{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
@@ -242,6 +236,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ENTRY SCREEN */
+#s-entry{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
+.entry-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 28px;width:400px;max-width:100%;display:flex;flex-direction:column;gap:14px;box-shadow:0 40px 80px #0008;text-align:center}
+.entry-logo{font-family:var(--fh);font-weight:900;font-size:38px;letter-spacing:-2px;margin-bottom:4px}
+.entry-logo span{color:var(--accent)}
+.entry-desc{font-size:13px;font-weight:500;color:var(--muted2);line-height:1.6}
+.entry-tap-hint{position:absolute;bottom:12px;right:14px;font-size:9px;color:transparent;user-select:none;pointer-events:none}
+
 /* ROOM SWITCHER */
 #s-rooms{align-items:center;justify-content:flex-start;flex-direction:column;position:relative;padding:env(safe-area-inset-top,24px) 16px 24px;overflow-y:auto}
 .rooms-header{width:100%;max-width:420px;display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px}
@@ -254,20 +256,44 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .room-card-info{flex:1;min-width:0}
 .room-card-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .room-card-meta{font-size:11px;font-weight:500;color:var(--muted2);margin-top:2px}
-.room-card-arr{color:var(--muted);font-size:18px;flex-shrink:0}
 .room-card.expired{opacity:.4;cursor:default}
 .room-card.expired:hover{transform:none}
 .rooms-new-btn{width:100%;max-width:420px;padding:14px;background:none;border:1px dashed var(--border2);border-radius:14px;color:var(--muted2);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
 .rooms-new-btn:hover{border-color:var(--accent)66;color:var(--accent)}
-.switch-room-btn{display:none}
-.is-admin-session .switch-room-btn{display:flex}
+
+/* READ RECEIPTS */
+.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
+.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
+.read-tick.seen{color:#90caf9}
+.read-tick.all{color:#42a5f5}
+.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+
+/* EXPIRY pending */
+.expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
+.msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
+.msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
+
+/* SWITCH ROOM BTN in header */
+#btn-switch-room{display:none}
 </style>
 </head>
 <body>
 
 <div id="loader" class="full-loader"><div class="spinner"></div><span>Načítám…</span></div>
 
-<!-- ROOM SWITCHER (jen admin) -->
+<!-- ENTRY SCREEN — username + skrytý admin trigger -->
+<div id="s-entry" class="screen grid-bg" id="s-entry">
+  <div class="entry-card" id="entry-card">
+    <div class="entry-logo">Room<span>Chat</span></div>
+    <p class="entry-desc" id="entry-desc">Zadej přezdívku a vstup do místnosti</p>
+    <input id="entry-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
+    <div id="entry-err" class="err"></div>
+    <button class="btn-p" onclick="entrySubmit()">Vstoupit →</button>
+    <span class="entry-tap-hint" id="entry-tap-hint">····</span>
+  </div>
+</div>
+
+<!-- ROOM SWITCHER — jen admin -->
 <div id="s-rooms" class="screen grid-bg">
   <div class="rooms-header">
     <div class="rooms-title">Moje místnosti</div>
@@ -353,7 +379,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <div class="cd-badge"><div class="cd-dot"></div>zmizí za <span class="cd-time" id="h-cd">…</span></div>
     </div>
     <div class="hright">
-      <div class="icon-btn switch-room-btn" onclick="goToRooms()" title="Přepnout místnost" style="display:none" id="btn-switch-room">
+      <div class="icon-btn" onclick="goToRooms()" title="Přepnout místnost" id="btn-switch-room" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
       <div class="icon-btn" onclick="copyCode()" title="Kopírovat kód">
@@ -466,7 +492,8 @@ const db = firebase.firestore();
 
 const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
 const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
-const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,roomData:null,slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,pendingInvite:null,jnState:'code',jnRoomData:null,replyTo:null};
+const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
+const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,isAdminSession:false,roomData:null,slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,pendingInvite:null,jnState:'code',jnRoomData:null,replyTo:null,entryContext:null};
 
 const $=id=>document.getElementById(id);
 const rnd=(n=8)=>Math.random().toString(36).slice(2,2+n).toUpperCase();
@@ -496,55 +523,84 @@ function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setI
 // SOUND
 function playNotif(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}}
 
-// ── MULTI-ROOM HELPERS ──────────────────────────────────────────────────────
+// ── HELPERS ─────────────────────────────────────────────────────────────────
 function getRoomList(){try{return JSON.parse(localStorage.getItem('rc_rooms')||'[]');}catch(e){return[];}}
 function saveRoomList(list){localStorage.setItem('rc_rooms',JSON.stringify(list));}
-function addToRoomList(roomId,slotId,name){
-  const list=getRoomList().filter(r=>r.roomId!==roomId);
-  list.unshift({roomId,slotId,name,ts:Date.now()});
-  saveRoomList(list);
+function addToRoomList(roomId,slotId,name){const list=getRoomList().filter(r=>r.roomId!==roomId);list.unshift({roomId,slotId,name,ts:Date.now()});saveRoomList(list);}
+
+async function hashStr(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-// BOOT
+// ── BOOT ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',async()=>{
   let sid=localStorage.getItem('rc_sid');
   if(!sid){sid=rnd(16);localStorage.setItem('rc_sid',sid);}
   S.sid=sid;
+  S.isAdminSession=localStorage.getItem('rc_admin')==='1';
+
+  // Migrace starého formátu
+  const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
+  if(oldRoom&&oldSlot){addToRoomList(oldRoom,oldSlot,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
+
   const p=new URLSearchParams(window.location.search);
   const rp=p.get('room'),ip=p.get('invite');
-  if(rp&&ip) await initInviteScreen(rp.toUpperCase(),ip);
-  else if(rp){$('jn-code').value=rp.toUpperCase();show('s-join');$('loader').style.display='none';}
-  else{
-    // Migrace starého formátu (single room) → nový seznam
-    const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
-    if(oldRoom&&oldSlot){
-      addToRoomList(oldRoom,oldSlot,'');
-      localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');
-    }
+
+  if(rp&&ip){
+    // Pozvaný uživatel — entry screen s kontextem pozvánky
+    await _prepareInviteEntry(rp.toUpperCase(),ip);
+  } else if(rp){
+    $('jn-code').value=rp.toUpperCase();show('s-join');$('loader').style.display='none';
+  } else if(S.isAdminSession){
+    // Admin zná heslo — rovnou room switcher nebo create
+    $('loader').style.display='none';
     const list=getRoomList();
-    if(list.length===0){show('s-home');$('loader').style.display='none';}
-    else if(list.length===1){await tryRejoin(list[0].roomId,list[0].slotId);}
+    if(list.length===0){show('s-home');}
     else{await showRoomSwitcher();}
+  } else {
+    // Normální uživatel — entry screen
+    const list=getRoomList();
+    if(list.length===1){
+      // Zkusit rejoin (pokud se vrací)
+      S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
+      $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
+      const saved=localStorage.getItem('rc_username');
+      if(saved)$('entry-user').value=saved;
+    }
+    show('s-entry');$('loader').style.display='none';
+    _setupAdminTap();
   }
 });
 
-async function tryRejoin(roomId,slotId){
+async function tryRejoin(roomId,slotId,usernameOverride){
   try{
-    const[sd,rd]=await Promise.all([db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),db.collection('rooms').doc(roomId).get()]);
-    if(sd.exists&&rd.exists&&sd.data().sessionId===S.sid){
+    const[sd,rd]=await Promise.all([
+      db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),
+      db.collection('rooms').doc(roomId).get()
+    ]);
+    if(rd.exists){
       const rd2=rd.data();
       if(Date.now()<rd2.expiresAt.toDate().getTime()){
-        const slot=sd.data();S.roomId=roomId;S.slotId=slotId;S.username=slot.username;S.color=slot.color;S.isAdmin=rd2.adminSession===S.sid;S.roomData=rd2;
-        // Aktualizovat jméno v seznamu
-        const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
-        enterChat();return;
+        if(sd.exists&&sd.data().sessionId===S.sid){
+          const slot=sd.data();
+          const uname=usernameOverride||slot.username;
+          if(usernameOverride&&usernameOverride!==slot.username){
+            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:uname});
+          }
+          S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;
+          S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;
+          S.roomData={...rd2,name:rd2.name};
+          const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
+          if(S.isAdmin)$('btn-switch-room').style.display='';
+          enterChat();return;
+        }
       }
     }
   }catch(e){}
-  // Místnost vypršela — odstranit ze seznamu
+  // Vypršela — odstranit ze seznamu
   const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
-  if(list.length>0)await showRoomSwitcher();
-  else{show('s-home');$('loader').style.display='none';}
+  show('s-entry');$('loader').style.display='none';
 }
 
 async function createRoom(){
@@ -560,7 +616,8 @@ async function createRoom(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
-    addToRoomList(roomId,sref.id,name);enterChat();
+    addToRoomList(roomId,sref.id,name);localStorage.setItem('rc_username',user);
+    $('btn-switch-room').style.display='';enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
 
@@ -591,26 +648,35 @@ async function joinByCode(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
     S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);enterChat();
+    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);localStorage.setItem('rc_username',user);enterChat();
   }
 }
 
-async function initInviteScreen(roomId,token){
+async function _prepareInviteEntry(roomId,token){
   try{
     const[rd,ssnap]=await Promise.all([db.collection('rooms').doc(roomId).get(),db.collection('rooms').doc(roomId).collection('slots').where('inviteToken','==',token).limit(1).get()]);
-    if(!rd.exists){show('s-home');toast('Místnost nenalezena','err');$('loader').style.display='none';return;}
+    if(!rd.exists){show('s-entry');toast('Místnost nenalezena','err');$('loader').style.display='none';return;}
     const rdata=rd.data();
-    if(Date.now()>rdata.expiresAt.toDate().getTime()){show('s-home');toast('Místnost vypršela','err');$('loader').style.display='none';return;}
-    if(ssnap.empty){show('s-home');toast('Neplatná pozvánka','err');$('loader').style.display='none';return;}
+    if(Date.now()>rdata.expiresAt.toDate().getTime()){show('s-entry');toast('Místnost vypršela','err');$('loader').style.display='none';return;}
+    if(ssnap.empty){show('s-entry');toast('Neplatná pozvánka','err');$('loader').style.display='none';return;}
     const sdoc=ssnap.docs[0],sdata=sdoc.data();
-    if(sdata.sessionId===S.sid&&sdata.username){S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;localStorage.setItem('rc_room',roomId);localStorage.setItem('rc_slot',sdoc.id);history.replaceState({},'','/');enterChat();return;}
-    if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-home');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
-    S.pendingInvite={roomId,token,slotId:sdoc.id,roomData:rdata};
-    $('inv-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
-    show('s-invite');$('loader').style.display='none';
-  }catch(e){show('s-home');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
+    // Vrací se ze stejného zařízení
+    if(sdata.sessionId===S.sid&&sdata.username){
+      S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;
+      addToRoomList(roomId,sdoc.id,rdata.name);history.replaceState({},'','/');enterChat();return;
+    }
+    if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-entry');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
+    // Nový uživatel — ukázat entry screen
+    S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};
+    $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
+    const saved=localStorage.getItem('rc_username');if(saved)$('entry-user').value=saved;
+    history.replaceState({},'','/');
+    show('s-entry');$('loader').style.display='none';
+    _setupAdminTap();
+  }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
 }
 
+// Stará s-invite obrazovka není potřeba, joinByInvite se volá z entrySubmit
 async function joinByInvite(){
   const user=$('inv-user').value.trim();hideErr('inv-err');
   if(!user)return showErr('inv-err','Zadej přezdívku');
@@ -620,30 +686,80 @@ async function joinByInvite(){
     await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    addToRoomList(roomId,slotId,roomData.name);history.replaceState({},'','/');enterChat();
+    addToRoomList(roomId,slotId,roomData.name);localStorage.setItem('rc_username',user);history.replaceState({},'','/');enterChat();
   }catch(e){showErr('inv-err','Chyba: '+e.message);}
 }
 
-// ROOM SWITCHER
+// ── ENTRY SCREEN ─────────────────────────────────────────────────────────────
+function _setupAdminTap(){
+  let taps=0,tapTO=null;
+  const card=$('entry-card');
+  function onTap(){
+    taps++;clearTimeout(tapTO);
+    tapTO=setTimeout(()=>{taps=0;},800);
+    if(taps>=4){taps=0;_showAdminPrompt();}
+  }
+  card.addEventListener('click',onTap);
+  card.addEventListener('touchend',e=>{if(e.changedTouches.length===1)onTap();},{passive:true});
+}
+
+function _showAdminPrompt(){
+  const pw=prompt('🔐 Admin heslo:');
+  if(!pw)return;
+  hashStr(pw).then(h=>{
+    if(h===ADMIN_HASH){
+      localStorage.setItem('rc_admin','1');
+      S.isAdminSession=true;
+      toast('✓ Admin režim aktivován','ok');
+      setTimeout(async()=>{
+        const list=getRoomList();
+        if(list.length===0){show('s-home');}
+        else{$('loader').style.display='';await showRoomSwitcher();}
+      },600);
+    }else{
+      toast('Špatné heslo','err');
+    }
+  });
+}
+
+async function entrySubmit(){
+  const user=$('entry-user').value.trim();
+  hideErr('entry-err');
+  if(!user)return showErr('entry-err','Zadej přezdívku');
+  localStorage.setItem('rc_username',user);
+  const ctx=S.entryContext;
+  if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}
+  if(ctx.type==='invite'){
+    // Nový uživatel přes pozvánku
+    const color=rndColor(),now=firebase.firestore.Timestamp.now();
+    try{
+      await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
+      await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
+      S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;
+      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);enterChat();
+    }catch(e){showErr('entry-err','Chyba: '+e.message);}
+  } else if(ctx.type==='rejoin'){
+    await tryRejoin(ctx.roomId,ctx.slotId,user);
+  }
+}
+
+// ── ROOM SWITCHER ─────────────────────────────────────────────────────────────
 async function showRoomSwitcher(){
   $('loader').style.display='none';
   const list=getRoomList();
   const container=$('rooms-list');
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
-  // Načteme info o každé místnosti
   const cards=await Promise.all(list.map(async r=>{
     try{
       const rd=await db.collection('rooms').doc(r.roomId).get();
       if(!rd.exists)return null;
       const d=rd.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
-      const isAdmin=d.adminSession===S.sid;
-      return{...r,roomData:d,expired,isAdmin};
+      return{...r,roomData:d,expired};
     }catch(e){return null;}
   }));
   const valid=cards.filter(Boolean);
-  // Odstranit vypršelé ze seznamu
   const fresh=valid.filter(r=>!r.expired);
   saveRoomList(fresh.map(r=>({roomId:r.roomId,slotId:r.slotId,name:r.roomData.name,ts:r.ts})));
   container.innerHTML='';
@@ -651,30 +767,74 @@ async function showRoomSwitcher(){
   valid.forEach(r=>{
     const card=document.createElement('div');
     card.className='room-card'+(r.expired?' expired':'');
-    const exp=r.roomData.expiresAt.toDate();
-    const rem=fmtCd(exp.getTime()-Date.now());
-    const adminBadge=r.isAdmin?'<span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span>':'';
+    const rem=fmtCd(r.roomData.expiresAt.toDate().getTime()-Date.now());
+    const isAdmin=r.roomData.adminSession===S.sid;
+    const adminBadge=isAdmin?'<span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span>':'';
     card.innerHTML=`<div class="room-card-icon">💬</div>
       <div class="room-card-info">
         <div class="room-card-name">${r.roomData.name||r.roomId}${adminBadge}</div>
-        <div class="room-card-meta">${r.expired?'⚠️ vypršela':('zmizí za '+rem)+(r.roomData.password?' · 🔒':'')}</div>
+        <div class="room-card-meta">${r.expired?'⚠️ vypršela':'zmizí za '+rem+(r.roomData.password?' · 🔒':'')}</div>
       </div>
-      ${r.expired?'':'<div class="room-card-arr">›</div>'}`;
+      ${r.expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
     if(!r.expired)card.onclick=()=>tryRejoin(r.roomId,r.slotId);
     container.appendChild(card);
   });
 }
 
 function goToRooms(){
-  // Odhlásit z aktuální místnosti — zrušit listenery
   S.unsubs.forEach(u=>u());S.unsubs=[];
   clearInterval(S.heartbeat);clearInterval(S.countdown);
   S.roomId=null;S.slotId=null;
   $('btn-switch-room').style.display='none';
   $('sb-inv').style.display='none';
-  const list=getRoomList();
-  if(list.length===1){show('s-home');return;}
   showRoomSwitcher();
+}
+
+// ── READ RECEIPTS ─────────────────────────────────────────────────────────────
+const _readDone=new Set();
+const _viewObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObserver.unobserve(e.target);}
+  });
+},{threshold:0.8});
+
+async function _markRead(msgId){
+  if(_readDone.has(msgId)||!S.roomId||!S.slotId)return;
+  _readDone.add(msgId);
+  try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId).set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
+}
+
+function _updateReadTicks(){
+  document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
+    const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
+    const reads=S.reads[msgId]||{};
+    const readers=Object.keys(reads).filter(id=>id!==sender);
+    const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);
+    const tick=rr.querySelector('.read-tick');
+    const nm=rr.querySelector('.read-names');
+    if(!tick)return;
+    if(readers.length===0){tick.textContent='✓';tick.className='read-tick';}
+    else if(others.length>0&&readers.length>=others.length){tick.textContent='✓✓';tick.className='read-tick all';}
+    else{tick.textContent='✓✓';tick.className='read-tick seen';}
+    if(nm){const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);nm.textContent=names.join(', ');}
+  });
+}
+
+// ── EXPIRY COUNTDOWN ──────────────────────────────────────────────────────────
+const _cdTimers={};
+function _startCountdown(msgId,exp,badgeEl,wrapEl){
+  if(_cdTimers[msgId])return;
+  function tick(){
+    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
+    if(rem<=0){
+      clearInterval(_cdTimers[msgId]);delete _cdTimers[msgId];
+      const grp=wrapEl.closest('.msg-group');
+      if(grp){const ws=grp.querySelectorAll('.bubble-wrap');if(ws.length<=1)grp.remove();else wrapEl.remove();}
+      return;
+    }
+    badgeEl.textContent=`⏱ zmizí za ${fmtExpiry(rem)}`;
+  }
+  tick();_cdTimers[msgId]=setInterval(tick,1000);
 }
 
 // ENTER CHAT
@@ -686,7 +846,7 @@ function enterChat(){
   if(S.isAdmin){$('sb-inv').style.display='';$('btn-switch-room').style.display='';}
   const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});
   S.unsubs.push(uSlots);
-  // Reads listener — SEPARATE kolekce, nespouští messages listener → žádné blikání
+  // Reads listener — samostatná kolekce, nespouští messages listener
   const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
     snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});
     _updateReadTicks();
@@ -867,7 +1027,6 @@ async function sendMsg(){
   clearReply();
   try{
     const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
-    // Odesílatel = automaticky přečetl — zapíšeme do reads kolekce
     db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id)
       .set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
   }catch(e){toast('Chyba při odesílání','err');}
@@ -880,68 +1039,6 @@ function renderTyping(){
   const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);
   if(!typers.length){$('typing').innerHTML='';return;}
   $('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;
-}
-
-// ── READ RECEIPTS ──────────────────────────────────────────────────────────
-const _readDone=new Set();
-const _viewObserver=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const id=e.target.dataset.msgid;
-      if(id)_markRead(id);
-      _viewObserver.unobserve(e.target);
-    }
-  });
-},{threshold:0.8});
-
-async function _markRead(msgId){
-  if(_readDone.has(msgId)||!S.roomId||!S.slotId)return;
-  _readDone.add(msgId);
-  try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId)
-    .set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
-}
-
-function _updateReadTicks(){
-  document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
-    const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
-    const reads=S.reads[msgId]||{};
-    const readers=Object.keys(reads).filter(id=>id!==sender);
-    const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);
-    const tick=rr.querySelector('.read-tick');
-    const nm=rr.querySelector('.read-names');
-    if(!tick)return;
-    if(readers.length===0){
-      tick.textContent='✓';tick.className='read-tick';
-    }else if(others.length>0&&readers.length>=others.length){
-      tick.textContent='✓✓';tick.className='read-tick all';
-    }else{
-      tick.textContent='✓✓';tick.className='read-tick seen';
-    }
-    if(nm){
-      const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);
-      nm.textContent=names.join(', ');
-      // Long press na .read-receipt ukáže jména — jsou vidět přímo jako text
-    }
-  });
-}
-
-// ── EXPIRY COUNTDOWN ────────────────────────────────────────────────────────
-const _cdTimers={};
-function _startCountdown(msgId,exp,badgeEl,wrapEl){
-  if(_cdTimers[msgId])return;
-  function tick(){
-    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    if(rem<=0){
-      clearInterval(_cdTimers[msgId]);delete _cdTimers[msgId];
-      // Okamžitě odstraníme ze DOM
-      const grp=wrapEl.closest('.msg-group');
-      if(grp){const ws=grp.querySelectorAll('.bubble-wrap');if(ws.length<=1)grp.remove();else wrapEl.remove();}
-      return;
-    }
-    badgeEl.textContent=`⏱ zmizí za ${fmtExpiry(rem)}`;
-  }
-  tick();
-  _cdTimers[msgId]=setInterval(tick,1000);
 }
 
 // EMOJI INPUT
