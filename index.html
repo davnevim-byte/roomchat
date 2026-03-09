@@ -439,7 +439,7 @@ const db = firebase.firestore();
 
 const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
 const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
-const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,roomData:null,slots:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,pendingInvite:null,jnState:'code',jnRoomData:null,replyTo:null};
+const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,roomData:null,slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,pendingInvite:null,jnState:'code',jnRoomData:null,replyTo:null};
 
 const $=id=>document.getElementById(id);
 const rnd=(n=8)=>Math.random().toString(36).slice(2,2+n).toUpperCase();
@@ -584,6 +584,11 @@ function enterChat(){
   if(S.isAdmin)$('sb-inv').style.display='';
   const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});
   S.unsubs.push(uSlots);
+  // Subscribe to reads collection (separate from messages — no flicker)
+  const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
+    snap.forEach(d=>{S.reads[d.id]={...d.data()};});
+  });
+  S.unsubs.push(uReads);
   const cutoff=new Date(Date.now()-86400000);
   const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages').where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff)).orderBy('timestamp','asc').limitToLast(200).onSnapshot(snap=>renderMessages(snap));
   S.unsubs.push(uMsgs);
@@ -658,8 +663,10 @@ function doCopyInv(){navigator.clipboard.writeText($('ci-url').textContent).then
 function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód ${S.roomId} zkopírován!`,'ok'));}
 
 // MESSAGES
-let lastMsgCount=0;
+let lastMsgCount=0,renderTO=null;
 function renderMessages(snap){
+  clearTimeout(renderTO);renderTO=setTimeout(()=>_doRender(snap),80);}
+function _doRender(snap){
   const box=$('msgs');
   const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
   const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;
@@ -695,21 +702,20 @@ const msgViewObserver=new IntersectionObserver(entries=>{
   });
 },{root:null,threshold:0.6});
 
+// Track which messages this session has already marked as viewed (avoid duplicate writes)
+const _viewedMsgs=new Set();
 async function markMessageViewed(msgId,msg){
   if(!S.roomId||!S.slotId)return;
-  const updates={};
-  // Mark read by this user (if not already)
-  const readBy=msg.readBy||{};
-  if(!readBy[S.slotId]){
-    updates[`readBy.${S.slotId}`]=firebase.firestore.FieldValue.serverTimestamp();
-  }
+  if(_viewedMsgs.has(msgId))return;
+  _viewedMsgs.add(msgId);
+  // Store read receipt in SEPARATE doc — does NOT trigger messages listener
+  const readRef=db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId);
+  try{await readRef.set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
   // Start expiry timer — only when viewed by someone OTHER than the sender
-  // (so sender sending a message doesn't start their own timer)
   if(msg.expirySecs>0&&!msg.expiresAt&&msg.slotId!==S.slotId){
-    updates.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+msg.expirySecs,0);
-  }
-  if(Object.keys(updates).length>0){
-    try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update(updates);}catch(e){}
+    try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update(
+      {expiresAt:new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+msg.expirySecs,0)}
+    );}catch(e){}
   }
 }
 
@@ -735,7 +741,7 @@ function makeBubbleWrap(msg){
   b.appendChild(re);
   // Read receipts (for own messages only)
   if(own){
-    const readBy=msg.readBy||{};
+    const readBy=S.reads[msg.id]||{};
     const readers=Object.keys(readBy).filter(id=>id!==S.slotId).map(id=>S.slots[id]).filter(Boolean);
     if(readers.length>0){
       const rr=document.createElement('div');rr.className='read-receipt';
