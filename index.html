@@ -162,17 +162,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
 .msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
 .msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
-.expiry-waiting{font-size:10px;font-weight:700;margin-top:5px;opacity:.55}
-.msg-group.own .expiry-waiting{color:#ffffffaa;text-align:right}
-.msg-group.other .expiry-waiting{color:var(--muted2);text-align:left}
-
-/* READ RECEIPTS */
-.read-receipt{display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap}
-.msg-group.own .read-receipt{justify-content:flex-end}
-.read-receipt-av{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;flex-shrink:0;opacity:.85}
-.read-tick{font-size:11px;font-weight:700;color:#ffffffaa}
-.read-tick.seen{color:#a0d8ff}
-.read-names{font-size:9px;font-weight:700;color:#ffffffaa;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* READ RECEIPTS — jen pro vlastní zprávy */
+.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
+.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
+.read-tick.seen{color:#90caf9}
+.read-tick.all{color:#42a5f5}
+.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
 
 /* REACTIONS */
 .bubble-re{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
@@ -584,9 +579,10 @@ function enterChat(){
   if(S.isAdmin)$('sb-inv').style.display='';
   const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});
   S.unsubs.push(uSlots);
-  // Subscribe to reads collection (separate from messages — no flicker)
+  // Reads listener — SEPARATE kolekce, nespouští messages listener → žádné blikání
   const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
-    snap.forEach(d=>{S.reads[d.id]={...d.data()};});
+    snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});
+    _updateReadTicks();
   });
   S.unsubs.push(uReads);
   const cutoff=new Date(Date.now()-86400000);
@@ -612,7 +608,7 @@ function updateCd(){const exp=S.roomData?.expiresAt?.toDate?.();if(exp)$('h-cd')
 async function cleanExpired(){
   if(!S.roomId)return;
   try{
-    const snap=await db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','>',firebase.firestore.Timestamp.fromDate(new Date(0))).where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(20).get();
+    const snap=await db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(20).get();
     const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));if(!snap.empty)await batch.commit();
   }catch(e){}
 }
@@ -663,10 +659,8 @@ function doCopyInv(){navigator.clipboard.writeText($('ci-url').textContent).then
 function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód ${S.roomId} zkopírován!`,'ok'));}
 
 // MESSAGES
-let lastMsgCount=0,renderTO=null;
+let lastMsgCount=0;
 function renderMessages(snap){
-  clearTimeout(renderTO);renderTO=setTimeout(()=>_doRender(snap),80);}
-function _doRender(snap){
   const box=$('msgs');
   const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
   const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;
@@ -689,73 +683,32 @@ function _doRender(snap){
   if(hasNew&&!document.hidden&&msg&&msg.slotId!==S.slotId)playNotif();
 }
 
-// MESSAGE VIEW TRACKING — read receipts & view-triggered expiry
-const msgViewObserver=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      const wrap=entry.target;
-      const msgId=wrap.dataset.msgId;
-      const msg=wrap._msgData;
-      if(msgId&&msg)markMessageViewed(msgId,msg);
-      msgViewObserver.unobserve(wrap);
-    }
-  });
-},{root:null,threshold:0.6});
-
-// Track which messages this session has already marked as viewed (avoid duplicate writes)
-const _viewedMsgs=new Set();
-async function markMessageViewed(msgId,msg){
-  if(!S.roomId||!S.slotId)return;
-  if(_viewedMsgs.has(msgId))return;
-  _viewedMsgs.add(msgId);
-  // Store read receipt in SEPARATE doc — does NOT trigger messages listener
-  const readRef=db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId);
-  try{await readRef.set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
-  // Start expiry timer — only when viewed by someone OTHER than the sender
-  if(msg.expirySecs>0&&!msg.expiresAt&&msg.slotId!==S.slotId){
-    try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update(
-      {expiresAt:new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+msg.expirySecs,0)}
-    );}catch(e){}
-  }
-}
-
 function makeBubbleWrap(msg){
   const own=msg.slotId===S.slotId;
   const wrap=document.createElement('div');wrap.className='bubble-wrap';wrap.style.overflow='visible';
-  // Store msg data for IntersectionObserver
-  wrap.dataset.msgId=msg.id;wrap._msgData=msg;
   if(own&&S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
   const b=document.createElement('div');b.className='bubble';
   if(msg.replyTo){const qbar=document.createElement('div');qbar.className='quote-bar';qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;b.appendChild(qbar);}
   const txt=document.createElement('div');txt.textContent=msg.text;b.appendChild(txt);
-  // Expiry badge — shows countdown if running, or "čeká na zobrazení" if pending
   if(msg.expiresAt){
     const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);
     const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
-  } else if(msg.expirySecs>0){
-    const eb=document.createElement('div');eb.className='expiry-waiting';eb.textContent=`⏱ ${fmtExpiry(msg.expirySecs)} · spustí se při zobrazení`;b.appendChild(eb);
+    const eb=document.createElement('div');eb.className='expiry-badge';
+    eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
+    _startCountdown(msg.id,exp,eb,wrap);
   }
+  // Read receipts — jen pro vlastní zprávy
+  if(own){
+    const rr=document.createElement('div');rr.className='read-receipt';rr.dataset.msgid=msg.id;rr.dataset.sender=S.slotId;
+    const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
+    const nm=document.createElement('span');nm.className='read-names';rr.appendChild(nm);
+    b.appendChild(rr);
+  }
+  // Označit jako přečtené při zobrazení — pro cizí zprávy
+  if(!own){wrap.dataset.msgid=msg.id;_viewObserver.observe(wrap);}
   const re=document.createElement('div');re.className='bubble-re';const reactions=msg.reactions||{};
   Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{const chip=document.createElement('div');chip.className='re-chip';chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);});
   b.appendChild(re);
-  // Read receipts (for own messages only)
-  if(own){
-    const readBy=S.reads[msg.id]||{};
-    const readers=Object.keys(readBy).filter(id=>id!==S.slotId).map(id=>S.slots[id]).filter(Boolean);
-    if(readers.length>0){
-      const rr=document.createElement('div');rr.className='read-receipt';
-      const tick=document.createElement('span');tick.className='read-tick seen';tick.textContent='✓✓';rr.appendChild(tick);
-      readers.slice(0,4).forEach(slot=>{const av=document.createElement('div');av.className='read-receipt-av';av.style.background=slot.color||'#5c6bff';av.title=slot.username;av.textContent=initials(slot.username);rr.appendChild(av);});
-      if(readers.length>0){const nm=document.createElement('span');nm.className='read-names';nm.textContent=readers.map(s=>s.username).join(', ');rr.appendChild(nm);}
-      b.appendChild(rr);
-    } else {
-      // Show single grey tick — sent but not yet read
-      const rr=document.createElement('div');rr.className='read-receipt';
-      const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
-      b.appendChild(rr);
-    }
-  }
   const acts=document.createElement('div');acts.className='bubble-actions';
   const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
   const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
@@ -766,8 +719,6 @@ function makeBubbleWrap(msg){
   wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),400);},{passive:true});
   wrap.addEventListener('touchend',()=>clearTimeout(lpTO),{passive:true});
   wrap.addEventListener('touchmove',()=>clearTimeout(lpTO),{passive:true});
-  // Register for view tracking
-  msgViewObserver.observe(wrap);
   return wrap;
 }
 
@@ -803,13 +754,16 @@ function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show')
 async function sendMsg(){
   const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
   const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
-  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{},readBy:{[S.slotId]:Date.now()}};
+  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};
   if(S.replyTo)msgData.replyTo=S.replyTo;
-  // Store expirySecs — timer starts when someone views the message, NOT at send time
-  if(expirySecs>0){msgData.expirySecs=expirySecs;}
+  if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
   clearReply();
-  try{await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);}
-  catch(e){toast('Chyba při odesílání','err');}
+  try{
+    const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
+    // Odesílatel = automaticky přečetl — zapíšeme do reads kolekce
+    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id)
+      .set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
+  }catch(e){toast('Chyba při odesílání','err');}
 }
 
 // TYPING
@@ -819,6 +773,68 @@ function renderTyping(){
   const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);
   if(!typers.length){$('typing').innerHTML='';return;}
   $('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;
+}
+
+// ── READ RECEIPTS ──────────────────────────────────────────────────────────
+const _readDone=new Set();
+const _viewObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.dataset.msgid;
+      if(id)_markRead(id);
+      _viewObserver.unobserve(e.target);
+    }
+  });
+},{threshold:0.8});
+
+async function _markRead(msgId){
+  if(_readDone.has(msgId)||!S.roomId||!S.slotId)return;
+  _readDone.add(msgId);
+  try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId)
+    .set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
+}
+
+function _updateReadTicks(){
+  document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
+    const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
+    const reads=S.reads[msgId]||{};
+    const readers=Object.keys(reads).filter(id=>id!==sender);
+    const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);
+    const tick=rr.querySelector('.read-tick');
+    const nm=rr.querySelector('.read-names');
+    if(!tick)return;
+    if(readers.length===0){
+      tick.textContent='✓';tick.className='read-tick';
+    }else if(others.length>0&&readers.length>=others.length){
+      tick.textContent='✓✓';tick.className='read-tick all';
+    }else{
+      tick.textContent='✓✓';tick.className='read-tick seen';
+    }
+    if(nm){
+      const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);
+      nm.textContent=names.join(', ');
+      // Long press na .read-receipt ukáže jména — jsou vidět přímo jako text
+    }
+  });
+}
+
+// ── EXPIRY COUNTDOWN ────────────────────────────────────────────────────────
+const _cdTimers={};
+function _startCountdown(msgId,exp,badgeEl,wrapEl){
+  if(_cdTimers[msgId])return;
+  function tick(){
+    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
+    if(rem<=0){
+      clearInterval(_cdTimers[msgId]);delete _cdTimers[msgId];
+      // Okamžitě odstraníme ze DOM
+      const grp=wrapEl.closest('.msg-group');
+      if(grp){const ws=grp.querySelectorAll('.bubble-wrap');if(ws.length<=1)grp.remove();else wrapEl.remove();}
+      return;
+    }
+    badgeEl.textContent=`⏱ zmizí za ${fmtExpiry(rem)}`;
+  }
+  tick();
+  _cdTimers[msgId]=setInterval(tick,1000);
 }
 
 // EMOJI INPUT
