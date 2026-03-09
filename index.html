@@ -241,11 +241,40 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .full-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:16px;font-size:13px;font-weight:600;color:var(--muted2)}
 .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ROOM SWITCHER */
+#s-rooms{align-items:center;justify-content:flex-start;flex-direction:column;position:relative;padding:env(safe-area-inset-top,24px) 16px 24px;overflow-y:auto}
+.rooms-header{width:100%;max-width:420px;display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px}
+.rooms-title{font-weight:900;font-size:22px;letter-spacing:-.5px}
+.rooms-list{width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px}
+.room-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px}
+.room-card:hover{border-color:var(--accent)66;transform:translateY(-1px)}
+.room-card:active{transform:translateY(0);opacity:.85}
+.room-card-icon{width:42px;height:42px;border-radius:11px;background:var(--accent-glow);border:1px solid var(--accent)44;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.room-card-info{flex:1;min-width:0}
+.room-card-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room-card-meta{font-size:11px;font-weight:500;color:var(--muted2);margin-top:2px}
+.room-card-arr{color:var(--muted);font-size:18px;flex-shrink:0}
+.room-card.expired{opacity:.4;cursor:default}
+.room-card.expired:hover{transform:none}
+.rooms-new-btn{width:100%;max-width:420px;padding:14px;background:none;border:1px dashed var(--border2);border-radius:14px;color:var(--muted2);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.rooms-new-btn:hover{border-color:var(--accent)66;color:var(--accent)}
+.switch-room-btn{display:none}
+.is-admin-session .switch-room-btn{display:flex}
 </style>
 </head>
 <body>
 
 <div id="loader" class="full-loader"><div class="spinner"></div><span>Načítám…</span></div>
+
+<!-- ROOM SWITCHER (jen admin) -->
+<div id="s-rooms" class="screen grid-bg">
+  <div class="rooms-header">
+    <div class="rooms-title">Moje místnosti</div>
+  </div>
+  <div class="rooms-list" id="rooms-list"></div>
+  <button class="rooms-new-btn" onclick="show('s-create')">+ Vytvořit novou místnost</button>
+</div>
 
 <!-- HOME -->
 <div id="s-home" class="screen grid-bg">
@@ -324,6 +353,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <div class="cd-badge"><div class="cd-dot"></div>zmizí za <span class="cd-time" id="h-cd">…</span></div>
     </div>
     <div class="hright">
+      <div class="icon-btn switch-room-btn" onclick="goToRooms()" title="Přepnout místnost" style="display:none" id="btn-switch-room">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
       <div class="icon-btn" onclick="copyCode()" title="Kopírovat kód">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </div>
@@ -464,6 +496,15 @@ function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setI
 // SOUND
 function playNotif(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}}
 
+// ── MULTI-ROOM HELPERS ──────────────────────────────────────────────────────
+function getRoomList(){try{return JSON.parse(localStorage.getItem('rc_rooms')||'[]');}catch(e){return[];}}
+function saveRoomList(list){localStorage.setItem('rc_rooms',JSON.stringify(list));}
+function addToRoomList(roomId,slotId,name){
+  const list=getRoomList().filter(r=>r.roomId!==roomId);
+  list.unshift({roomId,slotId,name,ts:Date.now()});
+  saveRoomList(list);
+}
+
 // BOOT
 window.addEventListener('DOMContentLoaded',async()=>{
   let sid=localStorage.getItem('rc_sid');
@@ -474,9 +515,16 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(rp&&ip) await initInviteScreen(rp.toUpperCase(),ip);
   else if(rp){$('jn-code').value=rp.toUpperCase();show('s-join');$('loader').style.display='none';}
   else{
-    const sr=localStorage.getItem('rc_room'),ss=localStorage.getItem('rc_slot');
-    if(sr&&ss) await tryRejoin(sr,ss);
-    else{show('s-home');$('loader').style.display='none';}
+    // Migrace starého formátu (single room) → nový seznam
+    const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
+    if(oldRoom&&oldSlot){
+      addToRoomList(oldRoom,oldSlot,'');
+      localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');
+    }
+    const list=getRoomList();
+    if(list.length===0){show('s-home');$('loader').style.display='none';}
+    else if(list.length===1){await tryRejoin(list[0].roomId,list[0].slotId);}
+    else{await showRoomSwitcher();}
   }
 });
 
@@ -486,11 +534,17 @@ async function tryRejoin(roomId,slotId){
     if(sd.exists&&rd.exists&&sd.data().sessionId===S.sid){
       const rd2=rd.data();
       if(Date.now()<rd2.expiresAt.toDate().getTime()){
-        const slot=sd.data();S.roomId=roomId;S.slotId=slotId;S.username=slot.username;S.color=slot.color;S.isAdmin=rd2.adminSession===S.sid;S.roomData=rd2;enterChat();return;
+        const slot=sd.data();S.roomId=roomId;S.slotId=slotId;S.username=slot.username;S.color=slot.color;S.isAdmin=rd2.adminSession===S.sid;S.roomData=rd2;
+        // Aktualizovat jméno v seznamu
+        const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
+        enterChat();return;
       }
     }
   }catch(e){}
-  localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');show('s-home');$('loader').style.display='none';
+  // Místnost vypršela — odstranit ze seznamu
+  const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
+  if(list.length>0)await showRoomSwitcher();
+  else{show('s-home');$('loader').style.display='none';}
 }
 
 async function createRoom(){
@@ -506,7 +560,7 @@ async function createRoom(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
-    localStorage.setItem('rc_room',roomId);localStorage.setItem('rc_slot',sref.id);enterChat();
+    addToRoomList(roomId,sref.id,name);enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
 
@@ -537,7 +591,7 @@ async function joinByCode(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
     S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    localStorage.setItem('rc_room',S.jnRoomData.id);localStorage.setItem('rc_slot',sref.id);enterChat();
+    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);enterChat();
   }
 }
 
@@ -566,8 +620,61 @@ async function joinByInvite(){
     await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    localStorage.setItem('rc_room',roomId);localStorage.setItem('rc_slot',slotId);history.replaceState({},'','/');enterChat();
+    addToRoomList(roomId,slotId,roomData.name);history.replaceState({},'','/');enterChat();
   }catch(e){showErr('inv-err','Chyba: '+e.message);}
+}
+
+// ROOM SWITCHER
+async function showRoomSwitcher(){
+  $('loader').style.display='none';
+  const list=getRoomList();
+  const container=$('rooms-list');
+  container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
+  show('s-rooms');
+  // Načteme info o každé místnosti
+  const cards=await Promise.all(list.map(async r=>{
+    try{
+      const rd=await db.collection('rooms').doc(r.roomId).get();
+      if(!rd.exists)return null;
+      const d=rd.data();
+      const expired=Date.now()>d.expiresAt.toDate().getTime();
+      const isAdmin=d.adminSession===S.sid;
+      return{...r,roomData:d,expired,isAdmin};
+    }catch(e){return null;}
+  }));
+  const valid=cards.filter(Boolean);
+  // Odstranit vypršelé ze seznamu
+  const fresh=valid.filter(r=>!r.expired);
+  saveRoomList(fresh.map(r=>({roomId:r.roomId,slotId:r.slotId,name:r.roomData.name,ts:r.ts})));
+  container.innerHTML='';
+  if(valid.length===0){show('s-home');return;}
+  valid.forEach(r=>{
+    const card=document.createElement('div');
+    card.className='room-card'+(r.expired?' expired':'');
+    const exp=r.roomData.expiresAt.toDate();
+    const rem=fmtCd(exp.getTime()-Date.now());
+    const adminBadge=r.isAdmin?'<span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span>':'';
+    card.innerHTML=`<div class="room-card-icon">💬</div>
+      <div class="room-card-info">
+        <div class="room-card-name">${r.roomData.name||r.roomId}${adminBadge}</div>
+        <div class="room-card-meta">${r.expired?'⚠️ vypršela':('zmizí za '+rem)+(r.roomData.password?' · 🔒':'')}</div>
+      </div>
+      ${r.expired?'':'<div class="room-card-arr">›</div>'}`;
+    if(!r.expired)card.onclick=()=>tryRejoin(r.roomId,r.slotId);
+    container.appendChild(card);
+  });
+}
+
+function goToRooms(){
+  // Odhlásit z aktuální místnosti — zrušit listenery
+  S.unsubs.forEach(u=>u());S.unsubs=[];
+  clearInterval(S.heartbeat);clearInterval(S.countdown);
+  S.roomId=null;S.slotId=null;
+  $('btn-switch-room').style.display='none';
+  $('sb-inv').style.display='none';
+  const list=getRoomList();
+  if(list.length===1){show('s-home');return;}
+  showRoomSwitcher();
 }
 
 // ENTER CHAT
@@ -576,7 +683,7 @@ function enterChat(){
   $('h-name').textContent='╱ '+S.roomData.name;
   if(S.roomData.password)$('h-lock').style.display='';
   updateCd();S.countdown=setInterval(updateCd,30000);
-  if(S.isAdmin)$('sb-inv').style.display='';
+  if(S.isAdmin){$('sb-inv').style.display='';$('btn-switch-room').style.display='';}
   const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});
   S.unsubs.push(uSlots);
   // Reads listener — SEPARATE kolekce, nespouští messages listener → žádné blikání
