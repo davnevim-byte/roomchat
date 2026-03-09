@@ -797,12 +797,10 @@ function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show')
 async function sendMsg(){
   const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
   const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
-  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{},readBy:{}};
+  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{},readBy:{[S.slotId]:Date.now()}};
   if(S.replyTo)msgData.replyTo=S.replyTo;
   // Store expirySecs — timer starts when someone views the message, NOT at send time
   if(expirySecs>0){msgData.expirySecs=expirySecs;msgData.expiresAt=null;}
-  // Mark as read by sender immediately
-  msgData[`readBy.${S.slotId}`]=firebase.firestore.FieldValue.serverTimestamp();
   clearReply();
   try{await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);}
   catch(e){toast('Chyba při odesílání','err');}
