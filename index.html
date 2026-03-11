@@ -814,7 +814,8 @@ function updateHeaderBadge(){
   const msLeft = exp.getTime()-Date.now();
   const daysLeft = msLeft/86400000;
   let txt;
-  if(daysLeft<3){
+  // ✅ Expiry warning only for admin
+  if(S.isAdmin && daysLeft<3){
     txt = `⚠️ vyprší za ${fmtCd(msLeft)}`;
     $('h-dot').classList.add('warn');
   } else {
@@ -854,7 +855,15 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(rp&&ip){
     await _prepareInviteEntry(rp.toUpperCase(),ip);
   } else if(rp){
-    $('jn-code').value=rp.toUpperCase();show('s-join');$('loader').style.display='none';
+    // ?room=XXX without invite = returning user (e.g. from home screen icon)
+    const roomId=rp.toUpperCase();
+    const stored=getRoomList().find(r=>r.roomId===roomId);
+    if(stored?.slotId){
+      // Try silent auto-rejoin
+      await tryRejoin(roomId,stored.slotId,null,true);
+    } else {
+      $('jn-code').value=roomId;show('s-join');$('loader').style.display='none';
+    }
   } else if(S.isAdminSession){
     $('loader').style.display='none';
     const list=getRoomList();
@@ -863,9 +872,14 @@ window.addEventListener('DOMContentLoaded',async()=>{
     const list=getRoomList();
     if(list.length===1){
       S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
-      $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
       const saved=localStorage.getItem('rc_username');
-      if(saved)$('entry-user').value=saved;
+      if(saved){
+        // Auto-rejoin without showing entry screen
+        $('loader').style.display='';
+        await tryRejoin(list[0].roomId,list[0].slotId,saved,false);
+        return;
+      }
+      $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
     }
     show('s-entry');$('loader').style.display='none';
     _setupAdminTap();
@@ -875,7 +889,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
 // ══════════════════════════════════════
 // REJOIN
 // ══════════════════════════════════════
-async function tryRejoin(roomId,slotId,usernameOverride){
+async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
   try{
     const[sd,rd]=await Promise.all([
       db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),
@@ -884,25 +898,44 @@ async function tryRejoin(roomId,slotId,usernameOverride){
     if(rd.exists){
       const rd2=rd.data();
       if(Date.now()<rd2.expiresAt.toDate().getTime()){
-        if(sd.exists&&sd.data().sessionId===S.sid){
+        if(sd.exists){
           const slot=sd.data();
-          const uname=usernameOverride||slot.username;
-          if(usernameOverride&&usernameOverride!==slot.username){
-            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:uname});
+          const uname=usernameOverride||slot.username||localStorage.getItem('rc_username');
+          if(!uname){
+            // No username available, show entry
+            S.entryContext={type:'rejoin',roomId,slotId};
+            show('s-entry');$('loader').style.display='none';_setupAdminTap();return;
+          }
+          // ✅ Accept even if sessionId changed (iOS clears storage)
+          // Update sessionId + username if needed
+          const updates={};
+          if(slot.sessionId!==S.sid) updates.sessionId=S.sid;
+          if(usernameOverride&&usernameOverride!==slot.username) updates.username=uname;
+          if(Object.keys(updates).length>0){
+            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);
           }
           S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;
           S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;
           S.roomData={...rd2};
           const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
           if(S.isAdmin)$('btn-switch-room').style.display='';
+          // ✅ Keep ?room= in URL so iOS home screen icon works
+          history.replaceState({},'','?room='+roomId);
           enterChat();return;
         }
       }
     }
   }catch(e){}
+  // Rejoin failed
   const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
   S.entryContext=null;
-  show('s-entry');$('loader').style.display='none';
+  if(silentMode){
+    // Came from home screen icon, room may be gone - show home
+    show('s-home');$('loader').style.display='none';
+    toast('Místnost nenalezena nebo vypršela','err');
+  } else {
+    show('s-entry');$('loader').style.display='none';
+  }
 }
 
 // ══════════════════════════════════════
@@ -924,6 +957,7 @@ async function createRoom(){
     S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;
     S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
     addToRoomList(roomId,sref.id,name);localStorage.setItem('rc_username',user);
+    history.replaceState({},'','?room='+roomId);
     $('btn-switch-room').style.display='';enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
@@ -958,7 +992,9 @@ async function joinByCode(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
     S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);localStorage.setItem('rc_username',user);enterChat();
+    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);localStorage.setItem('rc_username',user);
+    history.replaceState({},'','?room='+S.jnRoomData.id);
+    enterChat();
   }
 }
 
@@ -978,13 +1014,15 @@ async function _prepareInviteEntry(roomId,token){
     const sdoc=ssnap.docs[0],sdata=sdoc.data();
     if(sdata.sessionId===S.sid&&sdata.username){
       S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;
-      addToRoomList(roomId,sdoc.id,rdata.name);history.replaceState({},'','/');enterChat();return;
+      addToRoomList(roomId,sdoc.id,rdata.name);
+      history.replaceState({},'','?room='+roomId);
+      enterChat();return;
     }
     if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-entry');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
     S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};
     $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
     const saved=localStorage.getItem('rc_username');if(saved)$('entry-user').value=saved;
-    history.replaceState({},'','/');
+    history.replaceState({},'','?room='+roomId);
     show('s-entry');$('loader').style.display='none';
     _setupAdminTap();
   }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
@@ -999,7 +1037,9 @@ async function joinByInvite(){
     await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    addToRoomList(roomId,slotId,roomData.name);localStorage.setItem('rc_username',user);history.replaceState({},'','/');enterChat();
+    addToRoomList(roomId,slotId,roomData.name);localStorage.setItem('rc_username',user);
+    history.replaceState({},'','?room='+roomId);
+    enterChat();
   }catch(e){showErr('inv-err','Chyba: '+e.message);}
 }
 
@@ -1036,7 +1076,9 @@ async function entrySubmit(){
       await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
       await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
       S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;
-      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);enterChat();
+      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);
+      history.replaceState({},'','?room='+ctx.roomId);
+      enterChat();
     }catch(e){showErr('entry-err','Chyba: '+e.message);}
   } else if(ctx.type==='rejoin'){
     await tryRejoin(ctx.roomId,ctx.slotId,user);
@@ -1086,7 +1128,9 @@ async function _adminEnterRoom(roomId,roomData){
       const sdoc=slotsSnap.docs[0],slot=sdoc.data();
       S.roomId=roomId;S.slotId=sdoc.id;S.username=slot.username;S.color=slot.color;
       S.isAdmin=true;S.roomData=roomData;
-      addToRoomList(roomId,sdoc.id,roomData.name);$('btn-switch-room').style.display='';enterChat();return;
+      addToRoomList(roomId,sdoc.id,roomData.name);$('btn-switch-room').style.display='';
+      history.replaceState({},'','?room='+roomId);
+      enterChat();return;
     }
     const saved=localStorage.getItem('rc_username')||'Admin';
     const color=rndColor(),now=firebase.firestore.Timestamp.now();
