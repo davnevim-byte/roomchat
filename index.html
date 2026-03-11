@@ -975,7 +975,6 @@ async function joinByCode(){
       if(!doc.exists)return showErr('jn-err','Místnost nenalezena');
       const data=doc.data();
       if(Date.now()>data.expiresAt.toDate().getTime())return showErr('jn-err','Tato místnost vypršela');
-      if(data.inviteOnly)return showErr('jn-err','🔒 Pouze pro pozvané. Požádej admina o odkaz.');
       S.jnRoomData={...data,id:code};
       if(data.password){$('jn-pass').style.display='';$('jn-btn').textContent='Ověřit heslo →';S.jnState='password';}
       else{showInfo('jn-info',`Místnost „${data.name}" nalezena!`);$('jn-user').style.display='';$('jn-btn').textContent='Vstoupit →';S.jnState='username';}
