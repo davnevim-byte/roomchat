@@ -799,7 +799,7 @@ function _setupSwipeForSidebar(){
 // ROOM EXPIRY BANNER
 // ══════════════════════════════════════
 function checkRoomExpiry(){
-  if(!S.roomData?.expiresAt)return;
+  if(!S.isAdmin||!S.roomData?.expiresAt)return;
   const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
   const msLeft=exp.getTime()-Date.now();
   const daysLeft=msLeft/86400000;
@@ -1088,7 +1088,8 @@ async function _prepareInviteEntry(roomId,token){
 async function joinByInvite(){
   const user=$('inv-user').value.trim();hideErr('inv-err');
   if(!user)return showErr('inv-err','Zadej přezdívku');
-  const{roomId,slotId,roomData}=S.pendingInvite;
+  if(!S.entryContext)return showErr('inv-err','Chybí kontext pozvánky');
+  const{roomId,slotId,roomData}=S.entryContext;
   const color=rndColor(),now=firebase.firestore.Timestamp.now();
   try{
     await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
@@ -1151,11 +1152,18 @@ async function showRoomSwitcher(){
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
   try{
-    const snap=await db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get();
+    const [snap1, snap2] = await Promise.all([
+      db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get(),
+      db.collection('rooms').where('adminSession','==',S.sid).orderBy('createdAt','desc').get()
+    ]);
+    // Merge and deduplicate
+    const seen=new Set(); const docs=[];
+    [...snap1.docs,...snap2.docs].forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);docs.push(d);}});
+    docs.sort((a,b)=>(b.data().createdAt?.toDate?.()??0)-(a.data().createdAt?.toDate?.()??0));
     container.innerHTML='';
-    if(snap.empty){show('s-home');return;}
+    if(docs.length===0){show('s-home');return;}
     const freshList=[];
-    snap.forEach(doc=>{
+    docs.forEach(doc=>{
       const d=doc.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
       if(!expired){const local=getRoomList().find(r=>r.roomId===doc.id);freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});}
@@ -1246,14 +1254,17 @@ async function _adminEnterRoom(roomId,roomData){
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     S.roomId=roomId;S.slotId=sref.id;S.username=saved;S.color=color;S.isAdmin=true;S.roomData=roomData;
-    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';enterChat();
+    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';
+    history.replaceState({},'','?room='+roomId);
+    enterChat();
   }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
 
 function goToRooms(){
   S.unsubs.forEach(u=>u());S.unsubs=[];
   clearInterval(S.heartbeat);clearInterval(S.countdown);
-  S.roomId=null;S.slotId=null;
+  S.roomId=null;S.slotId=null;S.isAdmin=false;S.roomData=null;
+  S.username=null;S.color=null;S.replyTo=null;
   $('btn-switch-room').style.display='none';$('sb-inv').style.display='none';
   $('mob-sb-inv').style.display='none';
   showRoomSwitcher();
@@ -1419,7 +1430,7 @@ function uHtml(slot,forceOnline){
   const typing=slot.typing&&slot.typingAt&&(Date.now()-(slot.typingAt.toDate?.().getTime()??0))<5000;
   const dotCls=typing?'d-typing':(on?'d-on':'d-off');
   const lastSeen=!on&&slot.lastSeen?`<div class="u-lastseen">byl/a: ${fmtDate(slot.lastSeen)}</div>`:'';
-  const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" onclick="kickUser('${slot.id}')" title="Vyhodit">✕</button>`:'';
+  const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" data-kick="${slot.id}" onclick="kickUser('${slot.id}')" title="Vyhodit">✕</button>`:'';
   return `<div class="u-item${me?' me':''}">
     <div class="u-av" style="background:${slot.color}">${initials(slot.username)}<div class="sdot ${dotCls}"></div></div>
     <div class="u-info">
@@ -1474,7 +1485,15 @@ function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód
 
 // ── KICK USER ──
 async function kickUser(slotId){
-  if(!confirm('Vyhodit tohoto uživatele?')) return;
+  // iOS standalone blokuje confirm() — dvoukrokové potvrzení
+  const btn = document.querySelector(`.kick-btn[data-kick="${slotId}"]`);
+  if(btn && !btn.dataset.confirmed){
+    btn.dataset.confirmed='1';
+    btn.textContent='✓?';
+    btn.style.background='#ff5c5c33';
+    setTimeout(()=>{if(btn.dataset.confirmed){delete btn.dataset.confirmed;btn.textContent='✕';btn.style.background='';}},2500);
+    return;
+  }
   try{
     const slot=S.slots[slotId];
     await db.collection('rooms').doc(S.roomId).collection('slots').doc(slotId).delete();
