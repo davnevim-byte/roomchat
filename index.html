@@ -48,6 +48,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .btn-p:active{transform:translateY(0);opacity:.9}
 .btn-s{width:100%;padding:14px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--fh);font-weight:600;font-size:15px;cursor:pointer;transition:all .15s}
 .btn-s:hover{border-color:var(--accent)66}
+.btn-warn{width:100%;padding:12px;background:#f0a03022;border:1px solid #f0a03066;border-radius:10px;color:var(--orange);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
+.btn-warn:hover{background:#f0a03033}
 
 /* ── FORM ── */
 #s-create,#s-join,#s-invite{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:16px}
@@ -379,10 +381,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
   </div>
 </div>
 
+<!-- INVITE -->
+<div id="s-invite" class="screen grid-bg">
+  <div class="form-card">
+    <h2>Byl jsi pozván! 🎉</h2>
+    <p id="inv-desc">Připojuješ se do místnosti…</p>
+    <input id="inv-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
+    <div id="inv-err" class="err"></div>
+    <button class="btn-p" onclick="joinByInvite()">Vstoupit →</button>
+  </div>
+</div>
+
 <!-- CHAT -->
 <div id="s-chat" class="screen">
   <header class="chat-header">
     <div class="hleft">
+      <!-- Hamburger — mobile only -->
       <div class="icon-btn" id="btn-menu" onclick="openMobSidebar()" title="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -408,6 +422,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
   </header>
 
   <div class="chat-body">
+    <!-- Desktop sidebar -->
     <aside class="sidebar" id="desktop-sidebar">
       <div class="sb-section">
         <div class="sb-label" id="sb-on-lbl">online — 0</div>
@@ -518,54 +533,83 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 <div class="toast" id="toast"></div>
 
 <script>
+// ══════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════
 const firebaseConfig = {
-  apiKey:"AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",
-  authDomain:"roomchat-6092c.firebaseapp.com",
-  projectId:"roomchat-6092c",
-  storageBucket:"roomchat-6092c.firebasestorage.app",
-  messagingSenderId:"681715608200",
-  appId:"1:681715608200:web:cde43c08577bf279020d3d"
+  apiKey:            "AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",
+  authDomain:        "roomchat-6092c.firebaseapp.com",
+  projectId:         "roomchat-6092c",
+  storageBucket:     "roomchat-6092c.firebasestorage.app",
+  messagingSenderId: "681715608200",
+  appId:             "1:681715608200:web:cde43c08577bf279020d3d"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+// ── SERVICE WORKER ────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
-const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
-const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
-const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
-const ROOM_LIFETIME=30*86400;
-const MSG_LIFETIME=86400000;
+// ══════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════
+const COLORS  = ['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
+const EMOJIS  = ['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
+const ADMIN_HASH = '6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
+const ROOM_LIFETIME = 30 * 86400;   // 30 days in seconds
+const MSG_LIFETIME  = 86400000;     // 24h in ms
 
-const S={
-  sid:null,roomId:null,slotId:null,username:null,color:null,
-  isAdmin:false,isAdminSession:false,roomData:null,
-  slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,
-  typingTO:null,jnState:'code',jnRoomData:null,
-  replyTo:null,entryContext:null
+const S = {
+  sid:null, roomId:null, slotId:null, username:null, color:null,
+  isAdmin:false, isAdminSession:false, roomData:null,
+  slots:{}, reads:{}, unsubs:[], heartbeat:null, countdown:null,
+  typingTO:null, pendingInvite:null, jnState:'code', jnRoomData:null,
+  replyTo:null, entryContext:null
 };
-let todayMsgCount=0;
 
-const $=id=>document.getElementById(id);
-const rnd=(n=8)=>Math.random().toString(36).slice(2,2+n).toUpperCase();
-const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
-const initials=n=>(n||'??').slice(0,2).toUpperCase();
+let todayMsgCount = 0;
 
-const fmtTime=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});};
-const fmtDate=ts=>{
-  if(!ts)return '';
-  const d=ts.toDate?ts.toDate():new Date(ts);
-  const now=new Date();
-  if(d.toDateString()===now.toDateString())return 'dnes '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-  const y=new Date(now);y.setDate(y.getDate()-1);
-  if(d.toDateString()===y.toDateString())return 'včera '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+// ══════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════
+const $ = id => document.getElementById(id);
+const rnd = (n=8) => Math.random().toString(36).slice(2,2+n).toUpperCase();
+const rndColor = () => COLORS[Math.floor(Math.random()*COLORS.length)];
+const initials = n => (n||'??').slice(0,2).toUpperCase();
+
+const fmtTime = ts => {
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+};
+const fmtDate = ts => {
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  if(d.toDateString()===now.toDateString()) return 'dnes '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+  const y = new Date(now); y.setDate(y.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return 'včera '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
   return d.toLocaleDateString('cs',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
 };
-const fmtCd=ms=>{if(ms<=0)return 'vypršela';const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000);if(d>0)return `${d}d ${h}h`;return `${h}h ${String(m).padStart(2,'0')}m`;};
-const fmtExpiry=secs=>{if(!secs||secs<=0)return null;if(secs<60)return `${secs}s`;if(secs<3600)return `${Math.round(secs/60)}m`;return `${Math.round(secs/3600)}h`;};
-const isOnline=slot=>{if(!slot.lastSeen)return false;const t=slot.lastSeen.toDate?slot.lastSeen.toDate():new Date(slot.lastSeen);return Date.now()-t.getTime()<50000;};
+const fmtCd = ms => {
+  if(ms<=0) return 'vypršela';
+  const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000);
+  if(d>0) return `${d}d ${h}h`;
+  return `${h}h ${String(m).padStart(2,'0')}m`;
+};
+const fmtExpiry = secs => {
+  if(!secs||secs<=0) return null;
+  if(secs<60) return `${secs}s`;
+  if(secs<3600) return `${Math.round(secs/60)}m`;
+  return `${Math.round(secs/3600)}h`;
+};
+const isOnline = slot => {
+  if(!slot.lastSeen) return false;
+  const t = slot.lastSeen.toDate ? slot.lastSeen.toDate() : new Date(slot.lastSeen);
+  return Date.now()-t.getTime()<50000;
+};
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 function showErr(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
@@ -573,82 +617,138 @@ function hideErr(id){$(id).classList.remove('show');}
 function showInfo(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
 function openM(id){$(id).classList.add('show');}
 function closeM(id){$(id).classList.remove('show');}
-function toast(msg,type=''){const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(()=>t.className='toast',3000);}
+function toast(msg,type=''){
+  const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast',3000);
+}
 
 async function hashStr(str){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-// ── PWA ──
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('pwa_d'))showPwaBanner('android');});
+// ══════════════════════════════════════
+// PWA + NOTIFICATIONS + DND
+// ══════════════════════════════════════
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  if(!localStorage.getItem('pwa_d')) showPwaBanner('android');
+});
 function isIos(){return /iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;}
-function showPwaBanner(type){if(type==='ios')$('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';$('pwa-banner').classList.add('show');}
+function showPwaBanner(type){
+  if(type==='ios') $('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';
+  $('pwa-banner').classList.add('show');
+}
 function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setItem('pwa_d','1');}
+
 function addToHomeScreen(){
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});}
-  else if(isIos()){toast('Safari → Sdílet → Přidat na plochu 📱');}
-  else{toast('Appka je již nainstalována nebo použij Chrome 👆');}
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});
+  } else if(isIos()){
+    toast('Safari → Sdílet → Přidat na plochu 📱');
+  } else {
+    toast('Appka je již nainstalována nebo použij Chrome 👆');
+  }
   renderSidebarActions();
 }
 
-// ── NOTIFICATIONS ──
-async function requestNotifPerm(){if(!('Notification' in window))return false;if(Notification.permission==='default')await Notification.requestPermission();return Notification.permission==='granted';}
+async function requestNotifPerm(){
+  if(!('Notification' in window)) return false;
+  if(Notification.permission==='default') await Notification.requestPermission();
+  return Notification.permission==='granted';
+}
 async function toggleNotifications(){
   if(!('Notification' in window)){toast('Notifikace nejsou podporovány','err');return;}
-  if(Notification.permission==='granted'){toast('Notifikace jsou zapnuty ✓','ok');}
-  else if(Notification.permission==='denied'){toast('Notifikace jsou blokovány — povol je v nastavení prohlížeče','err');}
-  else{const ok=await requestNotifPerm();toast(ok?'Notifikace povoleny ✓':'Notifikace odmítnuty','ok');}
+  if(Notification.permission==='granted'){
+    toast('Notifikace jsou zapnuty ✓','ok');
+  } else if(Notification.permission==='denied'){
+    toast('Notifikace jsou blokovány — povol je v nastavení prohlížeče','err');
+  } else {
+    const ok = await requestNotifPerm();
+    toast(ok ? 'Notifikace povoleny ✓' : 'Notifikace odmítnuty','ok');
+  }
   renderSidebarActions();
 }
 
-// ── DND ──
 function isDnd(){return Date.now()<parseInt(localStorage.getItem('rc_dnd')||0);}
-function setDnd(ms){if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}renderSidebarActions();}
-function dndUntilMorning(){const m=new Date();m.setDate(m.getDate()+1);m.setHours(7,0,0,0);setDnd(m.getTime()-Date.now());}
+function setDnd(ms){
+  if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}
+  else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}
+  renderSidebarActions();
+}
+function dndUntilMorning(){
+  const morning=new Date();morning.setDate(morning.getDate()+1);morning.setHours(7,0,0,0);
+  setDnd(morning.getTime()-Date.now());
+}
 
 async function showPup(){
-  if(isDnd())return;
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  if(document.visibilityState==='visible'&&document.hasFocus())return;
+  if(isDnd()) return;
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  if(document.visibilityState==='visible'&&document.hasFocus()) return;
+  // Unique tag každé notifikace — iOS ignoruje renotify se stejným tagem
   const tag='roomchat-'+Date.now();
   try{
     if('serviceWorker' in navigator){
-      let reg=await navigator.serviceWorker.getRegistration();
-      if(!reg)reg=await navigator.serviceWorker.register('/sw.js');
-      if(reg){await reg.showNotification('PUP',{body:'Nová zpráva v místnosti',tag,silent:true});return;}
+      let reg = await navigator.serviceWorker.getRegistration();
+      // SW mohl usnou — zkus znovu registrovat
+      if(!reg) reg = await navigator.serviceWorker.register('/sw.js');
+      if(reg){
+        await reg.showNotification('PUP',{
+          body:'Nová zpráva v místnosti',
+          tag,
+          silent:true,
+        });
+        return;
+      }
     }
+    // Fallback desktop
     const n=new Notification('PUP',{tag,silent:true});
     n.onclick=()=>{window.focus();n.close();};
     setTimeout(()=>n.close(),4000);
   }catch(e){}
 }
 function playNotif(){
-  if(isDnd())return;
-  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}
+  if(isDnd()) return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.value=800;o.type='sine';
+    g.gain.setValueAtTime(.12,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);
+    o.start();o.stop(ctx.currentTime+.25);
+  }catch(e){}
 }
 
-// ── SIDEBAR ACTIONS ──
+// ══════════════════════════════════════
+// SIDEBAR ACTIONS RENDERER
+// ══════════════════════════════════════
 function renderSidebarActions(){
-  const html=_buildActionsHtml();
-  const el1=$('sb-actions'),el2=$('mob-sb-actions');
-  if(el1)el1.innerHTML=html;
-  if(el2)el2.innerHTML=html;
+  const html = _buildActionsHtml();
+  const el1=$('sb-actions'), el2=$('mob-sb-actions');
+  if(el1) el1.innerHTML=html;
+  if(el2) el2.innerHTML=html;
 }
+
 function _buildActionsHtml(){
-  const notifOk='Notification' in window&&Notification.permission==='granted';
-  const dnd=isDnd();
-  const adminBtn=S.isAdmin?`
+  const notifOk = 'Notification' in window && Notification.permission==='granted';
+  const dnd = isDnd();
+  const notifLabel = notifOk ? 'Notifikace: zapnuto' : 'Zapnout notifikace';
+  const notifSub = notifOk ? (dnd?'nerušit je aktivní':'klikni pro test') : 'PUP při nové zprávě';
+
+  const adminBtn = S.isAdmin ? `
   <button class="sb-act-btn" onclick="goToRooms();closeMobSidebar()">
     <span class="ico">🏠</span>
     <span class="lbl">Přepnout místnost<span class="sub">zpět na výběr místností</span></span>
-  </button>`:'';
+  </button>` : '';
+
   return `
   ${adminBtn}
   <button class="sb-act-btn ${notifOk?'active':''}" onclick="toggleNotifications()">
     <span class="ico">${notifOk?'🔔':'🔕'}</span>
-    <span class="lbl">${notifOk?'Notifikace: zapnuto':'Zapnout notifikace'}<span class="sub">${notifOk?(dnd?'nerušit je aktivní':'klikni pro test'):'PUP při nové zprávě'}</span></span>
+    <span class="lbl">${notifLabel}<span class="sub">${notifSub}</span></span>
   </button>
   <button class="sb-act-btn" onclick="addToHomeScreen()">
     <span class="ico">📲</span>
@@ -665,86 +765,173 @@ function _buildActionsHtml(){
   </div>`;
 }
 
-// ── MOBILE SIDEBAR ──
-function openMobSidebar(){$('mob-sb-ov').classList.add('open');document.body.style.overflow='hidden';}
-function closeMobSidebar(){$('mob-sb-ov').classList.remove('open');document.body.style.overflow='';}
+// ══════════════════════════════════════
+// MOBILE SIDEBAR
+// ══════════════════════════════════════
+function openMobSidebar(){
+  $('mob-sb-ov').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobSidebar(){
+  $('mob-sb-ov').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// Swipe right from left edge to open sidebar
 function _setupSwipeForSidebar(){
   const main=$('chat-main');
   let startX=0,startY=0,tracking=false;
-  main.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;tracking=startX<60;},{passive:true});
-  main.addEventListener('touchmove',e=>{if(!tracking)return;const dx=e.touches[0].clientX-startX;const dy=Math.abs(e.touches[0].clientY-startY);if(dx>50&&dy<40){openMobSidebar();tracking=false;}},{passive:true});
+  main.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+    tracking = startX<60; // only track if starting from left portion
+  },{passive:true});
+  main.addEventListener('touchmove',e=>{
+    if(!tracking) return;
+    const dx=e.touches[0].clientX-startX;
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    if(dx>50&&dy<40){openMobSidebar();tracking=false;}
+  },{passive:true});
   main.addEventListener('touchend',()=>{tracking=false;},{passive:true});
 }
 
-// ── ROOM EXPIRY BANNER ──
+// ══════════════════════════════════════
+// ROOM EXPIRY BANNER
+// ══════════════════════════════════════
 function checkRoomExpiry(){
-  if(!S.isAdmin||!S.roomData?.expiresAt)return;
-  const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
-  const msLeft=exp.getTime()-Date.now();
-  const daysLeft=msLeft/86400000;
-  if(daysLeft<3&&!sessionStorage.getItem('reb_dismissed')){
-    const txt=daysLeft<1?'⚠️ Místnost vyprší za méně než 24 hodin!':`⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
-    $('reb-text').textContent=txt;$('h-dot').classList.add('warn');$('room-expiry-banner').classList.add('show');
+  if(!S.isAdmin||!S.roomData?.expiresAt) return;
+  const exp = S.roomData.expiresAt.toDate ? S.roomData.expiresAt.toDate() : new Date(S.roomData.expiresAt);
+  const msLeft = exp.getTime()-Date.now();
+  const daysLeft = msLeft/86400000;
+  if(daysLeft<3 && !sessionStorage.getItem('reb_dismissed')){
+    const txt = daysLeft<1
+      ? `⚠️ Místnost vyprší za méně než 24 hodin!`
+      : `⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
+    $('reb-text').textContent = txt;
+    $('h-dot').classList.add('warn');
+    $('room-expiry-banner').classList.add('show');
   }
 }
-function dismissExpiryBanner(){$('room-expiry-banner').classList.remove('show');sessionStorage.setItem('reb_dismissed','1');}
+function dismissExpiryBanner(){
+  $('room-expiry-banner').classList.remove('show');
+  sessionStorage.setItem('reb_dismissed','1');
+}
 async function extendRoom(){
-  if(!S.isAdmin||!S.roomId)return;
+  if(!S.isAdmin||!S.roomId) return;
   try{
-    const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
-    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
+    const exp = S.roomData.expiresAt.toDate ? S.roomData.expiresAt.toDate() : new Date(S.roomData.expiresAt);
+    const newExp = new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME, 0);
     await db.collection('rooms').doc(S.roomId).update({expiresAt:newExp});
-    S.roomData.expiresAt=newExp;dismissExpiryBanner();$('h-dot').classList.remove('warn');
-    toast('Místnost prodloužena o 30 dní ✓','ok');updateHeaderBadge();
+    S.roomData.expiresAt = newExp;
+    dismissExpiryBanner();
+    $('h-dot').classList.remove('warn');
+    toast('Místnost prodloužena o 30 dní ✓','ok');
+    updateHeaderBadge();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
 
-// ── HEADER BADGE ──
+// ══════════════════════════════════════
+// HEADER BADGE
+// ══════════════════════════════════════
 function updateHeaderBadge(){
-  const exp=S.roomData?.expiresAt?.toDate?.();if(!exp)return;
-  const msLeft=exp.getTime()-Date.now();const daysLeft=msLeft/86400000;
-  if(S.isAdmin&&daysLeft<3){$('h-badge-text').textContent=`⚠️ vyprší za ${fmtCd(msLeft)}`;$('h-dot').classList.add('warn');}
-  else{$('h-badge-text').textContent=`${todayMsgCount} zpráv dnes · 🗑️ po 24h`;$('h-dot').classList.remove('warn');}
+  const exp = S.roomData?.expiresAt?.toDate?.();
+  if(!exp) return;
+  const msLeft = exp.getTime()-Date.now();
+  const daysLeft = msLeft/86400000;
+  let txt;
+  // ✅ Expiry warning only for admin
+  if(S.isAdmin && daysLeft<3){
+    txt = `⚠️ vyprší za ${fmtCd(msLeft)}`;
+    $('h-dot').classList.add('warn');
+  } else {
+    txt = `${todayMsgCount} zpráv dnes · 🗑️ po 24h`;
+    $('h-dot').classList.remove('warn');
+  }
+  $('h-badge-text').textContent = txt;
 }
 
-// ── STORAGE ──
-function _setCookie(name,val,days){const exp=new Date(Date.now()+days*86400000).toUTCString();document.cookie=`${name}=${encodeURIComponent(val)};expires=${exp};path=/;SameSite=Lax`;}
-function _getCookie(name){const m=document.cookie.match('(?:^|; )'+name+'=([^;]*)');return m?decodeURIComponent(m[1]):null;}
-function getRoomList(){try{const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');if(ls.length>0)return ls;const ck=_getCookie('rc_rooms');if(ck)return JSON.parse(ck);return[];}catch(e){return[];}}
-function saveRoomList(list){const json=JSON.stringify(list);localStorage.setItem('rc_rooms',json);_setCookie('rc_rooms',json,60);}
-function addToRoomList(roomId,slotId,name){const list=getRoomList().filter(r=>r.roomId!==roomId);list.unshift({roomId,slotId,name,ts:Date.now()});saveRoomList(list);}
-function getSid(){let sid=localStorage.getItem('rc_sid')||_getCookie('rc_sid');if(!sid)sid=rnd(16);localStorage.setItem('rc_sid',sid);_setCookie('rc_sid',sid,60);return sid;}
+// ══════════════════════════════════════
+// STORAGE HELPERS (localStorage + cookie fallback for iOS standalone)
+// ══════════════════════════════════════
+function _setCookie(name,val,days){
+  const exp=new Date(Date.now()+days*86400000).toUTCString();
+  document.cookie=`${name}=${encodeURIComponent(val)};expires=${exp};path=/;SameSite=Lax`;
+}
+function _getCookie(name){
+  const m=document.cookie.match('(?:^|; )'+name+'=([^;]*)');
+  return m?decodeURIComponent(m[1]):null;
+}
+function getRoomList(){
+  try{
+    const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');
+    if(ls.length>0)return ls;
+    const ck=_getCookie('rc_rooms');
+    if(ck)return JSON.parse(ck);
+    return[];
+  }catch(e){return[];}
+}
+function saveRoomList(list){
+  const json=JSON.stringify(list);
+  localStorage.setItem('rc_rooms',json);
+  _setCookie('rc_rooms',json,60);
+}
+function addToRoomList(roomId,slotId,name){
+  const list=getRoomList().filter(r=>r.roomId!==roomId);
+  list.unshift({roomId,slotId,name,ts:Date.now()});
+  saveRoomList(list);
+}
+function getSid(){
+  let sid=localStorage.getItem('rc_sid')||_getCookie('rc_sid');
+  if(!sid)sid=rnd(16);
+  localStorage.setItem('rc_sid',sid);
+  _setCookie('rc_sid',sid,60);
+  return sid;
+}
 function getUsername(){return localStorage.getItem('rc_username')||_getCookie('rc_username')||null;}
 function setUsername(u){localStorage.setItem('rc_username',u);_setCookie('rc_username',u,60);}
 
-// ── BOOT ──
+// ══════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════
 window.addEventListener('DOMContentLoaded',async()=>{
   S.sid=getSid();
   S.isAdminSession=localStorage.getItem('rc_admin')==='1';
+
+  // Migrate old format
   const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
   if(oldRoom&&oldSlot){addToRoomList(oldRoom,oldSlot,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
+
   const p=new URLSearchParams(window.location.search);
   const rp=p.get('room'),ip=p.get('invite');
+
   try{
     if(rp&&ip){
       await _prepareInviteEntry(rp.toUpperCase(),ip);
     } else if(rp){
       const roomId=rp.toUpperCase();
       const stored=getRoomList().find(r=>r.roomId===roomId);
-      if(stored?.slotId){await tryRejoin(roomId,stored.slotId,null,true);}
-      else{$('jn-code').value=roomId;show('s-join');$('loader').style.display='none';}
+      if(stored?.slotId){
+        await tryRejoin(roomId,stored.slotId,null,true);
+      } else {
+        $('jn-code').value=roomId;show('s-join');$('loader').style.display='none';
+      }
     } else if(S.isAdminSession){
       $('loader').style.display='none';
-      await showRoomSwitcher();
+      const list=getRoomList();
+      if(list.length===0){show('s-home');}else{await showRoomSwitcher();}
     } else {
       const list=getRoomList();
       if(list.length===1){
         S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
         const saved=getUsername();
-        if(saved){await tryRejoin(list[0].roomId,list[0].slotId,saved,false);return;}
+        if(saved){
+          await tryRejoin(list[0].roomId,list[0].slotId,saved,false);
+          return; // tryRejoin handles loader hide
+        }
         $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
       }
-      show('s-entry');$('loader').style.display='none';_setupAdminTap();
+      show('s-entry');$('loader').style.display='none';
+      _setupAdminTap();
     }
   }catch(e){
     saveRoomList([]);
@@ -753,7 +940,9 @@ window.addEventListener('DOMContentLoaded',async()=>{
   }
 });
 
-// ── REJOIN ──
+// ══════════════════════════════════════
+// REJOIN
+// ══════════════════════════════════════
 async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
   try{
     const[sd,rd]=await Promise.all([
@@ -766,35 +955,53 @@ async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
         if(sd.exists){
           const slot=sd.data();
           const uname=usernameOverride||slot.username||getUsername();
-          if(!uname){S.entryContext={type:'rejoin',roomId,slotId};show('s-entry');$('loader').style.display='none';_setupAdminTap();return;}
+          if(!uname){
+            // No username available, show entry
+            S.entryContext={type:'rejoin',roomId,slotId};
+            show('s-entry');$('loader').style.display='none';_setupAdminTap();return;
+          }
+          // ✅ Accept even if sessionId changed (iOS clears storage)
+          // Update sessionId + username if needed
           const updates={};
-          if(slot.sessionId!==S.sid)updates.sessionId=S.sid;
-          if(usernameOverride&&usernameOverride!==slot.username)updates.username=uname;
-          if(Object.keys(updates).length>0)await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);
+          if(slot.sessionId!==S.sid) updates.sessionId=S.sid;
+          if(usernameOverride&&usernameOverride!==slot.username) updates.username=uname;
+          if(Object.keys(updates).length>0){
+            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);
+          }
           S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;
           S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;
           S.roomData={...rd2};
           const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
           if(S.isAdmin)$('btn-switch-room').style.display='';
+          // ✅ Keep ?room= in URL so iOS home screen icon works
           history.replaceState({},'','?room='+roomId);
           enterChat();return;
         }
       }
     }
   }catch(e){}
+  // Rejoin failed
   const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
   S.entryContext=null;
-  if(silentMode){show('s-home');$('loader').style.display='none';toast('Místnost nenalezena nebo vypršela','err');}
-  else{show('s-entry');$('loader').style.display='none';}
+  if(silentMode){
+    // Came from home screen icon, room may be gone - show home
+    show('s-home');$('loader').style.display='none';
+    toast('Místnost nenalezena nebo vypršela','err');
+  } else {
+    show('s-entry');$('loader').style.display='none';
+  }
 }
 
-// ── CREATE ROOM ──
+// ══════════════════════════════════════
+// CREATE ROOM (30 day lifetime)
+// ══════════════════════════════════════
 async function createRoom(){
   const name=$('cr-name').value.trim(),user=$('cr-user').value.trim(),pass=$('cr-pass').value,maxU=parseInt($('cr-max').value),invOnly=$('cr-inv').checked;
   hideErr('cr-err');
   if(!name)return showErr('cr-err','Zadej název místnosti');
   if(!user)return showErr('cr-err','Zadej přezdívku');
   const roomId=rnd(6),color=rndColor(),now=firebase.firestore.Timestamp.now();
+  // ✅ 30 days lifetime
   const expiresAt=new firebase.firestore.Timestamp(now.seconds+ROOM_LIFETIME,now.nanoseconds);
   try{
     await db.collection('rooms').doc(roomId).set({name,password:pass,maxUsers:maxU,inviteOnly:invOnly,createdAt:now,expiresAt,adminSession:S.sid,adminKey:ADMIN_HASH});
@@ -809,7 +1016,9 @@ async function createRoom(){
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
 
-// ── JOIN BY CODE ──
+// ══════════════════════════════════════
+// JOIN BY CODE
+// ══════════════════════════════════════
 async function joinByCode(){
   const code=$('jn-code').value.trim().toUpperCase();
   hideErr('jn-err');$('jn-info').classList.remove('show');
@@ -842,7 +1051,9 @@ async function joinByCode(){
   }
 }
 
-// ── INVITE FLOW ──
+// ══════════════════════════════════════
+// INVITE FLOW
+// ══════════════════════════════════════
 async function _prepareInviteEntry(roomId,token){
   try{
     const[rd,ssnap]=await Promise.all([
@@ -865,11 +1076,29 @@ async function _prepareInviteEntry(roomId,token){
     $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
     const saved=getUsername();if(saved)$('entry-user').value=saved;
     history.replaceState({},'','?room='+roomId);
-    show('s-entry');$('loader').style.display='none';_setupAdminTap();
+    show('s-entry');$('loader').style.display='none';
+    _setupAdminTap();
   }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
 }
 
-// ── ENTRY + ADMIN TAP ──
+async function joinByInvite(){
+  const user=$('inv-user').value.trim();hideErr('inv-err');
+  if(!user)return showErr('inv-err','Zadej přezdívku');
+  const{roomId,slotId,roomData}=S.pendingInvite;
+  const color=rndColor(),now=firebase.firestore.Timestamp.now();
+  try{
+    await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
+    await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
+    S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
+    addToRoomList(roomId,slotId,roomData.name);setUsername(user);
+    history.replaceState({},'','?room='+roomId);
+    enterChat();
+  }catch(e){showErr('inv-err','Chyba: '+e.message);}
+}
+
+// ══════════════════════════════════════
+// ENTRY SCREEN + ADMIN TAP
+// ══════════════════════════════════════
 function _setupAdminTap(){
   let taps=0,tapTO=null;
   const card=$('entry-card');
@@ -883,7 +1112,7 @@ function _showAdminPrompt(){
     if(h===ADMIN_HASH){
       localStorage.setItem('rc_admin','1');S.isAdminSession=true;
       toast('✓ Admin režim aktivován','ok');
-      setTimeout(async()=>{$('loader').style.display='';await showRoomSwitcher();},600);
+      setTimeout(async()=>{const list=getRoomList();if(list.length===0){show('s-home');}else{$('loader').style.display='';await showRoomSwitcher();}},600);
     }else{toast('Špatné heslo','err');}
   });
 }
@@ -909,29 +1138,20 @@ async function entrySubmit(){
   }
 }
 
-// ── ROOM SWITCHER ──
+// ══════════════════════════════════════
+// ROOM SWITCHER
+// ══════════════════════════════════════
 async function showRoomSwitcher(){
   $('loader').style.display='none';
   const container=$('rooms-list');
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
   try{
-    // Dual query: adminKey (nové) + adminSession (staré místnosti)
-    const[snap1,snap2]=await Promise.all([
-      db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),
-      db.collection('rooms').where('adminSession','==',S.sid).get()
-    ]);
-    const docsMap={};
-    snap1.forEach(d=>{docsMap[d.id]=d;});
-    snap2.forEach(d=>{
-      docsMap[d.id]=d;
-      if(!d.data().adminKey)db.collection('rooms').doc(d.id).update({adminKey:ADMIN_HASH}).catch(()=>{});
-    });
-    const allDocs=Object.values(docsMap).sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
+    const snap=await db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get();
     container.innerHTML='';
-    if(allDocs.length===0){show('s-home');return;}
+    if(snap.empty){show('s-home');return;}
     const freshList=[];
-    allDocs.forEach(doc=>{
+    snap.forEach(doc=>{
       const d=doc.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
       if(!expired){const local=getRoomList().find(r=>r.roomId===doc.id);freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});}
@@ -946,6 +1166,7 @@ async function showRoomSwitcher(){
           <div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div>
           <div class="room-card-meta">${expired?'⚠️ vypršela':warnDot+'místnost vyprší za '+rem+(d.password?' · 🔒':'')}</div>
         </div>
+        ${daysLeft<3&&!expired?`<button onclick="event.stopPropagation();extendRoomById('${doc.id}')" style="height:30px;padding:0 10px;border-radius:8px;background:#f0a03033;border:1px solid #f0a03066;color:var(--orange);cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap">+30d</button>`:''}
         <button data-room-del="${doc.id}" onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Smazat místnost">🗑️</button>
         ${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
       if(!expired)card.onclick=()=>_adminEnterRoom(doc.id,doc.data());
@@ -955,30 +1176,55 @@ async function showRoomSwitcher(){
   }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba: ${e.message}</div>`;}
 }
 
+async function extendRoomById(roomId){
+  try{
+    const doc=await db.collection('rooms').doc(roomId).get();
+    if(!doc.exists)return toast('Místnost nenalezena','err');
+    const exp=doc.data().expiresAt.toDate();
+    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
+    await db.collection('rooms').doc(roomId).update({expiresAt:newExp});
+    toast('Místnost prodloužena o 30 dní ✓','ok');
+    showRoomSwitcher();
+  }catch(e){toast('Chyba: '+e.message,'err');}
+}
+
 async function deleteRoom(roomId){
-  const card=document.querySelector(`[data-room-del="${roomId}"]`);
-  if(card&&!card.dataset.confirmed){
-    card.dataset.confirmed='1';card.textContent='✓ Potvrdit';
-    card.style.cssText='background:#ff5c5c33;border-color:#ff5c5c88;width:80px;height:30px;border-radius:8px;border:1px solid;color:var(--red);cursor:pointer;font-size:12px;font-weight:700';
-    setTimeout(()=>{if(card.dataset.confirmed){delete card.dataset.confirmed;card.textContent='🗑️';card.style.cssText='width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0';}},3000);
+  // iOS standalone blokuje confirm() — použijeme vlastní potvrzení
+  const card = document.querySelector(`[data-room-del="${roomId}"]`);
+  if(card && !card.dataset.confirmed){
+    card.dataset.confirmed = '1';
+    card.textContent = '✓ Potvrdit';
+    card.style.background = '#ff5c5c33';
+    card.style.borderColor = '#ff5c5c88';
+    card.style.width = '80px';
+    setTimeout(()=>{
+      if(card.dataset.confirmed){
+        delete card.dataset.confirmed;
+        card.textContent = '🗑️';
+        card.style.width = '30px';
+        card.style.background = '#ff5c5c11';
+        card.style.borderColor = '#ff5c5c33';
+      }
+    }, 3000);
     return;
   }
   try{
     const batch=db.batch();
-    const[msgs,slots,reads]=await Promise.all([
+    const [msgs,slots,reads]=await Promise.all([
       db.collection('rooms').doc(roomId).collection('messages').limit(500).get(),
       db.collection('rooms').doc(roomId).collection('slots').limit(500).get(),
       db.collection('rooms').doc(roomId).collection('reads').limit(500).get(),
     ]);
-    msgs.forEach(d=>batch.delete(d.ref));slots.forEach(d=>batch.delete(d.ref));reads.forEach(d=>batch.delete(d.ref));
+    msgs.forEach(d=>batch.delete(d.ref));
+    slots.forEach(d=>batch.delete(d.ref));
+    reads.forEach(d=>batch.delete(d.ref));
     batch.delete(db.collection('rooms').doc(roomId));
     await batch.commit();
     saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));
-    toast('Místnost smazána','ok');showRoomSwitcher();
+    toast('Místnost smazána','ok');
+    showRoomSwitcher();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
-
-async function _adminEnterRoom(roomId,roomData){
   try{
     const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
     if(!slotsSnap.empty){
@@ -994,9 +1240,7 @@ async function _adminEnterRoom(roomId,roomData){
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     S.roomId=roomId;S.slotId=sref.id;S.username=saved;S.color=color;S.isAdmin=true;S.roomData=roomData;
-    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';
-    history.replaceState({},'','?room='+roomId);
-    enterChat();
+    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';enterChat();
   }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
 
@@ -1004,11 +1248,14 @@ function goToRooms(){
   S.unsubs.forEach(u=>u());S.unsubs=[];
   clearInterval(S.heartbeat);clearInterval(S.countdown);
   S.roomId=null;S.slotId=null;
-  $('btn-switch-room').style.display='none';$('sb-inv').style.display='none';$('mob-sb-inv').style.display='none';
+  $('btn-switch-room').style.display='none';$('sb-inv').style.display='none';
+  $('mob-sb-inv').style.display='none';
   showRoomSwitcher();
 }
 
-// ── ENTER CHAT ──
+// ══════════════════════════════════════
+// ENTER CHAT
+// ══════════════════════════════════════
 function enterChat(){
   $('loader').style.display='none';show('s-chat');
   requestNotifPerm();
@@ -1034,6 +1281,7 @@ function enterChat(){
   });
   S.unsubs.push(uReads);
 
+  // ✅ Load messages from last 24h (older ones get cleaned up)
   const cutoff=new Date(Date.now()-MSG_LIFETIME);
   const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages')
     .where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff))
@@ -1062,24 +1310,31 @@ async function heartbeat(){
   try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
 }
 
+// ✅ Clean expired messages AND messages older than 24h
 async function cleanExpired(){
   if(!S.roomId)return;
   try{
     const batch=db.batch();
     const now=new Date();
     const cutoff=firebase.firestore.Timestamp.fromDate(new Date(Date.now()-MSG_LIFETIME));
+
+    // Delete messages with expiresAt in the past
     const snap1=await db.collection('rooms').doc(S.roomId).collection('messages')
-      .where('expiresAt','>',firebase.firestore.Timestamp.fromDate(new Date(0)))
       .where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(now)).limit(10).get();
     snap1.forEach(d=>batch.delete(d.ref));
+
+    // Delete messages older than 24h (all messages)
     const snap2=await db.collection('rooms').doc(S.roomId).collection('messages')
       .where('timestamp','<',cutoff).limit(10).get();
     snap2.forEach(d=>batch.delete(d.ref));
-    if(!snap1.empty||!snap2.empty)await batch.commit();
+
+    if(!snap1.empty||!snap2.empty) await batch.commit();
   }catch(e){}
 }
 
-// ── READ RECEIPTS ──
+// ══════════════════════════════════════
+// READ RECEIPTS
+// ══════════════════════════════════════
 const _readDone=new Set();
 const _viewObserver=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObserver.unobserve(e.target);}});
@@ -1090,6 +1345,7 @@ async function _markRead(msgId){
   _readDone.add(msgId);
   try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId).set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
 }
+
 function _updateReadTicks(){
   document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
     const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
@@ -1101,11 +1357,13 @@ function _updateReadTicks(){
     if(readers.length===0){tick.textContent='✓';tick.className='read-tick';}
     else if(others.length>0&&readers.length>=others.length){tick.textContent='✓✓';tick.className='read-tick all';}
     else{tick.textContent='✓✓';tick.className='read-tick seen';}
-    if(nm){nm.textContent=readers.map(id=>S.slots[id]?.username).filter(Boolean).join(', ');}
+    if(nm){const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);nm.textContent=names.join(', ');}
   });
 }
 
-// ── EXPIRY COUNTDOWN ──
+// ══════════════════════════════════════
+// EXPIRY COUNTDOWN ON MESSAGES
+// ══════════════════════════════════════
 const _cdTimers={};
 function _startCountdown(msgId,exp,badgeEl,wrapEl){
   if(_cdTimers[msgId])return;
@@ -1122,21 +1380,31 @@ function _startCountdown(msgId,exp,badgeEl,wrapEl){
   tick();_cdTimers[msgId]=setInterval(tick,1000);
 }
 
-// ── SIDEBAR ──
+// ══════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════
 function renderSidebar(){
   const online=[],offline=[];
   Object.values(S.slots).forEach(s=>{if(s.username)(isOnline(s)?online:offline).push(s);});
+
   // Desktop
   $('sb-on-lbl').textContent=`online — ${online.length}`;
   $('sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
-  if(offline.length>0){$('sb-off-sec').style.display='';$('sb-off-lbl').textContent=`offline — ${offline.length}`;$('sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');}
-  else $('sb-off-sec').style.display='none';
+  if(offline.length>0){
+    $('sb-off-sec').style.display='';
+    $('sb-off-lbl').textContent=`offline — ${offline.length}`;
+    $('sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');
+  } else $('sb-off-sec').style.display='none';
   if(S.isAdmin)renderInvSlots();
+
   // Mobile
   $('mob-sb-on-lbl').textContent=`online — ${online.length}`;
   $('mob-sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
-  if(offline.length>0){$('mob-sb-off-sec').style.display='';$('mob-sb-off-lbl').textContent=`offline — ${offline.length}`;$('mob-sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');}
-  else $('mob-sb-off-sec').style.display='none';
+  if(offline.length>0){
+    $('mob-sb-off-sec').style.display='';
+    $('mob-sb-off-lbl').textContent=`offline — ${offline.length}`;
+    $('mob-sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');
+  } else $('mob-sb-off-sec').style.display='none';
   if(S.isAdmin)renderMobInvSlots();
 }
 
@@ -1148,7 +1416,11 @@ function uHtml(slot,forceOnline){
   const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" onclick="kickUser('${slot.id}')" title="Vyhodit">✕</button>`:'';
   return `<div class="u-item${me?' me':''}">
     <div class="u-av" style="background:${slot.color}">${initials(slot.username)}<div class="sdot ${dotCls}"></div></div>
-    <div class="u-info"><div class="u-name">${slot.username}</div><div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div>${lastSeen}</div>
+    <div class="u-info">
+      <div class="u-name">${slot.username}</div>
+      <div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div>
+      ${lastSeen}
+    </div>
     ${me?`<span class="badge">${slot.isAdmin?'admin':'ty'}</span>`:''}
     ${!me&&slot.isAdmin?'<span class="badge">admin</span>':''}
     ${kickBtn}
@@ -1162,6 +1434,7 @@ function renderInvSlots(){
   $('sb-new-inv').style.display=used>=total?'none':'';
 }
 function renderMobInvSlots(){
+  const total=S.roomData.maxUsers,used=Object.values(S.slots).length;
   const invSlots=Object.values(S.slots).filter(s=>s.inviteToken);
   $('mob-sb-inv-list').innerHTML=_invSlotsHtml(invSlots);
 }
@@ -1193,27 +1466,46 @@ function showCopyInvM(token,name){
 function doCopyInv(){navigator.clipboard.writeText($('ci-url').textContent).then(()=>toast('Odkaz zkopírován! 📋','ok'));}
 function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód ${S.roomId} zkopírován!`,'ok'));}
 
+// ── KICK USER ──
 async function kickUser(slotId){
-  if(!confirm('Vyhodit tohoto uživatele?'))return;
+  if(!confirm('Vyhodit tohoto uživatele?')) return;
   try{
     const slot=S.slots[slotId];
     await db.collection('rooms').doc(S.roomId).collection('slots').doc(slotId).delete();
-    if(slot?.username)await db.collection('rooms').doc(S.roomId).collection('messages').add({text:`${slot.username} byl/a odstraněn/a adminem`,isSystem:true,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    if(slot?.username){
+      await db.collection('rooms').doc(S.roomId).collection('messages').add({
+        text:`${slot.username} byl/a odstraněn/a adminem`,isSystem:true,
+        timestamp:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
     toast('Uživatel vyhozen','ok');
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
 
-// ── MESSAGES ──
+// ══════════════════════════════════════
+// MESSAGES
+// ══════════════════════════════════════
 let lastMsgCount=0;
+
 function renderMessages(snap){
   const box=$('msgs');
   const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
   const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;
   lastMsgCount=snap.size;
+
+  // Count today's messages
   const midnight=new Date();midnight.setHours(0,0,0,0);
   let cnt=0;
-  snap.forEach(doc=>{const d=doc.data();if(!d.isSystem&&d.timestamp){const t=d.timestamp.toDate?d.timestamp.toDate():new Date(d.timestamp);if(t>=midnight)cnt++;}});
-  todayMsgCount=cnt;updateHeaderBadge();
+  snap.forEach(doc=>{
+    const d=doc.data();
+    if(!d.isSystem&&d.timestamp){
+      const t=d.timestamp.toDate?d.timestamp.toDate():new Date(d.timestamp);
+      if(t>=midnight)cnt++;
+    }
+  });
+  todayMsgCount=cnt;
+  updateHeaderBadge();
+
   box.innerHTML='';let lastUser=null;
   snap.forEach(doc=>{
     const msg={id:doc.id,...doc.data()};
@@ -1229,23 +1521,40 @@ function renderMessages(snap){
     }
     lastUser=msg.username;
   });
+
   if(atBottom)box.scrollTop=box.scrollHeight;
-  if(hasNew){const ld=Array.from(snap.docs).pop()?.data();if(ld&&ld.slotId!==S.slotId){playNotif();showPup();}}
+  if(hasNew){
+    const ld=Array.from(snap.docs).pop()?.data();
+    if(ld&&ld.slotId!==S.slotId){playNotif();showPup();}
+  }
 }
 
 function makeBubbleWrap(msg){
   const own=msg.slotId===S.slotId;
   const wrap=document.createElement('div');wrap.className='bubble-wrap';wrap.style.overflow='visible';
-  if(S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
+
+  // Admin can swipe-delete any message
+  if(S.isAdmin){
+    const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';
+    wrap.appendChild(sh);setupSwipe(wrap,msg.id);
+  }
+
   const b=document.createElement('div');b.className='bubble';
-  if(msg.replyTo){const qbar=document.createElement('div');qbar.className='quote-bar';qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;b.appendChild(qbar);}
+  if(msg.replyTo){
+    const qbar=document.createElement('div');qbar.className='quote-bar';
+    qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;
+    b.appendChild(qbar);
+  }
   const txt=document.createElement('div');txt.textContent=msg.text;b.appendChild(txt);
+
   if(msg.expiresAt){
     const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);
     const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
+    const eb=document.createElement('div');eb.className='expiry-badge';
+    eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
     _startCountdown(msg.id,exp,eb,wrap);
   }
+
   if(own){
     const rr=document.createElement('div');rr.className='read-receipt';rr.dataset.msgid=msg.id;rr.dataset.sender=S.slotId;
     const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
@@ -1253,6 +1562,7 @@ function makeBubbleWrap(msg){
     b.appendChild(rr);
   }
   if(!own){wrap.dataset.msgid=msg.id;_viewObserver.observe(wrap);}
+
   const re=document.createElement('div');re.className='bubble-re';
   const reactions=msg.reactions||{};
   Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{
@@ -1261,20 +1571,29 @@ function makeBubbleWrap(msg){
     chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);
   });
   b.appendChild(re);
+
+  // Actions menu
   const acts=document.createElement('div');acts.className='bubble-actions';
+
   const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';
   btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
+
   const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';
   btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
+
+  // ✅ Copy message button
   const btnCopy=document.createElement('div');btnCopy.className='bact-btn';btnCopy.textContent='📋';btnCopy.title='Kopírovat';
   btnCopy.onclick=ev=>{ev.stopPropagation();copyMsg(msg.text);wrap.classList.remove('menu-open');};
+
   acts.appendChild(btnReply);acts.appendChild(btnRe);acts.appendChild(btnCopy);
+
   if(S.isAdmin){
     const btnDel=document.createElement('div');btnDel.className='bact-btn';btnDel.textContent='🗑️';btnDel.title='Smazat';
     btnDel.onclick=ev=>{ev.stopPropagation();deleteMsg(msg.id);};
     acts.appendChild(btnDel);
   }
   wrap.appendChild(acts);wrap.appendChild(b);
+
   let lpTO;
   wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),400);},{passive:true});
   wrap.addEventListener('touchend',()=>clearTimeout(lpTO),{passive:true});
@@ -1286,62 +1605,112 @@ function toggleBubbleEp(msgId,bubbleEl){
   document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
   const ep=document.createElement('div');ep.className='ep';ep.dataset.msg=msgId;
   ep.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease';
-  EMOJIS.forEach(e=>{const o=document.createElement('div');o.className='eo';o.textContent=e;o.onclick=()=>{addReaction(msgId,e);ep.remove();};ep.appendChild(o);});
+  EMOJIS.forEach(e=>{
+    const o=document.createElement('div');o.className='eo';o.textContent=e;
+    o.onclick=()=>{addReaction(msgId,e);ep.remove();};ep.appendChild(o);
+  });
   bubbleEl.style.position='relative';bubbleEl.appendChild(ep);
 }
-async function addReaction(msgId,emoji){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update({[`reactions.${emoji}`]:firebase.firestore.FieldValue.increment(1)});}catch(e){}}
-async function deleteMsg(msgId){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();}catch(e){toast('Nelze smazat: '+e.message,'err');}}
+
+async function addReaction(msgId,emoji){
+  try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update({[`reactions.${emoji}`]:firebase.firestore.FieldValue.increment(1)});}catch(e){}
+}
+
+async function deleteMsg(msgId){
+  try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();}
+  catch(e){toast('Nelze smazat: '+e.message,'err');}
+}
+
 function copyMsg(text){
   navigator.clipboard.writeText(text).then(()=>toast('Zpráva zkopírována 📋','ok')).catch(()=>{
-    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';
+    // Fallback
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
     document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
     toast('Zpráva zkopírována 📋','ok');
   });
 }
 
+// ── SWIPE DELETE ──
 function setupSwipe(wrap,msgId){
   let startX=0,dx=0,swipeActive=false;
-  wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dx=0;swipeActive=startX>60;},{passive:true});
-  wrap.addEventListener('touchmove',e=>{if(!swipeActive)return;dx=e.touches[0].clientX-startX;if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}},{passive:true});
-  wrap.addEventListener('touchend',()=>{if(swipeActive&&dx<-60)deleteMsg(msgId);wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;swipeActive=false;},{passive:true});
+  wrap.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;dx=0;
+    // Only activate swipe if NOT starting from far left (avoid conflict with sidebar swipe)
+    swipeActive=startX>60;
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(!swipeActive)return;
+    dx=e.touches[0].clientX-startX;
+    if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}
+  },{passive:true});
+  wrap.addEventListener('touchend',()=>{
+    if(swipeActive&&dx<-60)deleteMsg(msgId);
+    wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;swipeActive=false;
+  },{passive:true});
 }
 
-function setReply(msg){S.replyTo={id:msg.id,text:msg.text,username:msg.username};$('reply-text').textContent=`${msg.username}: ${msg.text.slice(0,60)}`;$('reply-preview').classList.add('show');$('msg-inp').focus();}
+// ── REPLY ──
+function setReply(msg){
+  S.replyTo={id:msg.id,text:msg.text,username:msg.username};
+  $('reply-text').textContent=`${msg.username}: ${msg.text.slice(0,60)}`;
+  $('reply-preview').classList.add('show');$('msg-inp').focus();
+}
 function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show');}
 
-// ── SEND ──
+// ══════════════════════════════════════
+// SEND
+// ══════════════════════════════════════
 async function sendMsg(){
   const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
   const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
   const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};
   if(S.replyTo)msgData.replyTo=S.replyTo;
-  if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
+  if(expirySecs>0){
+    // Individual short timer
+    msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
+  }
+  // Note: all messages are cleaned by cleanExpired() after 24h regardless
   clearReply();
   try{
     const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
-    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id).set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
+    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id)
+      .set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
   }catch(e){toast('Chyba při odesílání','err');}
 }
 
-// ── TYPING ──
+// ══════════════════════════════════════
+// TYPING
+// ══════════════════════════════════════
 function onTyping(){
   clearTimeout(S.typingTO);
-  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId)
+    .update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
   S.typingTO=setTimeout(clearTyping,3000);
 }
-function clearTyping(){clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});}
+function clearTyping(){
+  clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;
+  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});
+}
 function renderTyping(){
   const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);
   if(!typers.length){$('typing').innerHTML='';return;}
   $('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;
 }
 
-// ── EMOJI INPUT ──
+// ══════════════════════════════════════
+// EMOJI INPUT
+// ══════════════════════════════════════
 function toggleInpEmoji(){
   const ep=$('inp-ep');
   if(ep.style.display===''){ep.style.display='none';return;}
   const inner=$('inp-ep-inner');
-  if(!inner.querySelector('.eo')){EMOJIS.forEach(e=>{const o=document.createElement('div');o.className='eo';o.textContent=e;o.onclick=()=>{$('msg-inp').value+=' '+e;$('msg-inp').focus();ep.style.display='none';};inner.appendChild(o);});}
+  if(!inner.querySelector('.eo')){
+    EMOJIS.forEach(e=>{
+      const o=document.createElement('div');o.className='eo';o.textContent=e;
+      o.onclick=()=>{$('msg-inp').value+=' '+e;$('msg-inp').focus();ep.style.display='none';};
+      inner.appendChild(o);
+    });
+  }
   ep.style.display='';
 }
 </script>
