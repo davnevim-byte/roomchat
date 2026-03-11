@@ -19,7 +19,7 @@
   --border:#ffffff12;--border2:#ffffff22;
   --text:#f2f4fa;--muted:#5a6072;--muted2:#9aa3b8;
   --accent:#5c6bff;--accent-glow:#5c6bff33;
-  --green:#3ecf6b;--red:#ff5c5c;
+  --green:#3ecf6b;--red:#ff5c5c;--orange:#f0a030;
   --fh:'Inter',sans-serif;--fm:'DM Mono',monospace;
   --safe-b:env(safe-area-inset-bottom,0px);
   --safe-t:env(safe-area-inset-top,0px);
@@ -27,15 +27,13 @@
 html{height:100%;height:-webkit-fill-available}
 body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:500;
   height:100vh;height:-webkit-fill-available;overflow:hidden;-webkit-font-smoothing:antialiased;}
-
 .screen{display:none;height:100%;height:-webkit-fill-available}
 .screen.active{display:flex}
-
 .grid-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
   background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
   background-size:40px 40px;opacity:.6;}
 
-/* HOME */
+/* ── HOME ── */
 #s-home{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .home-card{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:400px;width:100%;padding:24px}
 .logo{font-family:var(--fh);font-weight:900;font-size:46px;letter-spacing:-2px}
@@ -44,14 +42,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .tag-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
 .pill{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--muted2)}
 
-/* BUTTONS */
+/* ── BUTTONS ── */
 .btn-p{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s}
 .btn-p:hover{background:#7280ff;transform:translateY(-1px)}
 .btn-p:active{transform:translateY(0);opacity:.9}
 .btn-s{width:100%;padding:14px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--fh);font-weight:600;font-size:15px;cursor:pointer;transition:all .15s}
 .btn-s:hover{border-color:var(--accent)66}
 
-/* FORM */
+/* ── FORM ── */
 #s-create,#s-join,#s-invite{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:16px}
 .form-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 26px;width:430px;max-width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 80px #0008}
 .form-card h2{font-weight:800;font-size:22px;letter-spacing:-.5px}
@@ -60,7 +58,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .fi:focus{border-color:var(--accent)88;box-shadow:0 0 0 3px var(--accent-glow)}
 .fi::placeholder{color:var(--muted);font-weight:400}
 .fsel{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:13px 14px;color:var(--text);font-family:var(--fh);font-size:14px;font-weight:600;outline:none;width:100%;cursor:pointer;-webkit-appearance:none}
-.ftoggle{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.ftoggle{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer}
 .ftoggle input{accent-color:var(--accent);width:17px;height:17px;cursor:pointer;flex-shrink:0}
 .ftoggle span{font-size:13px;font-weight:500;color:var(--muted2);line-height:1.4}
 .back-btn{background:none;border:none;color:var(--muted2);font-family:var(--fh);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 0;align-self:flex-start}
@@ -70,52 +68,90 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .info{background:var(--accent-glow);border:1px solid var(--accent)44;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--accent);display:none}
 .info.show{display:block}
 
-/* CHAT */
+/* ── CHAT LAYOUT ── */
 #s-chat{flex-direction:column}
-.chat-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:var(--safe-t);height:calc(56px + var(--safe-t));background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:10}
-.hleft{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.room-name-h{font-weight:800;font-size:15px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.chat-header{display:flex;align-items:center;justify-content:space-between;padding:0 12px;padding-top:var(--safe-t);height:calc(56px + var(--safe-t));background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:10;gap:8px}
+.hleft{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.room-name-h{font-weight:800;font-size:15px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
 .lock-badge{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:var(--muted2);flex-shrink:0}
 .hcenter{flex:1;display:flex;justify-content:center}
 @media(max-width:480px){.hcenter{display:none}}
-.cd-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--muted2);white-space:nowrap}
-.cd-dot{width:6px;height:6px;border-radius:50%;background:#f0a030;animation:pulse 2s ease infinite;flex-shrink:0}
-.cd-time{color:#f0a030}
+.cd-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--muted2);white-space:nowrap;cursor:default}
+.cd-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.cd-dot.warn{background:var(--orange);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hright{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.icon-btn{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);transition:all .15s;-webkit-tap-highlight-color:transparent}
+.icon-btn{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);transition:all .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .icon-btn:hover{border-color:var(--border2);color:var(--text)}
+.icon-btn.active{border-color:var(--accent)66;color:var(--accent);background:var(--accent-glow)}
 .icon-btn svg{width:15px;height:15px}
+#btn-menu{display:none}
+@media(max-width:600px){#btn-menu{display:flex}}
 
-/* BODY */
+/* ── BODY ── */
 .chat-body{display:flex;flex:1;overflow:hidden;min-height:0}
 
-/* SIDEBAR */
-.sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
+/* ── DESKTOP SIDEBAR ── */
+.sidebar{width:210px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
 @media(max-width:600px){.sidebar{display:none}}
 .sb-section{padding:14px 10px 8px}
 .sb-label{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.8px;text-transform:uppercase;padding:0 4px;margin-bottom:6px}
-.u-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;margin-bottom:2px}
+.u-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;margin-bottom:2px;position:relative}
 .u-item.me{background:var(--accent-glow)}
 .u-av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:11px;color:#fff;flex-shrink:0;position:relative}
 .sdot{position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;border:2px solid var(--surface)}
 .d-on{background:var(--green)}.d-off{background:var(--muted)}.d-typing{background:var(--accent);animation:pulse 1s ease infinite}
+.u-info{flex:1;min-width:0}
 .u-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .u-sub{font-size:10px;font-weight:500;color:var(--muted)}
+.u-lastseen{font-size:9px;font-weight:500;color:var(--muted);margin-top:1px}
 .badge{font-size:8px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 5px;flex-shrink:0}
+.kick-btn{width:22px;height:22px;border-radius:6px;background:none;border:1px solid transparent;color:var(--muted);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.kick-btn:hover{background:#ff5c5c22;border-color:#ff5c5c44;color:var(--red)}
+.u-item:hover .kick-btn{display:flex}
 
-/* INVITE SIDEBAR */
+/* ── INVITE SIDEBAR ── */
 .inv-section{padding:12px;border-top:1px solid var(--border);margin-top:auto}
 .inv-slot{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer;transition:border-color .15s;background:var(--surface2)}
 .inv-slot:hover{border-color:var(--accent)66}
 .inv-slot.used{opacity:.45;cursor:default;border-style:dashed}
 .inv-slot.pending{border-color:var(--accent)33}
-.inv-slot-name{font-size:11px;font-weight:700;color:var(--text);flex:1}
-.inv-slot-st{font-size:10px;font-weight:500;color:var(--muted)}
 .new-inv-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;border:1px dashed var(--border2);cursor:pointer;font-size:11px;font-weight:700;color:var(--muted2);background:none;width:100%;transition:all .15s;font-family:var(--fh)}
 .new-inv-btn:hover{border-color:var(--accent)66;color:var(--accent)}
 
-/* CHAT MAIN */
+/* ── SIDEBAR ACTIONS ── */
+.sb-actions{padding:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.sb-act-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:11px;font-weight:600;color:var(--muted2);transition:all .15s;width:100%;font-family:var(--fh);text-align:left}
+.sb-act-btn:hover{border-color:var(--accent)66;color:var(--text)}
+.sb-act-btn.active{border-color:var(--accent)66;color:var(--accent);background:var(--accent-glow)}
+.sb-act-btn .ico{font-size:14px;flex-shrink:0}
+.sb-act-btn .lbl{flex:1}
+.sb-act-btn .sub{font-size:9px;color:var(--muted);display:block;margin-top:1px}
+.dnd-opts{display:flex;gap:4px;padding:2px 0}
+.dnd-opt{padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--fh);transition:all .15s;flex:1;text-align:center}
+.dnd-opt:hover{border-color:var(--accent)66;color:var(--text)}
+.dnd-opt.active{border-color:var(--orange)66;color:var(--orange);background:#f0a03011}
+
+/* ── MOBILE SIDEBAR OVERLAY ── */
+.mob-sb-ov{position:fixed;inset:0;z-index:80;pointer-events:none;display:none}
+.mob-sb-ov.open{pointer-events:all}
+@media(max-width:600px){.mob-sb-ov{display:block}}
+.mob-sb-backdrop{position:absolute;inset:0;background:#0d0f12cc;opacity:0;transition:opacity .25s}
+.mob-sb-ov.open .mob-sb-backdrop{opacity:1}
+.mob-sb-panel{position:absolute;left:0;top:0;bottom:0;width:280px;max-width:85vw;background:var(--surface);border-right:1px solid var(--border);transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.mob-sb-ov.open .mob-sb-panel{transform:translateX(0)}
+.mob-sb-header{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 12px;padding-top:calc(16px + var(--safe-t));border-bottom:1px solid var(--border);flex-shrink:0}
+.mob-sb-title{font-weight:800;font-size:14px}
+.mob-sb-close{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);font-size:16px}
+
+/* ── ROOM EXPIRY WARNING ── */
+.room-expiry-banner{position:fixed;top:calc(56px + var(--safe-t));left:0;right:0;background:#f0a03022;border-bottom:1px solid #f0a03044;padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:9;font-size:12px;font-weight:600;color:var(--orange);transform:translateY(-100%);transition:transform .3s ease}
+.room-expiry-banner.show{transform:translateY(0)}
+.reb-text{flex:1}
+.reb-extend{background:#f0a03033;border:1px solid #f0a03066;border-radius:6px;padding:5px 12px;color:var(--orange);font-family:var(--fh);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+.reb-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;line-height:1}
+
+/* ── CHAT MAIN ── */
 .chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;min-width:0}
 .chat-main::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4;pointer-events:none}
 .messages{flex:1;overflow-y:auto;padding:16px 12px 4px;display:flex;flex-direction:column;position:relative;z-index:1;scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -123,11 +159,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .sys-msg{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding:8px 0}
 .sys-msg span{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 12px}
-.date-div{display:flex;align-items:center;gap:12px;margin:16px 0 12px}
-.date-div::before,.date-div::after{content:'';flex:1;height:1px;background:var(--border)}
-.date-div span{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 
-/* MSG GROUP */
+/* ── MSG GROUP ── */
 .msg-group{display:flex;flex-direction:column;margin-bottom:10px;animation:msgIn .22s cubic-bezier(.34,1.56,.64,1)}
 @keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 .msg-group.own{align-items:flex-end}
@@ -137,7 +170,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .mm-av{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:9px;color:#fff}
 .mm-time{font-size:10px;color:var(--muted)}
 
-/* BUBBLE WRAP */
+/* ── BUBBLES ── */
 .bubble-wrap{position:relative;max-width:min(340px,82vw);overflow:hidden}
 .msg-group.own .bubble-wrap{align-self:flex-end;overflow:visible}
 .msg-group.other .bubble-wrap{overflow:visible}
@@ -145,25 +178,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .bubble:active{opacity:.85}
 .msg-group.other .bubble{background:var(--surface);border:1px solid var(--border2);border-bottom-left-radius:4px;color:var(--text)}
 .msg-group.own .bubble{background:var(--accent);border-bottom-right-radius:4px;color:#fff;font-weight:600}
-
-/* BUBBLE ACTIONS */
 .bubble-actions{position:absolute;top:-40px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:5px;display:none;gap:2px;z-index:50;box-shadow:0 4px 20px #0008;animation:fadeUp .15s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .bubble-wrap:hover .bubble-actions,.bubble-wrap.menu-open .bubble-actions{display:flex}
 .bact-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
 .bact-btn:hover{background:var(--surface2)}
-
-/* QUOTE */
 .quote-bar{background:rgba(255,255,255,.1);border-left:3px solid rgba(255,255,255,.5);border-radius:6px;padding:6px 10px;margin-bottom:7px;font-size:12px;font-weight:600;color:rgba(255,255,255,.75);line-height:1.4}
 .msg-group.other .bubble .quote-bar{background:var(--surface2);border-left-color:var(--accent);color:var(--muted2)}
 .quote-name{font-size:10px;font-weight:800;margin-bottom:2px;opacity:.9}
-
-/* EXPIRY */
 .expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
 .msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
 .msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
-
-/* REACTIONS */
 .bubble-re{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
 .re-chip{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .re-chip:hover{border-color:var(--accent)66;transform:scale(1.05)}
@@ -171,18 +196,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .ep{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease}
 .eo{width:33px;height:33px;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:7px;cursor:pointer;transition:background .1s}
 .eo:hover{background:var(--surface2)}
-
-/* SWIPE DELETE */
 .swipe-hint{position:absolute;right:-52px;top:50%;transform:translateY(-50%);background:var(--red);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;pointer-events:none;opacity:0;transition:opacity .1s}
 
-/* TYPING */
+/* ── READ RECEIPTS ── */
+.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
+.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
+.read-tick.seen{color:#90caf9}
+.read-tick.all{color:#42a5f5}
+.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+
+/* ── TYPING ── */
 .typing-ind{padding:4px 12px;min-height:26px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;font-size:11px;font-weight:600;color:var(--muted)}
 .td{display:flex;gap:3px;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:5px 10px}
 .td span{width:5px;height:5px;border-radius:50%;background:var(--muted2);animation:tdot 1.2s ease infinite}
 .td span:nth-child(2){animation-delay:.2s}.td span:nth-child(3){animation-delay:.4s}
 @keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 
-/* INPUT */
+/* ── INPUT ── */
 .input-area{padding:8px 12px;padding-bottom:calc(10px + var(--safe-b));position:relative;z-index:1;background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
 .reply-preview{display:none;background:var(--surface2);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted2);align-items:center;gap:8px}
 .reply-preview.show{display:flex}
@@ -201,7 +231,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .send-btn svg{width:16px;height:16px}
 #inp-ep{display:none;position:absolute;bottom:calc(100% + 4px);left:12px;z-index:100}
 
-/* MODAL */
+/* ── MODAL ── */
 .modal-ov{position:fixed;inset:0;background:#0d0f12ee;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;padding:16px}
 .modal-ov.show{opacity:1;pointer-events:all}
 .modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 26px;width:400px;max-width:100%;display:flex;flex-direction:column;gap:14px;transform:translateY(16px);transition:transform .25s cubic-bezier(.34,1.4,.64,1);box-shadow:0 40px 80px #0008;position:relative}
@@ -214,7 +244,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .url-text{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px}
 .url-hint{font-size:11px;font-weight:500;color:var(--muted)}
 
-/* PWA BANNER */
+/* ── PWA BANNER ── */
 .pwa-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border2);padding:14px 18px;padding-bottom:calc(14px + var(--safe-b));display:flex;align-items:center;gap:12px;z-index:150;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.4,.64,1);box-shadow:0 -8px 30px #0008}
 .pwa-banner.show{transform:translateY(0)}
 .pwa-icon{width:44px;height:44px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
@@ -225,18 +255,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .pwa-add{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:9px 16px;font-family:var(--fh);font-weight:700;font-size:13px;cursor:pointer}
 .pwa-skip{background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:8px;padding:9px 12px;font-family:var(--fh);font-weight:600;font-size:13px;cursor:pointer}
 
-/* TOAST */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;color:var(--text);z-index:300;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;color:var(--text);z-index:300;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--green)66;color:var(--green)}
 .toast.err{border-color:var(--red)66;color:var(--red)}
 
-/* LOADER */
+/* ── LOADER ── */
 .full-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:16px;font-size:13px;font-weight:600;color:var(--muted2)}
 .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ENTRY SCREEN */
+/* ── ENTRY ── */
 #s-entry{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
 .entry-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 28px;width:400px;max-width:100%;display:flex;flex-direction:column;gap:14px;box-shadow:0 40px 80px #0008;text-align:center}
 .entry-logo{font-family:var(--fh);font-weight:900;font-size:38px;letter-spacing:-2px;margin-bottom:4px}
@@ -244,7 +274,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .entry-desc{font-size:13px;font-weight:500;color:var(--muted2);line-height:1.6}
 .entry-tap-hint{position:absolute;bottom:12px;right:14px;font-size:9px;color:transparent;user-select:none;pointer-events:none}
 
-/* ROOM SWITCHER */
+/* ── ROOM SWITCHER ── */
 #s-rooms{align-items:center;justify-content:flex-start;flex-direction:column;position:relative;padding:env(safe-area-inset-top,24px) 16px 24px;overflow-y:auto}
 .rooms-header{width:100%;max-width:420px;display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px}
 .rooms-title{font-weight:900;font-size:22px;letter-spacing:-.5px}
@@ -261,19 +291,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .rooms-new-btn{width:100%;max-width:420px;padding:14px;background:none;border:1px dashed var(--border2);border-radius:14px;color:var(--muted2);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
 .rooms-new-btn:hover{border-color:var(--accent)66;color:var(--accent)}
 
-/* READ RECEIPTS */
-.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
-.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
-.read-tick.seen{color:#90caf9}
-.read-tick.all{color:#42a5f5}
-.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-
-/* EXPIRY pending */
-.expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
-.msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
-.msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
-
-/* SWITCH ROOM BTN in header */
 #btn-switch-room{display:none}
 </style>
 </head>
@@ -281,23 +298,28 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 
 <div id="loader" class="full-loader"><div class="spinner"></div><span>Načítám…</span></div>
 
-<!-- ENTRY SCREEN — username + skrytý admin trigger -->
-<div id="s-entry" class="screen grid-bg" id="s-entry">
+<!-- ROOM EXPIRY WARNING BANNER -->
+<div class="room-expiry-banner" id="room-expiry-banner">
+  <span class="reb-text" id="reb-text">⚠️ Místnost brzy vyprší</span>
+  <button class="reb-extend" onclick="extendRoom()">Prodloužit o měsíc</button>
+  <button class="reb-dismiss" onclick="dismissExpiryBanner()">✕</button>
+</div>
+
+<!-- ENTRY -->
+<div id="s-entry" class="screen grid-bg">
   <div class="entry-card" id="entry-card">
     <div class="entry-logo">Room<span>Chat</span></div>
     <p class="entry-desc" id="entry-desc">Zadej přezdívku a vstup do místnosti</p>
     <input id="entry-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
     <div id="entry-err" class="err"></div>
     <button class="btn-p" onclick="entrySubmit()">Vstoupit →</button>
-    <span class="entry-tap-hint" id="entry-tap-hint">····</span>
+    <span class="entry-tap-hint">····</span>
   </div>
 </div>
 
-<!-- ROOM SWITCHER — jen admin -->
+<!-- ROOM SWITCHER -->
 <div id="s-rooms" class="screen grid-bg">
-  <div class="rooms-header">
-    <div class="rooms-title">Moje místnosti</div>
-  </div>
+  <div class="rooms-header"><div class="rooms-title">Moje místnosti</div></div>
   <div class="rooms-list" id="rooms-list"></div>
   <button class="rooms-new-btn" onclick="show('s-create')">+ Vytvořit novou místnost</button>
 </div>
@@ -306,11 +328,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 <div id="s-home" class="screen grid-bg">
   <div class="home-card">
     <div class="logo">Room<span>Chat</span></div>
-    <p class="tagline">Dočasný chat pro malé skupiny.<br>Bez registrace. Zmizí za 24 hodin.</p>
+    <p class="tagline">Trvalý chat pro malé skupiny.<br>Bez registrace. Zprávy mizí po 24h.</p>
     <div class="tag-pills">
       <span class="pill">🔐 Zámek heslem</span>
       <span class="pill">📨 Unikátní pozvánky</span>
-      <span class="pill">⏱ 24h živostnost</span>
+      <span class="pill">🗑️ Zprávy po 24h</span>
     </div>
     <button class="btn-p" onclick="show('s-create')">+ Vytvořit místnost</button>
     <button class="btn-s" onclick="show('s-join')">Připojit se kódem</button>
@@ -322,7 +344,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
   <div class="form-card">
     <button class="back-btn" onclick="show('s-home')">← Zpět</button>
     <h2>Nová místnost</h2>
-    <p>Ty budeš admin – jen ty můžeš generovat pozvánky.</p>
+    <p>Ty budeš admin. Místnost trvá 30 dní, zprávy se mažou po 24h.</p>
     <input id="cr-name" class="fi" placeholder="Název místnosti" maxlength="32">
     <input id="cr-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
     <input id="cr-pass" class="fi" type="password" placeholder="Heslo místnosti (volitelné)">
@@ -357,29 +379,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
   </div>
 </div>
 
-<!-- INVITE -->
-<div id="s-invite" class="screen grid-bg">
-  <div class="form-card">
-    <h2>Byl jsi pozván! 🎉</h2>
-    <p id="inv-desc">Připojuješ se do místnosti…</p>
-    <input id="inv-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
-    <div id="inv-err" class="err"></div>
-    <button class="btn-p" onclick="joinByInvite()">Vstoupit →</button>
-  </div>
-</div>
-
 <!-- CHAT -->
 <div id="s-chat" class="screen">
   <header class="chat-header">
     <div class="hleft">
+      <div class="icon-btn" id="btn-menu" onclick="openMobSidebar()" title="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </div>
       <div class="room-name-h" id="h-name">Místnost</div>
-      <div class="lock-badge" id="h-lock" style="display:none">🔒 heslo</div>
+      <div class="lock-badge" id="h-lock" style="display:none">🔒</div>
     </div>
     <div class="hcenter">
-      <div class="cd-badge"><div class="cd-dot"></div>zmizí za <span class="cd-time" id="h-cd">…</span></div>
+      <div class="cd-badge" id="h-badge">
+        <div class="cd-dot" id="h-dot"></div>
+        <span id="h-badge-text">…</span>
+      </div>
     </div>
     <div class="hright">
-      <div class="icon-btn" onclick="goToRooms()" title="Přepnout místnost" id="btn-switch-room" style="display:none">
+      <div class="icon-btn" onclick="goToRooms()" id="btn-switch-room" title="Místnosti" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
       <div class="icon-btn" onclick="copyCode()" title="Kopírovat kód">
@@ -389,7 +408,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
   </header>
 
   <div class="chat-body">
-    <aside class="sidebar">
+    <aside class="sidebar" id="desktop-sidebar">
       <div class="sb-section">
         <div class="sb-label" id="sb-on-lbl">online — 0</div>
         <div id="sb-on"></div>
@@ -403,9 +422,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
         <div id="sb-inv-list"></div>
         <button class="new-inv-btn" id="sb-new-inv" onclick="openNewInvModal()">+ nová pozvánka</button>
       </div>
+      <div class="sb-actions" id="sb-actions"></div>
     </aside>
 
-    <main class="chat-main">
+    <main class="chat-main" id="chat-main">
       <div class="messages" id="msgs"></div>
       <div class="typing-ind" id="typing"></div>
       <div class="input-area">
@@ -427,11 +447,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
-        <div id="inp-ep">
-          <div class="ep" id="inp-ep-inner" style="position:static;animation:none;box-shadow:none"></div>
-        </div>
+        <div id="inp-ep"><div class="ep" id="inp-ep-inner" style="position:static;animation:none;box-shadow:none"></div></div>
       </div>
     </main>
+  </div>
+</div>
+
+<!-- MOBILE SIDEBAR OVERLAY -->
+<div class="mob-sb-ov" id="mob-sb-ov">
+  <div class="mob-sb-backdrop" onclick="closeMobSidebar()"></div>
+  <div class="mob-sb-panel" id="mob-sb-panel">
+    <div class="mob-sb-header">
+      <span class="mob-sb-title" id="mob-sb-room-name">Místnost</span>
+      <div class="mob-sb-close" onclick="closeMobSidebar()">✕</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label" id="mob-sb-on-lbl">online — 0</div>
+      <div id="mob-sb-on"></div>
+    </div>
+    <div id="mob-sb-off-sec" style="display:none" class="sb-section">
+      <div class="sb-label" id="mob-sb-off-lbl">offline — 0</div>
+      <div id="mob-sb-off"></div>
+    </div>
+    <div class="inv-section" id="mob-sb-inv" style="display:none">
+      <div class="sb-label" style="margin-bottom:8px">pozvánky (admin)</div>
+      <div id="mob-sb-inv-list"></div>
+      <button class="new-inv-btn" onclick="openNewInvModal();closeMobSidebar()">+ nová pozvánka</button>
+    </div>
+    <div class="sb-actions" id="mob-sb-actions"></div>
   </div>
 </div>
 
@@ -446,7 +489,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <button class="btn-p" onclick="createInvite()">Vygenerovat →</button>
   </div>
 </div>
-
 <div class="modal-ov" id="m-copy-inv">
   <div class="modal-card">
     <button class="modal-close" onclick="closeM('m-copy-inv')">✕</button>
@@ -468,7 +510,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <div class="pwa-sub" id="pwa-sub">Otevři příště jedním kliknutím</div>
   </div>
   <div class="pwa-btns">
-    <button class="pwa-add" onclick="pwaTrigger()">Přidat</button>
+    <button class="pwa-add" onclick="addToHomeScreen()">Přidat</button>
     <button class="pwa-skip" onclick="pwaDismiss()">Teď ne</button>
   </div>
 </div>
@@ -476,31 +518,52 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════
-// FIREBASE CONFIG
-// ════════════════════════════════
 const firebaseConfig = {
-  apiKey:            "AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",
-  authDomain:        "roomchat-6092c.firebaseapp.com",
-  projectId:         "roomchat-6092c",
-  storageBucket:     "roomchat-6092c.firebasestorage.app",
-  messagingSenderId: "681715608200",
-  appId:             "1:681715608200:web:cde43c08577bf279020d3d"
+  apiKey:"AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",
+  authDomain:"roomchat-6092c.firebaseapp.com",
+  projectId:"roomchat-6092c",
+  storageBucket:"roomchat-6092c.firebasestorage.app",
+  messagingSenderId:"681715608200",
+  appId:"1:681715608200:web:cde43c08577bf279020d3d"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
 const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
 const EMOJIS=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
 const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
-const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,isAdminSession:false,roomData:null,slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,pendingInvite:null,jnState:'code',jnRoomData:null,replyTo:null,entryContext:null};
+const ROOM_LIFETIME=30*86400;
+const MSG_LIFETIME=86400000;
+
+const S={
+  sid:null,roomId:null,slotId:null,username:null,color:null,
+  isAdmin:false,isAdminSession:false,roomData:null,
+  slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,
+  typingTO:null,jnState:'code',jnRoomData:null,
+  replyTo:null,entryContext:null
+};
+let todayMsgCount=0;
 
 const $=id=>document.getElementById(id);
 const rnd=(n=8)=>Math.random().toString(36).slice(2,2+n).toUpperCase();
 const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
 const initials=n=>(n||'??').slice(0,2).toUpperCase();
+
 const fmtTime=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});};
-const fmtCd=ms=>{if(ms<=0)return 'vypršela';const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);return `${h}h ${String(m).padStart(2,'0')}m`;};
+const fmtDate=ts=>{
+  if(!ts)return '';
+  const d=ts.toDate?ts.toDate():new Date(ts);
+  const now=new Date();
+  if(d.toDateString()===now.toDateString())return 'dnes '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+  const y=new Date(now);y.setDate(y.getDate()-1);
+  if(d.toDateString()===y.toDateString())return 'včera '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('cs',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+};
+const fmtCd=ms=>{if(ms<=0)return 'vypršela';const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000);if(d>0)return `${d}d ${h}h`;return `${h}h ${String(m).padStart(2,'0')}m`;};
 const fmtExpiry=secs=>{if(!secs||secs<=0)return null;if(secs<60)return `${secs}s`;if(secs<3600)return `${Math.round(secs/60)}m`;return `${Math.round(secs/3600)}h`;};
 const isOnline=slot=>{if(!slot.lastSeen)return false;const t=slot.lastSeen.toDate?slot.lastSeen.toDate():new Date(slot.lastSeen);return Date.now()-t.getTime()<50000;};
 
@@ -510,70 +573,188 @@ function hideErr(id){$(id).classList.remove('show');}
 function showInfo(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
 function openM(id){$(id).classList.add('show');}
 function closeM(id){$(id).classList.remove('show');}
-function toast(msg,type=''){const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(()=>t.className='toast',2800);}
-
-// PWA
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('pwa_d'))showPwaBanner('android');});
-function isIos(){return /iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;}
-function showPwaBanner(type){if(type==='ios'){$('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';}$('pwa-banner').classList.add('show');}
-function pwaTrigger(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});}else{toast('Safari: Sdílet → Přidat na plochu 📱');pwaDismiss();}}
-function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setItem('pwa_d','1');}
-
-// SOUND
-function playNotif(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}}
-
-// ── HELPERS ─────────────────────────────────────────────────────────────────
-function getRoomList(){try{return JSON.parse(localStorage.getItem('rc_rooms')||'[]');}catch(e){return[];}}
-function saveRoomList(list){localStorage.setItem('rc_rooms',JSON.stringify(list));}
-function addToRoomList(roomId,slotId,name){const list=getRoomList().filter(r=>r.roomId!==roomId);list.unshift({roomId,slotId,name,ts:Date.now()});saveRoomList(list);}
+function toast(msg,type=''){const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(()=>t.className='toast',3000);}
 
 async function hashStr(str){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-// ── BOOT ─────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',async()=>{
-  let sid=localStorage.getItem('rc_sid');
-  if(!sid){sid=rnd(16);localStorage.setItem('rc_sid',sid);}
-  S.sid=sid;
-  S.isAdminSession=localStorage.getItem('rc_admin')==='1';
+// ── PWA ──
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('pwa_d'))showPwaBanner('android');});
+function isIos(){return /iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;}
+function showPwaBanner(type){if(type==='ios')$('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';$('pwa-banner').classList.add('show');}
+function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setItem('pwa_d','1');}
+function addToHomeScreen(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});}
+  else if(isIos()){toast('Safari → Sdílet → Přidat na plochu 📱');}
+  else{toast('Appka je již nainstalována nebo použij Chrome 👆');}
+  renderSidebarActions();
+}
 
-  // Migrace starého formátu
+// ── NOTIFICATIONS ──
+async function requestNotifPerm(){if(!('Notification' in window))return false;if(Notification.permission==='default')await Notification.requestPermission();return Notification.permission==='granted';}
+async function toggleNotifications(){
+  if(!('Notification' in window)){toast('Notifikace nejsou podporovány','err');return;}
+  if(Notification.permission==='granted'){toast('Notifikace jsou zapnuty ✓','ok');}
+  else if(Notification.permission==='denied'){toast('Notifikace jsou blokovány — povol je v nastavení prohlížeče','err');}
+  else{const ok=await requestNotifPerm();toast(ok?'Notifikace povoleny ✓':'Notifikace odmítnuty','ok');}
+  renderSidebarActions();
+}
+
+// ── DND ──
+function isDnd(){return Date.now()<parseInt(localStorage.getItem('rc_dnd')||0);}
+function setDnd(ms){if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}renderSidebarActions();}
+function dndUntilMorning(){const m=new Date();m.setDate(m.getDate()+1);m.setHours(7,0,0,0);setDnd(m.getTime()-Date.now());}
+
+async function showPup(){
+  if(isDnd())return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  if(document.visibilityState==='visible'&&document.hasFocus())return;
+  const tag='roomchat-'+Date.now();
+  try{
+    if('serviceWorker' in navigator){
+      let reg=await navigator.serviceWorker.getRegistration();
+      if(!reg)reg=await navigator.serviceWorker.register('/sw.js');
+      if(reg){await reg.showNotification('PUP',{body:'Nová zpráva v místnosti',tag,silent:true});return;}
+    }
+    const n=new Notification('PUP',{tag,silent:true});
+    n.onclick=()=>{window.focus();n.close();};
+    setTimeout(()=>n.close(),4000);
+  }catch(e){}
+}
+function playNotif(){
+  if(isDnd())return;
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}
+}
+
+// ── SIDEBAR ACTIONS ──
+function renderSidebarActions(){
+  const html=_buildActionsHtml();
+  const el1=$('sb-actions'),el2=$('mob-sb-actions');
+  if(el1)el1.innerHTML=html;
+  if(el2)el2.innerHTML=html;
+}
+function _buildActionsHtml(){
+  const notifOk='Notification' in window&&Notification.permission==='granted';
+  const dnd=isDnd();
+  const adminBtn=S.isAdmin?`
+  <button class="sb-act-btn" onclick="goToRooms();closeMobSidebar()">
+    <span class="ico">🏠</span>
+    <span class="lbl">Přepnout místnost<span class="sub">zpět na výběr místností</span></span>
+  </button>`:'';
+  return `
+  ${adminBtn}
+  <button class="sb-act-btn ${notifOk?'active':''}" onclick="toggleNotifications()">
+    <span class="ico">${notifOk?'🔔':'🔕'}</span>
+    <span class="lbl">${notifOk?'Notifikace: zapnuto':'Zapnout notifikace'}<span class="sub">${notifOk?(dnd?'nerušit je aktivní':'klikni pro test'):'PUP při nové zprávě'}</span></span>
+  </button>
+  <button class="sb-act-btn" onclick="addToHomeScreen()">
+    <span class="ico">📲</span>
+    <span class="lbl">Přidat na plochu<span class="sub">rychlý přístup k místnosti</span></span>
+  </button>
+  <div style="padding:2px 0">
+    <div style="font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.5px;padding:2px 4px 6px;text-transform:uppercase">Nerušit</div>
+    <div class="dnd-opts">
+      <div class="dnd-opt ${dnd?'active':''}" onclick="setDnd(3600000)">1h</div>
+      <div class="dnd-opt" onclick="setDnd(14400000)">4h</div>
+      <div class="dnd-opt" onclick="dndUntilMorning()">ráno</div>
+      <div class="dnd-opt" onclick="setDnd(0)">vyp</div>
+    </div>
+  </div>`;
+}
+
+// ── MOBILE SIDEBAR ──
+function openMobSidebar(){$('mob-sb-ov').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobSidebar(){$('mob-sb-ov').classList.remove('open');document.body.style.overflow='';}
+function _setupSwipeForSidebar(){
+  const main=$('chat-main');
+  let startX=0,startY=0,tracking=false;
+  main.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;tracking=startX<60;},{passive:true});
+  main.addEventListener('touchmove',e=>{if(!tracking)return;const dx=e.touches[0].clientX-startX;const dy=Math.abs(e.touches[0].clientY-startY);if(dx>50&&dy<40){openMobSidebar();tracking=false;}},{passive:true});
+  main.addEventListener('touchend',()=>{tracking=false;},{passive:true});
+}
+
+// ── ROOM EXPIRY BANNER ──
+function checkRoomExpiry(){
+  if(!S.isAdmin||!S.roomData?.expiresAt)return;
+  const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
+  const msLeft=exp.getTime()-Date.now();
+  const daysLeft=msLeft/86400000;
+  if(daysLeft<3&&!sessionStorage.getItem('reb_dismissed')){
+    const txt=daysLeft<1?'⚠️ Místnost vyprší za méně než 24 hodin!':`⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
+    $('reb-text').textContent=txt;$('h-dot').classList.add('warn');$('room-expiry-banner').classList.add('show');
+  }
+}
+function dismissExpiryBanner(){$('room-expiry-banner').classList.remove('show');sessionStorage.setItem('reb_dismissed','1');}
+async function extendRoom(){
+  if(!S.isAdmin||!S.roomId)return;
+  try{
+    const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
+    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
+    await db.collection('rooms').doc(S.roomId).update({expiresAt:newExp});
+    S.roomData.expiresAt=newExp;dismissExpiryBanner();$('h-dot').classList.remove('warn');
+    toast('Místnost prodloužena o 30 dní ✓','ok');updateHeaderBadge();
+  }catch(e){toast('Chyba: '+e.message,'err');}
+}
+
+// ── HEADER BADGE ──
+function updateHeaderBadge(){
+  const exp=S.roomData?.expiresAt?.toDate?.();if(!exp)return;
+  const msLeft=exp.getTime()-Date.now();const daysLeft=msLeft/86400000;
+  if(S.isAdmin&&daysLeft<3){$('h-badge-text').textContent=`⚠️ vyprší za ${fmtCd(msLeft)}`;$('h-dot').classList.add('warn');}
+  else{$('h-badge-text').textContent=`${todayMsgCount} zpráv dnes · 🗑️ po 24h`;$('h-dot').classList.remove('warn');}
+}
+
+// ── STORAGE ──
+function _setCookie(name,val,days){const exp=new Date(Date.now()+days*86400000).toUTCString();document.cookie=`${name}=${encodeURIComponent(val)};expires=${exp};path=/;SameSite=Lax`;}
+function _getCookie(name){const m=document.cookie.match('(?:^|; )'+name+'=([^;]*)');return m?decodeURIComponent(m[1]):null;}
+function getRoomList(){try{const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');if(ls.length>0)return ls;const ck=_getCookie('rc_rooms');if(ck)return JSON.parse(ck);return[];}catch(e){return[];}}
+function saveRoomList(list){const json=JSON.stringify(list);localStorage.setItem('rc_rooms',json);_setCookie('rc_rooms',json,60);}
+function addToRoomList(roomId,slotId,name){const list=getRoomList().filter(r=>r.roomId!==roomId);list.unshift({roomId,slotId,name,ts:Date.now()});saveRoomList(list);}
+function getSid(){let sid=localStorage.getItem('rc_sid')||_getCookie('rc_sid');if(!sid)sid=rnd(16);localStorage.setItem('rc_sid',sid);_setCookie('rc_sid',sid,60);return sid;}
+function getUsername(){return localStorage.getItem('rc_username')||_getCookie('rc_username')||null;}
+function setUsername(u){localStorage.setItem('rc_username',u);_setCookie('rc_username',u,60);}
+
+// ── BOOT ──
+window.addEventListener('DOMContentLoaded',async()=>{
+  S.sid=getSid();
+  S.isAdminSession=localStorage.getItem('rc_admin')==='1';
   const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
   if(oldRoom&&oldSlot){addToRoomList(oldRoom,oldSlot,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
-
   const p=new URLSearchParams(window.location.search);
   const rp=p.get('room'),ip=p.get('invite');
-
-  if(rp&&ip){
-    // Pozvaný uživatel — entry screen s kontextem pozvánky
-    await _prepareInviteEntry(rp.toUpperCase(),ip);
-  } else if(rp){
-    $('jn-code').value=rp.toUpperCase();show('s-join');$('loader').style.display='none';
-  } else if(S.isAdminSession){
-    // Admin zná heslo — rovnou room switcher nebo create
-    $('loader').style.display='none';
-    const list=getRoomList();
-    if(list.length===0){show('s-home');}
-    else{await showRoomSwitcher();}
-  } else {
-    // Normální uživatel — entry screen
-    const list=getRoomList();
-    if(list.length===1){
-      // Zkusit rejoin (pokud se vrací)
-      S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
-      $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
-      const saved=localStorage.getItem('rc_username');
-      if(saved)$('entry-user').value=saved;
+  try{
+    if(rp&&ip){
+      await _prepareInviteEntry(rp.toUpperCase(),ip);
+    } else if(rp){
+      const roomId=rp.toUpperCase();
+      const stored=getRoomList().find(r=>r.roomId===roomId);
+      if(stored?.slotId){await tryRejoin(roomId,stored.slotId,null,true);}
+      else{$('jn-code').value=roomId;show('s-join');$('loader').style.display='none';}
+    } else if(S.isAdminSession){
+      $('loader').style.display='none';
+      await showRoomSwitcher();
+    } else {
+      const list=getRoomList();
+      if(list.length===1){
+        S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
+        const saved=getUsername();
+        if(saved){await tryRejoin(list[0].roomId,list[0].slotId,saved,false);return;}
+        $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
+      }
+      show('s-entry');$('loader').style.display='none';_setupAdminTap();
     }
-    show('s-entry');$('loader').style.display='none';
-    _setupAdminTap();
+  }catch(e){
+    saveRoomList([]);
+    if(S.isAdminSession){show('s-home');}else{show('s-entry');}
+    $('loader').style.display='none';
   }
 });
 
-async function tryRejoin(roomId,slotId,usernameOverride){
+// ── REJOIN ──
+async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
   try{
     const[sd,rd]=await Promise.all([
       db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),
@@ -582,45 +763,53 @@ async function tryRejoin(roomId,slotId,usernameOverride){
     if(rd.exists){
       const rd2=rd.data();
       if(Date.now()<rd2.expiresAt.toDate().getTime()){
-        if(sd.exists&&sd.data().sessionId===S.sid){
+        if(sd.exists){
           const slot=sd.data();
-          const uname=usernameOverride||slot.username;
-          if(usernameOverride&&usernameOverride!==slot.username){
-            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:uname});
-          }
+          const uname=usernameOverride||slot.username||getUsername();
+          if(!uname){S.entryContext={type:'rejoin',roomId,slotId};show('s-entry');$('loader').style.display='none';_setupAdminTap();return;}
+          const updates={};
+          if(slot.sessionId!==S.sid)updates.sessionId=S.sid;
+          if(usernameOverride&&usernameOverride!==slot.username)updates.username=uname;
+          if(Object.keys(updates).length>0)await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);
           S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;
           S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;
-          S.roomData={...rd2,name:rd2.name};
+          S.roomData={...rd2};
           const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
           if(S.isAdmin)$('btn-switch-room').style.display='';
+          history.replaceState({},'','?room='+roomId);
           enterChat();return;
         }
       }
     }
   }catch(e){}
-  // Vypršela — odstranit ze seznamu
   const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
-  show('s-entry');$('loader').style.display='none';
+  S.entryContext=null;
+  if(silentMode){show('s-home');$('loader').style.display='none';toast('Místnost nenalezena nebo vypršela','err');}
+  else{show('s-entry');$('loader').style.display='none';}
 }
 
+// ── CREATE ROOM ──
 async function createRoom(){
   const name=$('cr-name').value.trim(),user=$('cr-user').value.trim(),pass=$('cr-pass').value,maxU=parseInt($('cr-max').value),invOnly=$('cr-inv').checked;
   hideErr('cr-err');
   if(!name)return showErr('cr-err','Zadej název místnosti');
   if(!user)return showErr('cr-err','Zadej přezdívku');
   const roomId=rnd(6),color=rndColor(),now=firebase.firestore.Timestamp.now();
-  const expiresAt=new firebase.firestore.Timestamp(now.seconds+86400,now.nanoseconds);
+  const expiresAt=new firebase.firestore.Timestamp(now.seconds+ROOM_LIFETIME,now.nanoseconds);
   try{
     await db.collection('rooms').doc(roomId).set({name,password:pass,maxUsers:maxU,inviteOnly:invOnly,createdAt:now,expiresAt,adminSession:S.sid,adminKey:ADMIN_HASH});
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
-    S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
-    addToRoomList(roomId,sref.id,name);localStorage.setItem('rc_username',user);
+    S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;
+    S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
+    addToRoomList(roomId,sref.id,name);setUsername(user);
+    history.replaceState({},'','?room='+roomId);
     $('btn-switch-room').style.display='';enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
 
+// ── JOIN BY CODE ──
 async function joinByCode(){
   const code=$('jn-code').value.trim().toUpperCase();
   hideErr('jn-err');$('jn-info').classList.remove('show');
@@ -647,110 +836,88 @@ async function joinByCode(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
     S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);localStorage.setItem('rc_username',user);enterChat();
+    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);setUsername(user);
+    history.replaceState({},'','?room='+S.jnRoomData.id);
+    enterChat();
   }
 }
 
+// ── INVITE FLOW ──
 async function _prepareInviteEntry(roomId,token){
   try{
-    const[rd,ssnap]=await Promise.all([db.collection('rooms').doc(roomId).get(),db.collection('rooms').doc(roomId).collection('slots').where('inviteToken','==',token).limit(1).get()]);
+    const[rd,ssnap]=await Promise.all([
+      db.collection('rooms').doc(roomId).get(),
+      db.collection('rooms').doc(roomId).collection('slots').where('inviteToken','==',token).limit(1).get()
+    ]);
     if(!rd.exists){show('s-entry');toast('Místnost nenalezena','err');$('loader').style.display='none';return;}
     const rdata=rd.data();
     if(Date.now()>rdata.expiresAt.toDate().getTime()){show('s-entry');toast('Místnost vypršela','err');$('loader').style.display='none';return;}
     if(ssnap.empty){show('s-entry');toast('Neplatná pozvánka','err');$('loader').style.display='none';return;}
     const sdoc=ssnap.docs[0],sdata=sdoc.data();
-    // Vrací se ze stejného zařízení
     if(sdata.sessionId===S.sid&&sdata.username){
       S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;
-      addToRoomList(roomId,sdoc.id,rdata.name);history.replaceState({},'','/');enterChat();return;
+      addToRoomList(roomId,sdoc.id,rdata.name);
+      history.replaceState({},'','?room='+roomId);
+      enterChat();return;
     }
     if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-entry');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
-    // Nový uživatel — ukázat entry screen
     S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};
     $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
-    const saved=localStorage.getItem('rc_username');if(saved)$('entry-user').value=saved;
-    history.replaceState({},'','/');
-    show('s-entry');$('loader').style.display='none';
-    _setupAdminTap();
+    const saved=getUsername();if(saved)$('entry-user').value=saved;
+    history.replaceState({},'','?room='+roomId);
+    show('s-entry');$('loader').style.display='none';_setupAdminTap();
   }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
 }
 
-// Stará s-invite obrazovka není potřeba, joinByInvite se volá z entrySubmit
-async function joinByInvite(){
-  const user=$('inv-user').value.trim();hideErr('inv-err');
-  if(!user)return showErr('inv-err','Zadej přezdívku');
-  const{roomId,slotId,roomData}=S.pendingInvite;
-  const color=rndColor(),now=firebase.firestore.Timestamp.now();
-  try{
-    await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
-    await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
-    S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    addToRoomList(roomId,slotId,roomData.name);localStorage.setItem('rc_username',user);history.replaceState({},'','/');enterChat();
-  }catch(e){showErr('inv-err','Chyba: '+e.message);}
-}
-
-// ── ENTRY SCREEN ─────────────────────────────────────────────────────────────
+// ── ENTRY + ADMIN TAP ──
 function _setupAdminTap(){
   let taps=0,tapTO=null;
   const card=$('entry-card');
-  function onTap(){
-    taps++;clearTimeout(tapTO);
-    tapTO=setTimeout(()=>{taps=0;},800);
-    if(taps>=4){taps=0;_showAdminPrompt();}
-  }
+  function onTap(){taps++;clearTimeout(tapTO);tapTO=setTimeout(()=>{taps=0;},800);if(taps>=4){taps=0;_showAdminPrompt();}}
   card.addEventListener('click',onTap);
   card.addEventListener('touchend',e=>{if(e.changedTouches.length===1)onTap();},{passive:true});
 }
-
 function _showAdminPrompt(){
-  const pw=prompt('🔐 Admin heslo:');
-  if(!pw)return;
+  const pw=prompt('🔐 Admin heslo:');if(!pw)return;
   hashStr(pw).then(h=>{
     if(h===ADMIN_HASH){
-      localStorage.setItem('rc_admin','1');
-      S.isAdminSession=true;
+      localStorage.setItem('rc_admin','1');S.isAdminSession=true;
       toast('✓ Admin režim aktivován','ok');
-      setTimeout(async()=>{
-        const list=getRoomList();
-        if(list.length===0){show('s-home');}
-        else{$('loader').style.display='';await showRoomSwitcher();}
-      },600);
-    }else{
-      toast('Špatné heslo','err');
-    }
+      setTimeout(async()=>{$('loader').style.display='';await showRoomSwitcher();},600);
+    }else{toast('Špatné heslo','err');}
   });
 }
 
 async function entrySubmit(){
-  const user=$('entry-user').value.trim();
-  hideErr('entry-err');
+  const user=$('entry-user').value.trim();hideErr('entry-err');
   if(!user)return showErr('entry-err','Zadej přezdívku');
-  localStorage.setItem('rc_username',user);
+  setUsername(user);
   const ctx=S.entryContext;
   if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}
   if(ctx.type==='invite'){
-    // Nový uživatel přes pozvánku
     const color=rndColor(),now=firebase.firestore.Timestamp.now();
     try{
       await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
       await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
       S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;
-      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);enterChat();
+      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);
+      history.replaceState({},'','?room='+ctx.roomId);
+      enterChat();
     }catch(e){showErr('entry-err','Chyba: '+e.message);}
   } else if(ctx.type==='rejoin'){
     await tryRejoin(ctx.roomId,ctx.slotId,user);
   }
 }
 
-// ── ROOM SWITCHER ─────────────────────────────────────────────────────────────
+// ── ROOM SWITCHER ──
 async function showRoomSwitcher(){
   $('loader').style.display='none';
   const container=$('rooms-list');
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
   try{
-    // Načíst místnosti podle adminKey (nové) i adminSession (staré bez adminKey)
-    const [snap1,snap2]=await Promise.all([
+    // Dual query: adminKey (nové) + adminSession (staré místnosti)
+    const[snap1,snap2]=await Promise.all([
       db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),
       db.collection('rooms').where('adminSession','==',S.sid).get()
     ]);
@@ -758,9 +925,7 @@ async function showRoomSwitcher(){
     snap1.forEach(d=>{docsMap[d.id]=d;});
     snap2.forEach(d=>{
       docsMap[d.id]=d;
-      if(!d.data().adminKey){
-        db.collection('rooms').doc(d.id).update({adminKey:ADMIN_HASH}).catch(()=>{});
-      }
+      if(!d.data().adminKey)db.collection('rooms').doc(d.id).update({adminKey:ADMIN_HASH}).catch(()=>{});
     });
     const allDocs=Object.values(docsMap).sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
     container.innerHTML='';
@@ -769,15 +934,11 @@ async function showRoomSwitcher(){
     allDocs.forEach(doc=>{
       const d=doc.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
-      if(!expired){
-        // Najít slotId z lokálního cache pokud existuje
-        const local=getRoomList().find(r=>r.roomId===doc.id);
-        freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});
-      }
+      if(!expired){const local=getRoomList().find(r=>r.roomId===doc.id);freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});}
       const card=document.createElement('div');
       card.className='room-card'+(expired?' expired':'');
-      const rem=fmtCd(d.expiresAt.toDate().getTime()-Date.now());
       const msLeft=d.expiresAt.toDate().getTime()-Date.now();
+      const rem=fmtCd(msLeft);
       const daysLeft=msLeft/86400000;
       const warnDot=daysLeft<3&&!expired?'⚠️ ':'';
       card.innerHTML=`<div class="room-card-icon">💬</div>
@@ -791,66 +952,50 @@ async function showRoomSwitcher(){
       container.appendChild(card);
     });
     saveRoomList(freshList);
-  }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba načítání: ${e.message}</div>`;}
+  }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba: ${e.message}</div>`;}
 }
 
 async function deleteRoom(roomId){
-  const card = document.querySelector(`[data-room-del="${roomId}"]`);
-  if(card && !card.dataset.confirmed){
-    card.dataset.confirmed = '1';
-    card.textContent = '✓ Potvrdit';
-    card.style.background = '#ff5c5c33';
-    card.style.borderColor = '#ff5c5c88';
-    card.style.width = '80px';
-    setTimeout(()=>{
-      if(card.dataset.confirmed){
-        delete card.dataset.confirmed;
-        card.textContent = '🗑️';
-        card.style.width = '30px';
-        card.style.background = '#ff5c5c11';
-        card.style.borderColor = '#ff5c5c33';
-      }
-    }, 3000);
+  const card=document.querySelector(`[data-room-del="${roomId}"]`);
+  if(card&&!card.dataset.confirmed){
+    card.dataset.confirmed='1';card.textContent='✓ Potvrdit';
+    card.style.cssText='background:#ff5c5c33;border-color:#ff5c5c88;width:80px;height:30px;border-radius:8px;border:1px solid;color:var(--red);cursor:pointer;font-size:12px;font-weight:700';
+    setTimeout(()=>{if(card.dataset.confirmed){delete card.dataset.confirmed;card.textContent='🗑️';card.style.cssText='width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0';}},3000);
     return;
   }
   try{
     const batch=db.batch();
-    const [msgs,slots,reads]=await Promise.all([
+    const[msgs,slots,reads]=await Promise.all([
       db.collection('rooms').doc(roomId).collection('messages').limit(500).get(),
       db.collection('rooms').doc(roomId).collection('slots').limit(500).get(),
       db.collection('rooms').doc(roomId).collection('reads').limit(500).get(),
     ]);
-    msgs.forEach(d=>batch.delete(d.ref));
-    slots.forEach(d=>batch.delete(d.ref));
-    reads.forEach(d=>batch.delete(d.ref));
+    msgs.forEach(d=>batch.delete(d.ref));slots.forEach(d=>batch.delete(d.ref));reads.forEach(d=>batch.delete(d.ref));
     batch.delete(db.collection('rooms').doc(roomId));
     await batch.commit();
     saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));
-    toast('Místnost smazána','ok');
-    showRoomSwitcher();
+    toast('Místnost smazána','ok');showRoomSwitcher();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
 
 async function _adminEnterRoom(roomId,roomData){
-  // Admin vstupuje do místnosti — najít nebo vytvořit svůj slot
   try{
     const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
     if(!slotsSnap.empty){
       const sdoc=slotsSnap.docs[0],slot=sdoc.data();
       S.roomId=roomId;S.slotId=sdoc.id;S.username=slot.username;S.color=slot.color;
       S.isAdmin=true;S.roomData=roomData;
-      addToRoomList(roomId,sdoc.id,roomData.name);
-      $('btn-switch-room').style.display='';
+      addToRoomList(roomId,sdoc.id,roomData.name);$('btn-switch-room').style.display='';
+      history.replaceState({},'','?room='+roomId);
       enterChat();return;
     }
-    // Nový slot pro admina na tomto zařízení
-    const saved=localStorage.getItem('rc_username')||'Admin';
+    const saved=getUsername()||'Admin';
     const color=rndColor(),now=firebase.firestore.Timestamp.now();
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     S.roomId=roomId;S.slotId=sref.id;S.username=saved;S.color=color;S.isAdmin=true;S.roomData=roomData;
-    addToRoomList(roomId,sref.id,roomData.name);
-    $('btn-switch-room').style.display='';
+    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';
+    history.replaceState({},'','?room='+roomId);
     enterChat();
   }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
@@ -859,17 +1004,85 @@ function goToRooms(){
   S.unsubs.forEach(u=>u());S.unsubs=[];
   clearInterval(S.heartbeat);clearInterval(S.countdown);
   S.roomId=null;S.slotId=null;
-  $('btn-switch-room').style.display='none';
-  $('sb-inv').style.display='none';
+  $('btn-switch-room').style.display='none';$('sb-inv').style.display='none';$('mob-sb-inv').style.display='none';
   showRoomSwitcher();
 }
 
-// ── READ RECEIPTS ─────────────────────────────────────────────────────────────
+// ── ENTER CHAT ──
+function enterChat(){
+  $('loader').style.display='none';show('s-chat');
+  requestNotifPerm();
+  $('h-name').textContent='╱ '+S.roomData.name;
+  $('mob-sb-room-name').textContent=S.roomData.name;
+  if(S.roomData.password)$('h-lock').style.display='';
+  updateHeaderBadge();
+  S.countdown=setInterval(updateHeaderBadge,60000);
+  if(S.isAdmin){$('sb-inv').style.display='';$('mob-sb-inv').style.display='';$('btn-switch-room').style.display='';}
+  renderSidebarActions();
+  checkRoomExpiry();
+  _setupSwipeForSidebar();
+
+  const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{
+    S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});
+    renderSidebar();renderTyping();
+  });
+  S.unsubs.push(uSlots);
+
+  const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
+    snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});
+    _updateReadTicks();
+  });
+  S.unsubs.push(uReads);
+
+  const cutoff=new Date(Date.now()-MSG_LIFETIME);
+  const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages')
+    .where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff))
+    .orderBy('timestamp','asc').limitToLast(200)
+    .onSnapshot(snap=>renderMessages(snap));
+  S.unsubs.push(uMsgs);
+
+  heartbeat();S.heartbeat=setInterval(heartbeat,20000);
+  setInterval(cleanExpired,10000);
+
+  const inp=$('msg-inp');
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  inp.addEventListener('input',onTyping);
+  inp.addEventListener('focus',()=>setTimeout(()=>$('msgs').scrollTop=$('msgs').scrollHeight,300));
+
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#inp-ep')&&!e.target.closest('.emoji-tog'))$('inp-ep').style.display='none';
+    if(!e.target.closest('.ep')&&!e.target.closest('.bact-btn'))document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
+    if(!e.target.closest('.bubble-wrap'))document.querySelectorAll('.bubble-wrap.menu-open').forEach(w=>w.classList.remove('menu-open'));
+  });
+  setTimeout(()=>{if(isIos()&&!window.navigator.standalone&&!localStorage.getItem('pwa_d'))showPwaBanner('ios');},3000);
+}
+
+async function heartbeat(){
+  if(!S.roomId||!S.slotId)return;
+  try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
+}
+
+async function cleanExpired(){
+  if(!S.roomId)return;
+  try{
+    const batch=db.batch();
+    const now=new Date();
+    const cutoff=firebase.firestore.Timestamp.fromDate(new Date(Date.now()-MSG_LIFETIME));
+    const snap1=await db.collection('rooms').doc(S.roomId).collection('messages')
+      .where('expiresAt','>',firebase.firestore.Timestamp.fromDate(new Date(0)))
+      .where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(now)).limit(10).get();
+    snap1.forEach(d=>batch.delete(d.ref));
+    const snap2=await db.collection('rooms').doc(S.roomId).collection('messages')
+      .where('timestamp','<',cutoff).limit(10).get();
+    snap2.forEach(d=>batch.delete(d.ref));
+    if(!snap1.empty||!snap2.empty)await batch.commit();
+  }catch(e){}
+}
+
+// ── READ RECEIPTS ──
 const _readDone=new Set();
 const _viewObserver=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObserver.unobserve(e.target);}
-  });
+  entries.forEach(e=>{if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObserver.unobserve(e.target);}});
 },{threshold:0.8});
 
 async function _markRead(msgId){
@@ -877,24 +1090,22 @@ async function _markRead(msgId){
   _readDone.add(msgId);
   try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId).set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
 }
-
 function _updateReadTicks(){
   document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
     const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
     const reads=S.reads[msgId]||{};
     const readers=Object.keys(reads).filter(id=>id!==sender);
     const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);
-    const tick=rr.querySelector('.read-tick');
-    const nm=rr.querySelector('.read-names');
+    const tick=rr.querySelector('.read-tick'),nm=rr.querySelector('.read-names');
     if(!tick)return;
     if(readers.length===0){tick.textContent='✓';tick.className='read-tick';}
     else if(others.length>0&&readers.length>=others.length){tick.textContent='✓✓';tick.className='read-tick all';}
     else{tick.textContent='✓✓';tick.className='read-tick seen';}
-    if(nm){const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);nm.textContent=names.join(', ');}
+    if(nm){nm.textContent=readers.map(id=>S.slots[id]?.username).filter(Boolean).join(', ');}
   });
 }
 
-// ── EXPIRY COUNTDOWN ──────────────────────────────────────────────────────────
+// ── EXPIRY COUNTDOWN ──
 const _cdTimers={};
 function _startCountdown(msgId,exp,badgeEl,wrapEl){
   if(_cdTimers[msgId])return;
@@ -911,101 +1122,98 @@ function _startCountdown(msgId,exp,badgeEl,wrapEl){
   tick();_cdTimers[msgId]=setInterval(tick,1000);
 }
 
-// ENTER CHAT
-function enterChat(){
-  $('loader').style.display='none';show('s-chat');
-  $('h-name').textContent='╱ '+S.roomData.name;
-  if(S.roomData.password)$('h-lock').style.display='';
-  updateCd();S.countdown=setInterval(updateCd,30000);
-  if(S.isAdmin){$('sb-inv').style.display='';$('btn-switch-room').style.display='';}
-  const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});
-  S.unsubs.push(uSlots);
-  // Reads listener — samostatná kolekce, nespouští messages listener
-  const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
-    snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});
-    _updateReadTicks();
-  });
-  S.unsubs.push(uReads);
-  const cutoff=new Date(Date.now()-86400000);
-  const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages').where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff)).orderBy('timestamp','asc').limitToLast(200).onSnapshot(snap=>renderMessages(snap));
-  S.unsubs.push(uMsgs);
-  heartbeat();S.heartbeat=setInterval(heartbeat,20000);
-  setInterval(cleanExpired,8000);
-  const inp=$('msg-inp');
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
-  inp.addEventListener('input',onTyping);
-  inp.addEventListener('focus',()=>setTimeout(()=>$('msgs').scrollTop=$('msgs').scrollHeight,300));
-  document.addEventListener('click',e=>{
-    if(!e.target.closest('#inp-ep')&&!e.target.closest('.emoji-tog'))$('inp-ep').style.display='none';
-    if(!e.target.closest('.ep')&&!e.target.closest('.bact-btn'))document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
-    if(!e.target.closest('.bubble-wrap'))document.querySelectorAll('.bubble-wrap.menu-open').forEach(w=>w.classList.remove('menu-open'));
-  });
-  setTimeout(()=>{if(isIos()&&!window.navigator.standalone&&!localStorage.getItem('pwa_d'))showPwaBanner('ios');},3000);
-}
-
-async function heartbeat(){if(!S.roomId||!S.slotId)return;try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}}
-function updateCd(){const exp=S.roomData?.expiresAt?.toDate?.();if(exp)$('h-cd').textContent=fmtCd(exp.getTime()-Date.now());}
-
-async function cleanExpired(){
-  if(!S.roomId)return;
-  try{
-    const snap=await db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(20).get();
-    const batch=db.batch();snap.forEach(d=>batch.delete(d.ref));if(!snap.empty)await batch.commit();
-  }catch(e){}
-}
-
-// SIDEBAR
+// ── SIDEBAR ──
 function renderSidebar(){
   const online=[],offline=[];
   Object.values(S.slots).forEach(s=>{if(s.username)(isOnline(s)?online:offline).push(s);});
+  // Desktop
   $('sb-on-lbl').textContent=`online — ${online.length}`;
-  $('sb-on').innerHTML=online.map(s=>uHtml(s)).join('');
+  $('sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
   if(offline.length>0){$('sb-off-sec').style.display='';$('sb-off-lbl').textContent=`offline — ${offline.length}`;$('sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');}
   else $('sb-off-sec').style.display='none';
   if(S.isAdmin)renderInvSlots();
+  // Mobile
+  $('mob-sb-on-lbl').textContent=`online — ${online.length}`;
+  $('mob-sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
+  if(offline.length>0){$('mob-sb-off-sec').style.display='';$('mob-sb-off-lbl').textContent=`offline — ${offline.length}`;$('mob-sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');}
+  else $('mob-sb-off-sec').style.display='none';
+  if(S.isAdmin)renderMobInvSlots();
 }
-function uHtml(slot,forceOnline=null){
-  const me=slot.id===S.slotId,on=forceOnline!==null?forceOnline:isOnline(slot);
+
+function uHtml(slot,forceOnline){
+  const me=slot.id===S.slotId,on=forceOnline;
   const typing=slot.typing&&slot.typingAt&&(Date.now()-(slot.typingAt.toDate?.().getTime()??0))<5000;
   const dotCls=typing?'d-typing':(on?'d-on':'d-off');
+  const lastSeen=!on&&slot.lastSeen?`<div class="u-lastseen">byl/a: ${fmtDate(slot.lastSeen)}</div>`:'';
+  const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" onclick="kickUser('${slot.id}')" title="Vyhodit">✕</button>`:'';
   return `<div class="u-item${me?' me':''}">
     <div class="u-av" style="background:${slot.color}">${initials(slot.username)}<div class="sdot ${dotCls}"></div></div>
-    <div style="flex:1;min-width:0"><div class="u-name">${slot.username}</div><div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div></div>
-    ${me?`<span class="badge">${slot.isAdmin?'admin':'ty'}</span>`:''}${!me&&slot.isAdmin?'<span class="badge">admin</span>':''}
+    <div class="u-info"><div class="u-name">${slot.username}</div><div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div>${lastSeen}</div>
+    ${me?`<span class="badge">${slot.isAdmin?'admin':'ty'}</span>`:''}
+    ${!me&&slot.isAdmin?'<span class="badge">admin</span>':''}
+    ${kickBtn}
   </div>`;
 }
+
 function renderInvSlots(){
   const total=S.roomData.maxUsers,used=Object.values(S.slots).length;
   const invSlots=Object.values(S.slots).filter(s=>s.inviteToken);
-  $('sb-inv-list').innerHTML=invSlots.map(s=>{
+  $('sb-inv-list').innerHTML=_invSlotsHtml(invSlots);
+  $('sb-new-inv').style.display=used>=total?'none':'';
+}
+function renderMobInvSlots(){
+  const invSlots=Object.values(S.slots).filter(s=>s.inviteToken);
+  $('mob-sb-inv-list').innerHTML=_invSlotsHtml(invSlots);
+}
+function _invSlotsHtml(invSlots){
+  return invSlots.map(s=>{
     const active=s.username&&s.sessionId;
-    return `<div class="inv-slot ${active?'used':'pending'}" onclick="${active?'':'showCopyInvM(\''+s.inviteToken+'\',\''+s.name+'\')'}" >
+    return `<div class="inv-slot ${active?'used':'pending'}" onclick="${active?'':'showCopyInvM(\''+s.inviteToken+'\',\''+s.name+'\')'}">
       <div style="flex:1;min-width:0"><div class="inv-slot-name">${s.name||'?'}</div><div class="inv-slot-st">${active?'✓ připojen/a':'čeká'}</div></div>
       ${!active?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`:''}
     </div>`;
   }).join('');
-  $('sb-new-inv').style.display=used>=total?'none':'';
 }
+
 function openNewInvModal(){$('ni-name').value='';hideErr('ni-err');openM('m-new-inv');}
 async function createInvite(){
   const name=$('ni-name').value.trim();hideErr('ni-err');if(!name)return showErr('ni-err','Zadej jméno pro slot');
   const total=S.roomData.maxUsers,ssnap=await db.collection('rooms').doc(S.roomId).collection('slots').get();
   if(ssnap.size>=total){showErr('ni-err','Místnost je plná');return;}
   const token=rnd(12).toLowerCase();
-  try{await db.collection('rooms').doc(S.roomId).collection('slots').doc().set({name,username:null,color:null,sessionId:null,isAdmin:false,online:false,lastSeen:null,typing:false,typingAt:null,joinedAt:null,inviteToken:token});closeM('m-new-inv');showCopyInvM(token,name);}
-  catch(e){showErr('ni-err','Chyba: '+e.message);}
+  try{
+    await db.collection('rooms').doc(S.roomId).collection('slots').doc().set({name,username:null,color:null,sessionId:null,isAdmin:false,online:false,lastSeen:null,typing:false,typingAt:null,joinedAt:null,inviteToken:token});
+    closeM('m-new-inv');showCopyInvM(token,name);
+  }catch(e){showErr('ni-err','Chyba: '+e.message);}
 }
-function showCopyInvM(token,name){const url=`${location.origin}${location.pathname}?room=${S.roomId}&invite=${token}`;$('ci-title').textContent=`Pozvánka pro ${name}`;$('ci-url').textContent=url;openM('m-copy-inv');}
+function showCopyInvM(token,name){
+  const url=`${location.origin}${location.pathname}?room=${S.roomId}&invite=${token}`;
+  $('ci-title').textContent=`Pozvánka pro ${name}`;$('ci-url').textContent=url;openM('m-copy-inv');
+}
 function doCopyInv(){navigator.clipboard.writeText($('ci-url').textContent).then(()=>toast('Odkaz zkopírován! 📋','ok'));}
 function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód ${S.roomId} zkopírován!`,'ok'));}
 
-// MESSAGES
+async function kickUser(slotId){
+  if(!confirm('Vyhodit tohoto uživatele?'))return;
+  try{
+    const slot=S.slots[slotId];
+    await db.collection('rooms').doc(S.roomId).collection('slots').doc(slotId).delete();
+    if(slot?.username)await db.collection('rooms').doc(S.roomId).collection('messages').add({text:`${slot.username} byl/a odstraněn/a adminem`,isSystem:true,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('Uživatel vyhozen','ok');
+  }catch(e){toast('Chyba: '+e.message,'err');}
+}
+
+// ── MESSAGES ──
 let lastMsgCount=0;
 function renderMessages(snap){
   const box=$('msgs');
   const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
   const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;
   lastMsgCount=snap.size;
+  const midnight=new Date();midnight.setHours(0,0,0,0);
+  let cnt=0;
+  snap.forEach(doc=>{const d=doc.data();if(!d.isSystem&&d.timestamp){const t=d.timestamp.toDate?d.timestamp.toDate():new Date(d.timestamp);if(t>=midnight)cnt++;}});
+  todayMsgCount=cnt;updateHeaderBadge();
   box.innerHTML='';let lastUser=null;
   snap.forEach(doc=>{
     const msg={id:doc.id,...doc.data()};
@@ -1016,45 +1224,56 @@ function renderMessages(snap){
       const g=document.createElement('div');g.className=`msg-group ${own?'own':'other'}`;
       g.innerHTML=`<div class="msg-meta"><div class="mm-av" style="background:${msg.color}">${initials(msg.username)}</div><span>${msg.username}</span><span class="mm-time">${fmtTime(msg.timestamp)}</span></div>`;
       g.appendChild(makeBubbleWrap(msg));box.appendChild(g);
-    }else{const last=box.querySelector('.msg-group:last-child');if(last)last.appendChild(makeBubbleWrap(msg));}
+    }else{
+      const last=box.querySelector('.msg-group:last-child');if(last)last.appendChild(makeBubbleWrap(msg));
+    }
     lastUser=msg.username;
   });
   if(atBottom)box.scrollTop=box.scrollHeight;
-  if(hasNew&&document.hidden)playNotif();
-  if(hasNew&&!document.hidden&&msg&&msg.slotId!==S.slotId)playNotif();
+  if(hasNew){const ld=Array.from(snap.docs).pop()?.data();if(ld&&ld.slotId!==S.slotId){playNotif();showPup();}}
 }
 
 function makeBubbleWrap(msg){
   const own=msg.slotId===S.slotId;
   const wrap=document.createElement('div');wrap.className='bubble-wrap';wrap.style.overflow='visible';
-  if(own&&S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
+  if(S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
   const b=document.createElement('div');b.className='bubble';
   if(msg.replyTo){const qbar=document.createElement('div');qbar.className='quote-bar';qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;b.appendChild(qbar);}
   const txt=document.createElement('div');txt.textContent=msg.text;b.appendChild(txt);
   if(msg.expiresAt){
     const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);
     const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    const eb=document.createElement('div');eb.className='expiry-badge';
-    eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
+    const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
     _startCountdown(msg.id,exp,eb,wrap);
   }
-  // Read receipts — jen pro vlastní zprávy
   if(own){
     const rr=document.createElement('div');rr.className='read-receipt';rr.dataset.msgid=msg.id;rr.dataset.sender=S.slotId;
     const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
     const nm=document.createElement('span');nm.className='read-names';rr.appendChild(nm);
     b.appendChild(rr);
   }
-  // Označit jako přečtené při zobrazení — pro cizí zprávy
   if(!own){wrap.dataset.msgid=msg.id;_viewObserver.observe(wrap);}
-  const re=document.createElement('div');re.className='bubble-re';const reactions=msg.reactions||{};
-  Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{const chip=document.createElement('div');chip.className='re-chip';chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);});
+  const re=document.createElement('div');re.className='bubble-re';
+  const reactions=msg.reactions||{};
+  Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{
+    const chip=document.createElement('div');chip.className='re-chip';
+    chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;
+    chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);
+  });
   b.appendChild(re);
   const acts=document.createElement('div');acts.className='bubble-actions';
-  const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
-  const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
-  acts.appendChild(btnReply);acts.appendChild(btnRe);
-  if(S.isAdmin){const btnDel=document.createElement('div');btnDel.className='bact-btn';btnDel.textContent='🗑️';btnDel.title='Smazat';btnDel.onclick=ev=>{ev.stopPropagation();deleteMsg(msg.id);};acts.appendChild(btnDel);}
+  const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';
+  btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
+  const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';
+  btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
+  const btnCopy=document.createElement('div');btnCopy.className='bact-btn';btnCopy.textContent='📋';btnCopy.title='Kopírovat';
+  btnCopy.onclick=ev=>{ev.stopPropagation();copyMsg(msg.text);wrap.classList.remove('menu-open');};
+  acts.appendChild(btnReply);acts.appendChild(btnRe);acts.appendChild(btnCopy);
+  if(S.isAdmin){
+    const btnDel=document.createElement('div');btnDel.className='bact-btn';btnDel.textContent='🗑️';btnDel.title='Smazat';
+    btnDel.onclick=ev=>{ev.stopPropagation();deleteMsg(msg.id);};
+    acts.appendChild(btnDel);
+  }
   wrap.appendChild(acts);wrap.appendChild(b);
   let lpTO;
   wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),400);},{passive:true});
@@ -1065,33 +1284,32 @@ function makeBubbleWrap(msg){
 
 function toggleBubbleEp(msgId,bubbleEl){
   document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
-  const ep=document.createElement('div');ep.className='ep';ep.dataset.msg=msgId;ep.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease';
+  const ep=document.createElement('div');ep.className='ep';ep.dataset.msg=msgId;
+  ep.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease';
   EMOJIS.forEach(e=>{const o=document.createElement('div');o.className='eo';o.textContent=e;o.onclick=()=>{addReaction(msgId,e);ep.remove();};ep.appendChild(o);});
   bubbleEl.style.position='relative';bubbleEl.appendChild(ep);
 }
-
 async function addReaction(msgId,emoji){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update({[`reactions.${emoji}`]:firebase.firestore.FieldValue.increment(1)});}catch(e){}}
-async function deleteMsg(msgId){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();}catch(e){toast('Nelze smazat','err');}}
-
-// SWIPE DELETE
-function setupSwipe(wrap,msgId){
-  let startX=0,dx=0;
-  wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dx=0;},{passive:true});
-  wrap.addEventListener('touchmove',e=>{
-    dx=e.touches[0].clientX-startX;
-    if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}
-  },{passive:true});
-  wrap.addEventListener('touchend',()=>{
-    if(dx<-60)deleteMsg(msgId);
-    wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;
-  },{passive:true});
+async function deleteMsg(msgId){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();}catch(e){toast('Nelze smazat: '+e.message,'err');}}
+function copyMsg(text){
+  navigator.clipboard.writeText(text).then(()=>toast('Zpráva zkopírována 📋','ok')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('Zpráva zkopírována 📋','ok');
+  });
 }
 
-// REPLY
+function setupSwipe(wrap,msgId){
+  let startX=0,dx=0,swipeActive=false;
+  wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;dx=0;swipeActive=startX>60;},{passive:true});
+  wrap.addEventListener('touchmove',e=>{if(!swipeActive)return;dx=e.touches[0].clientX-startX;if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}},{passive:true});
+  wrap.addEventListener('touchend',()=>{if(swipeActive&&dx<-60)deleteMsg(msgId);wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;swipeActive=false;},{passive:true});
+}
+
 function setReply(msg){S.replyTo={id:msg.id,text:msg.text,username:msg.username};$('reply-text').textContent=`${msg.username}: ${msg.text.slice(0,60)}`;$('reply-preview').classList.add('show');$('msg-inp').focus();}
 function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show');}
 
-// SEND
+// ── SEND ──
 async function sendMsg(){
   const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
   const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
@@ -1101,13 +1319,16 @@ async function sendMsg(){
   clearReply();
   try{
     const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
-    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id)
-      .set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
+    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id).set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
   }catch(e){toast('Chyba při odesílání','err');}
 }
 
-// TYPING
-function onTyping(){clearTimeout(S.typingTO);db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});S.typingTO=setTimeout(clearTyping,3000);}
+// ── TYPING ──
+function onTyping(){
+  clearTimeout(S.typingTO);
+  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  S.typingTO=setTimeout(clearTyping,3000);
+}
 function clearTyping(){clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});}
 function renderTyping(){
   const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);
@@ -1115,7 +1336,7 @@ function renderTyping(){
   $('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;
 }
 
-// EMOJI INPUT
+// ── EMOJI INPUT ──
 function toggleInpEmoji(){
   const ep=$('inp-ep');
   if(ep.style.display===''){ep.style.display='none';return;}
