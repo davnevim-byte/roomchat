@@ -687,22 +687,24 @@ async function showPup(){
   if(isDnd()) return;
   if(!('Notification' in window)||Notification.permission!=='granted') return;
   if(document.visibilityState==='visible'&&document.hasFocus()) return;
+  // Unique tag každé notifikace — iOS ignoruje renotify se stejným tagem
+  const tag='roomchat-'+Date.now();
   try{
-    // iOS requires showNotification via ServiceWorker, new Notification() doesn't work
     if('serviceWorker' in navigator){
-      const reg = await navigator.serviceWorker.getRegistration();
+      let reg = await navigator.serviceWorker.getRegistration();
+      // SW mohl usnou — zkus znovu registrovat
+      if(!reg) reg = await navigator.serviceWorker.register('/sw.js');
       if(reg){
         await reg.showNotification('PUP',{
-          body: 'Nová zpráva v místnosti',
-          tag: 'roomchat-msg',
-          renotify: true,
-          silent: true,
+          body:'Nová zpráva v místnosti',
+          tag,
+          silent:true,
         });
         return;
       }
     }
-    // Fallback for desktop browsers
-    const n=new Notification('PUP',{tag:'roomchat-msg',renotify:true,silent:true});
+    // Fallback desktop
+    const n=new Notification('PUP',{tag,silent:true});
     n.onclick=()=>{window.focus();n.close();};
     setTimeout(()=>n.close(),4000);
   }catch(e){}
