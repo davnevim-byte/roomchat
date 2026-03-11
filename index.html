@@ -683,13 +683,29 @@ function dndUntilMorning(){
   setDnd(morning.getTime()-Date.now());
 }
 
-function showPup(){
+async function showPup(){
   if(isDnd()) return;
   if(!('Notification' in window)||Notification.permission!=='granted') return;
   if(document.visibilityState==='visible'&&document.hasFocus()) return;
-  const n=new Notification('PUP',{tag:'roomchat-msg',renotify:true,silent:false});
-  n.onclick=()=>{window.focus();n.close();};
-  setTimeout(()=>n.close(),4000);
+  try{
+    // iOS requires showNotification via ServiceWorker, new Notification() doesn't work
+    if('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.getRegistration();
+      if(reg){
+        await reg.showNotification('PUP',{
+          body: 'Nová zpráva v místnosti',
+          tag: 'roomchat-msg',
+          renotify: true,
+          silent: true,
+        });
+        return;
+      }
+    }
+    // Fallback for desktop browsers
+    const n=new Notification('PUP',{tag:'roomchat-msg',renotify:true,silent:true});
+    n.onclick=()=>{window.focus();n.close();};
+    setTimeout(()=>n.close(),4000);
+  }catch(e){}
 }
 function playNotif(){
   if(isDnd()) return;
@@ -826,23 +842,50 @@ function updateHeaderBadge(){
 }
 
 // ══════════════════════════════════════
-// LOCAL STORAGE HELPERS
+// STORAGE HELPERS (localStorage + cookie fallback for iOS standalone)
 // ══════════════════════════════════════
-function getRoomList(){try{return JSON.parse(localStorage.getItem('rc_rooms')||'[]');}catch(e){return[];}}
-function saveRoomList(list){localStorage.setItem('rc_rooms',JSON.stringify(list));}
+function _setCookie(name,val,days){
+  const exp=new Date(Date.now()+days*86400000).toUTCString();
+  document.cookie=`${name}=${encodeURIComponent(val)};expires=${exp};path=/;SameSite=Lax`;
+}
+function _getCookie(name){
+  const m=document.cookie.match('(?:^|; )'+name+'=([^;]*)');
+  return m?decodeURIComponent(m[1]):null;
+}
+function getRoomList(){
+  try{
+    const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');
+    if(ls.length>0)return ls;
+    const ck=_getCookie('rc_rooms');
+    if(ck)return JSON.parse(ck);
+    return[];
+  }catch(e){return[];}
+}
+function saveRoomList(list){
+  const json=JSON.stringify(list);
+  localStorage.setItem('rc_rooms',json);
+  _setCookie('rc_rooms',json,60);
+}
 function addToRoomList(roomId,slotId,name){
   const list=getRoomList().filter(r=>r.roomId!==roomId);
   list.unshift({roomId,slotId,name,ts:Date.now()});
   saveRoomList(list);
 }
+function getSid(){
+  let sid=localStorage.getItem('rc_sid')||_getCookie('rc_sid');
+  if(!sid)sid=rnd(16);
+  localStorage.setItem('rc_sid',sid);
+  _setCookie('rc_sid',sid,60);
+  return sid;
+}
+function getUsername(){return localStorage.getItem('rc_username')||_getCookie('rc_username')||null;}
+function setUsername(u){localStorage.setItem('rc_username',u);_setCookie('rc_username',u,60);}
 
 // ══════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════
 window.addEventListener('DOMContentLoaded',async()=>{
-  let sid=localStorage.getItem('rc_sid');
-  if(!sid){sid=rnd(16);localStorage.setItem('rc_sid',sid);}
-  S.sid=sid;
+  S.sid=getSid();
   S.isAdminSession=localStorage.getItem('rc_admin')==='1';
 
   // Migrate old format
@@ -872,7 +915,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
     const list=getRoomList();
     if(list.length===1){
       S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
-      const saved=localStorage.getItem('rc_username');
+      const saved=getUsername();
       if(saved){
         // Auto-rejoin without showing entry screen
         $('loader').style.display='';
@@ -900,7 +943,7 @@ async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
       if(Date.now()<rd2.expiresAt.toDate().getTime()){
         if(sd.exists){
           const slot=sd.data();
-          const uname=usernameOverride||slot.username||localStorage.getItem('rc_username');
+          const uname=usernameOverride||slot.username||getUsername();
           if(!uname){
             // No username available, show entry
             S.entryContext={type:'rejoin',roomId,slotId};
@@ -956,7 +999,7 @@ async function createRoom(){
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;
     S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
-    addToRoomList(roomId,sref.id,name);localStorage.setItem('rc_username',user);
+    addToRoomList(roomId,sref.id,name);setUsername(user);
     history.replaceState({},'','?room='+roomId);
     $('btn-switch-room').style.display='';enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
@@ -991,7 +1034,7 @@ async function joinByCode(){
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
     S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);localStorage.setItem('rc_username',user);
+    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);setUsername(user);
     history.replaceState({},'','?room='+S.jnRoomData.id);
     enterChat();
   }
@@ -1020,7 +1063,7 @@ async function _prepareInviteEntry(roomId,token){
     if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-entry');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
     S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};
     $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
-    const saved=localStorage.getItem('rc_username');if(saved)$('entry-user').value=saved;
+    const saved=getUsername();if(saved)$('entry-user').value=saved;
     history.replaceState({},'','?room='+roomId);
     show('s-entry');$('loader').style.display='none';
     _setupAdminTap();
@@ -1036,7 +1079,7 @@ async function joinByInvite(){
     await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
     S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    addToRoomList(roomId,slotId,roomData.name);localStorage.setItem('rc_username',user);
+    addToRoomList(roomId,slotId,roomData.name);setUsername(user);
     history.replaceState({},'','?room='+roomId);
     enterChat();
   }catch(e){showErr('inv-err','Chyba: '+e.message);}
@@ -1066,7 +1109,7 @@ function _showAdminPrompt(){
 async function entrySubmit(){
   const user=$('entry-user').value.trim();hideErr('entry-err');
   if(!user)return showErr('entry-err','Zadej přezdívku');
-  localStorage.setItem('rc_username',user);
+  setUsername(user);
   const ctx=S.entryContext;
   if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}
   if(ctx.type==='invite'){
@@ -1131,7 +1174,7 @@ async function _adminEnterRoom(roomId,roomData){
       history.replaceState({},'','?room='+roomId);
       enterChat();return;
     }
-    const saved=localStorage.getItem('rc_username')||'Admin';
+    const saved=getUsername()||'Admin';
     const color=rndColor(),now=firebase.firestore.Timestamp.now();
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
