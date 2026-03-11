@@ -897,19 +897,6 @@ window.addEventListener('DOMContentLoaded',async()=>{
   S.sid=getSid();
   S.isAdminSession=localStorage.getItem('rc_admin')==='1';
 
-  // Safety net — pokud se někde zasekne loader, zobrazíme home po 4s
-  const loaderTimeout=setTimeout(()=>{
-    if($('loader').style.display!=='none'){
-      // Vymaž všechna uložená data — pravděpodobně staré/smazané místnosti
-      saveRoomList([]);
-      _setCookie('rc_rooms','[]',60);
-      localStorage.removeItem('rc_rooms');
-      if(S.isAdminSession){show('s-home');}else{show('s-entry');}
-      $('loader').style.display='none';
-      toast('Relace vypršela — přihlas se znovu','err');
-    }
-  },4000);
-
   // Migrate old format
   const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
   if(oldRoom&&oldSlot){addToRoomList(oldRoom,oldSlot,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
@@ -918,44 +905,39 @@ window.addEventListener('DOMContentLoaded',async()=>{
   const rp=p.get('room'),ip=p.get('invite');
 
   try{
-  if(rp&&ip){
-    await _prepareInviteEntry(rp.toUpperCase(),ip);
-  } else if(rp){
-    // ?room=XXX without invite = returning user (e.g. from home screen icon)
-    const roomId=rp.toUpperCase();
-    const stored=getRoomList().find(r=>r.roomId===roomId);
-    if(stored?.slotId){
-      // Try silent auto-rejoin
-      await tryRejoin(roomId,stored.slotId,null,true);
-    } else {
-      $('jn-code').value=roomId;show('s-join');$('loader').style.display='none';
-    }
-  } else if(S.isAdminSession){
-    $('loader').style.display='none';
-    const list=getRoomList();
-    if(list.length===0){show('s-home');}else{await showRoomSwitcher();}
-  } else {
-    const list=getRoomList();
-    if(list.length===1){
-      S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
-      const saved=getUsername();
-      if(saved){
-        // Auto-rejoin without showing entry screen
-        $('loader').style.display='';
-        await tryRejoin(list[0].roomId,list[0].slotId,saved,false);
-        return;
+    if(rp&&ip){
+      await _prepareInviteEntry(rp.toUpperCase(),ip);
+    } else if(rp){
+      const roomId=rp.toUpperCase();
+      const stored=getRoomList().find(r=>r.roomId===roomId);
+      if(stored?.slotId){
+        await tryRejoin(roomId,stored.slotId,null,true);
+      } else {
+        $('jn-code').value=roomId;show('s-join');$('loader').style.display='none';
       }
-      $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
+    } else if(S.isAdminSession){
+      $('loader').style.display='none';
+      const list=getRoomList();
+      if(list.length===0){show('s-home');}else{await showRoomSwitcher();}
+    } else {
+      const list=getRoomList();
+      if(list.length===1){
+        S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
+        const saved=getUsername();
+        if(saved){
+          await tryRejoin(list[0].roomId,list[0].slotId,saved,false);
+          return; // tryRejoin handles loader hide
+        }
+        $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
+      }
+      show('s-entry');$('loader').style.display='none';
+      _setupAdminTap();
     }
-    show('s-entry');$('loader').style.display='none';
-    _setupAdminTap();
-  }
   }catch(e){
     saveRoomList([]);
     if(S.isAdminSession){show('s-home');}else{show('s-entry');}
     $('loader').style.display='none';
   }
-  clearTimeout(loaderTimeout);
 });
 
 // ══════════════════════════════════════
