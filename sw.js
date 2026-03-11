@@ -1,34 +1,38 @@
 // RoomChat Service Worker
-const CACHE = 'roomchat-v1';
+const CACHE = 'roomchat-v2';
 
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 
-// Push event — pro budoucí FCM integraci
+// Push event (pro budoucí FCM)
 self.addEventListener('push', e => {
   const data = e.data?.json() || {};
   e.waitUntil(
     self.registration.showNotification(data.title || 'PUP', {
-      body: data.body || '',
-      icon: data.icon || '/icon-192.png',
-      badge: '/badge-72.png',
+      body: data.body || 'Nová zpráva',
       tag: 'roomchat-msg',
       renotify: true,
-      vibrate: [100, 50, 100],
-      data: { url: data.url || '/' }
+      silent: true,
+      data: { url: data.url || self.location.origin }
     })
   );
 });
 
-// Klik na notifikaci → otevřít/focusnout chat
+// Klik na notifikaci → focus nebo otevřít okno
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  const target = e.notification.data?.url || self.location.origin;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
       for (const c of cs) {
-        if (c.url && 'focus' in c) return c.focus();
+        if (c.url.includes(target) || target.includes(new URL(c.url).pathname)) {
+          return c.focus();
+        }
       }
-      if (clients.openWindow) return clients.openWindow('/');
+      for (const c of cs) {
+        if ('focus' in c) return c.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(target);
     })
   );
 });
