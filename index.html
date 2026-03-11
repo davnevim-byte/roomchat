@@ -738,7 +738,14 @@ function _buildActionsHtml(){
   const notifLabel = notifOk ? 'Notifikace: zapnuto' : 'Zapnout notifikace';
   const notifSub = notifOk ? (dnd?'nerušit je aktivní':'klikni pro test') : 'PUP při nové zprávě';
 
+  const adminBtn = S.isAdmin ? `
+  <button class="sb-act-btn" onclick="goToRooms();closeMobSidebar()">
+    <span class="ico">🏠</span>
+    <span class="lbl">Přepnout místnost<span class="sub">zpět na výběr místností</span></span>
+  </button>` : '';
+
   return `
+  ${adminBtn}
   <button class="sb-act-btn ${notifOk?'active':''}" onclick="toggleNotifications()">
     <span class="ico">${notifOk?'🔔':'🔕'}</span>
     <span class="lbl">${notifLabel}<span class="sub">${notifSub}</span></span>
@@ -1157,6 +1164,7 @@ async function showRoomSwitcher(){
           <div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div>
           <div class="room-card-meta">${expired?'⚠️ vypršela':warnDot+'místnost vyprší za '+rem+(d.password?' · 🔒':'')}</div>
         </div>
+        <button onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Smazat místnost">🗑️</button>
         ${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
       if(!expired)card.onclick=()=>_adminEnterRoom(doc.id,doc.data());
       container.appendChild(card);
