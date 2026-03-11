@@ -897,13 +897,18 @@ window.addEventListener('DOMContentLoaded',async()=>{
   S.sid=getSid();
   S.isAdminSession=localStorage.getItem('rc_admin')==='1';
 
-  // Safety net — pokud se někde zasekne loader, zobrazíme home po 6s
+  // Safety net — pokud se někde zasekne loader, zobrazíme home po 4s
   const loaderTimeout=setTimeout(()=>{
     if($('loader').style.display!=='none'){
+      // Vymaž všechna uložená data — pravděpodobně staré/smazané místnosti
       saveRoomList([]);
-      show('s-home');$('loader').style.display='none';
+      _setCookie('rc_rooms','[]',60);
+      localStorage.removeItem('rc_rooms');
+      if(S.isAdminSession){show('s-home');}else{show('s-entry');}
+      $('loader').style.display='none';
+      toast('Relace vypršela — přihlas se znovu','err');
     }
-  },6000);
+  },4000);
 
   // Migrate old format
   const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
