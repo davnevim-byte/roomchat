@@ -1225,6 +1225,8 @@ async function deleteRoom(roomId){
     showRoomSwitcher();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
+
+async function _adminEnterRoom(roomId,roomData){
   try{
     const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
     if(!slotsSnap.empty){
