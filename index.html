@@ -799,16 +799,14 @@ function _setupSwipeForSidebar(){
 // ROOM EXPIRY BANNER
 // ══════════════════════════════════════
 function checkRoomExpiry(){
-  if(!S.isAdmin||!S.roomData?.expiresAt) return;
-  const exp = S.roomData.expiresAt.toDate ? S.roomData.expiresAt.toDate() : new Date(S.roomData.expiresAt);
-  const msLeft = exp.getTime()-Date.now();
-  const daysLeft = msLeft/86400000;
-  if(daysLeft<3 && !sessionStorage.getItem('reb_dismissed')){
-    const txt = daysLeft<1
-      ? `⚠️ Místnost vyprší za méně než 24 hodin!`
-      : `⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
-    $('reb-text').textContent = txt;
-    $('h-dot').classList.add('warn');
+  if(!S.roomData?.expiresAt)return;
+  const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
+  const msLeft=exp.getTime()-Date.now();
+  const daysLeft=msLeft/86400000;
+  if(daysLeft<3&&!sessionStorage.getItem('reb_dismissed')){
+    const txt=daysLeft<1?'⚠️ Místnost vyprší za méně než 24 hodin!':`⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
+    $('reb-text').textContent=txt;
+    const dot=$('h-dot');if(dot)dot.classList.add('warn');
     $('room-expiry-banner').classList.add('show');
   }
 }
@@ -817,16 +815,19 @@ function dismissExpiryBanner(){
   sessionStorage.setItem('reb_dismissed','1');
 }
 async function extendRoom(){
-  if(!S.isAdmin||!S.roomId) return;
+  const roomId=S.roomId||new URLSearchParams(window.location.search).get('room')?.toUpperCase();
+  if(!roomId)return;
   try{
-    const exp = S.roomData.expiresAt.toDate ? S.roomData.expiresAt.toDate() : new Date(S.roomData.expiresAt);
-    const newExp = new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME, 0);
-    await db.collection('rooms').doc(S.roomId).update({expiresAt:newExp});
-    S.roomData.expiresAt = newExp;
+    const doc=await db.collection('rooms').doc(roomId).get();
+    if(!doc.exists)return toast('Místnost nenalezena','err');
+    const exp=doc.data().expiresAt.toDate();
+    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
+    await db.collection('rooms').doc(roomId).update({expiresAt:newExp});
+    if(S.roomData)S.roomData.expiresAt=newExp;
     dismissExpiryBanner();
-    $('h-dot').classList.remove('warn');
+    if($('h-dot'))$('h-dot').classList.remove('warn');
     toast('Místnost prodloužena o 30 dní ✓','ok');
-    updateHeaderBadge();
+    if(S.roomId)updateHeaderBadge();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
 
@@ -956,9 +957,10 @@ async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
           const slot=sd.data();
           const uname=usernameOverride||slot.username||getUsername();
           if(!uname){
-            // No username available, show entry
             S.entryContext={type:'rejoin',roomId,slotId};
-            show('s-entry');$('loader').style.display='none';_setupAdminTap();return;
+            S.roomData={...rd2};
+            show('s-entry');$('loader').style.display='none';
+            checkRoomExpiry();_setupAdminTap();return;
           }
           // ✅ Accept even if sessionId changed (iOS clears storage)
           // Update sessionId + username if needed
@@ -1076,7 +1078,9 @@ async function _prepareInviteEntry(roomId,token){
     $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
     const saved=getUsername();if(saved)$('entry-user').value=saved;
     history.replaceState({},'','?room='+roomId);
+    S.roomData=rdata;
     show('s-entry');$('loader').style.display='none';
+    checkRoomExpiry();
     _setupAdminTap();
   }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
 }
