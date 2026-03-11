@@ -611,7 +611,7 @@ const isOnline = slot => {
   return Date.now()-t.getTime()<50000;
 };
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');if(id!=='s-chat')$('room-expiry-banner').classList.remove('show');}
 function showErr(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
 function hideErr(id){$(id).classList.remove('show');}
 function showInfo(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
