@@ -1153,8 +1153,8 @@ async function showRoomSwitcher(){
   show('s-rooms');
   try{
     const [snap1, snap2] = await Promise.all([
-      db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get(),
-      db.collection('rooms').where('adminSession','==',S.sid).orderBy('createdAt','desc').get()
+      db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),
+      db.collection('rooms').where('adminSession','==',S.sid).get()
     ]);
     // Merge and deduplicate
     const seen=new Set(); const docs=[];
