@@ -750,13 +750,24 @@ async function showRoomSwitcher(){
   container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
   show('s-rooms');
   try{
-    // Načíst všechny místnosti z Firestore podle adminKey — funguje na všech zařízeních
-    const snap=await db.collection('rooms').where('adminKey','==',ADMIN_HASH).orderBy('createdAt','desc').get();
+    // Načíst místnosti podle adminKey (nové) i adminSession (staré bez adminKey)
+    const [snap1,snap2]=await Promise.all([
+      db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),
+      db.collection('rooms').where('adminSession','==',S.sid).get()
+    ]);
+    const docsMap={};
+    snap1.forEach(d=>{docsMap[d.id]=d;});
+    snap2.forEach(d=>{
+      docsMap[d.id]=d;
+      if(!d.data().adminKey){
+        db.collection('rooms').doc(d.id).update({adminKey:ADMIN_HASH}).catch(()=>{});
+      }
+    });
+    const allDocs=Object.values(docsMap).sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
     container.innerHTML='';
-    if(snap.empty){show('s-home');return;}
-    // Aktualizovat lokální seznam
+    if(allDocs.length===0){show('s-home');return;}
     const freshList=[];
-    snap.forEach(doc=>{
+    allDocs.forEach(doc=>{
       const d=doc.data();
       const expired=Date.now()>d.expiresAt.toDate().getTime();
       if(!expired){
