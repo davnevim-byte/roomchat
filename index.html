@@ -1164,7 +1164,7 @@ async function showRoomSwitcher(){
           <div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div>
           <div class="room-card-meta">${expired?'⚠️ vypršela':warnDot+'místnost vyprší za '+rem+(d.password?' · 🔒':'')}</div>
         </div>
-        <button onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Smazat místnost">🗑️</button>
+        <button data-room-del="${doc.id}" onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Smazat místnost">🗑️</button>
         ${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
       if(!expired)card.onclick=()=>_adminEnterRoom(doc.id,doc.data());
       container.appendChild(card);
@@ -1173,7 +1173,43 @@ async function showRoomSwitcher(){
   }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba: ${e.message}</div>`;}
 }
 
-async function _adminEnterRoom(roomId,roomData){
+async function deleteRoom(roomId){
+  // iOS standalone blokuje confirm() — použijeme vlastní potvrzení
+  const card = document.querySelector(`[data-room-del="${roomId}"]`);
+  if(card && !card.dataset.confirmed){
+    card.dataset.confirmed = '1';
+    card.textContent = '✓ Potvrdit';
+    card.style.background = '#ff5c5c33';
+    card.style.borderColor = '#ff5c5c88';
+    card.style.width = '80px';
+    setTimeout(()=>{
+      if(card.dataset.confirmed){
+        delete card.dataset.confirmed;
+        card.textContent = '🗑️';
+        card.style.width = '30px';
+        card.style.background = '#ff5c5c11';
+        card.style.borderColor = '#ff5c5c33';
+      }
+    }, 3000);
+    return;
+  }
+  try{
+    const batch=db.batch();
+    const [msgs,slots,reads]=await Promise.all([
+      db.collection('rooms').doc(roomId).collection('messages').limit(500).get(),
+      db.collection('rooms').doc(roomId).collection('slots').limit(500).get(),
+      db.collection('rooms').doc(roomId).collection('reads').limit(500).get(),
+    ]);
+    msgs.forEach(d=>batch.delete(d.ref));
+    slots.forEach(d=>batch.delete(d.ref));
+    reads.forEach(d=>batch.delete(d.ref));
+    batch.delete(db.collection('rooms').doc(roomId));
+    await batch.commit();
+    saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));
+    toast('Místnost smazána','ok');
+    showRoomSwitcher();
+  }catch(e){toast('Chyba: '+e.message,'err');}
+}
   try{
     const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
     if(!slotsSnap.empty){
