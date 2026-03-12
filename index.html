@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -21,37 +21,31 @@
   --accent:#5c6bff;--accent-glow:#5c6bff33;
   --green:#3ecf6b;--red:#ff5c5c;--orange:#f0a030;
   --fh:'Inter',sans-serif;--fm:'DM Mono',monospace;
-  --safe-b:env(safe-area-inset-bottom,0px);
-  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  --chat-bg-img:none;
 }
+[data-theme="darker"]{--bg:#050608;--surface:#0a0c0f;--surface2:#0f1219}
+[data-theme="blue"]{--bg:#080d1a;--surface:#0d1526;--surface2:#121e33;--accent:#3b82f6;--accent-glow:#3b82f633}
+[data-theme="purple"]{--bg:#0e0818;--surface:#160e26;--surface2:#1d1333;--accent:#8b5cf6;--accent-glow:#8b5cf633}
+[data-theme="forest"]{--bg:#080f08;--surface:#0d150d;--surface2:#121c12;--accent:#22c55e;--accent-glow:#22c55e33}
 html{height:100%;height:-webkit-fill-available}
-body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:500;
-  height:100vh;height:-webkit-fill-available;overflow:hidden;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:500;height:100vh;height:-webkit-fill-available;overflow:hidden;-webkit-font-smoothing:antialiased}
 .screen{display:none;height:100%;height:-webkit-fill-available}
 .screen.active{display:flex}
-.grid-bg::before{content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
-  background-size:40px 40px;opacity:.6;}
-
-/* ── HOME ── */
+.grid-bg::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.6}
+/* HOME */
 #s-home{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .home-card{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:400px;width:100%;padding:24px}
-.logo{font-family:var(--fh);font-weight:900;font-size:46px;letter-spacing:-2px}
-.logo span{color:var(--accent)}
+.logo{font-weight:900;font-size:46px;letter-spacing:-2px}.logo span{color:var(--accent)}
 .tagline{color:var(--muted2);font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.7}
 .tag-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:4px}
 .pill{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--muted2)}
-
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn-p{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s}
-.btn-p:hover{background:#7280ff;transform:translateY(-1px)}
-.btn-p:active{transform:translateY(0);opacity:.9}
+.btn-p:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn-p:active{transform:translateY(0);opacity:.9}
 .btn-s{width:100%;padding:14px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--fh);font-weight:600;font-size:15px;cursor:pointer;transition:all .15s}
 .btn-s:hover{border-color:var(--accent)66}
-.btn-warn{width:100%;padding:12px;background:#f0a03022;border:1px solid #f0a03066;border-radius:10px;color:var(--orange);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
-.btn-warn:hover{background:#f0a03033}
-
-/* ── FORM ── */
+/* FORM */
 #s-create,#s-join,#s-invite{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:16px}
 .form-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 26px;width:430px;max-width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 80px #0008}
 .form-card h2{font-weight:800;font-size:22px;letter-spacing:-.5px}
@@ -69,8 +63,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .err.show{display:block}
 .info{background:var(--accent-glow);border:1px solid var(--accent)44;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--accent);display:none}
 .info.show{display:block}
-
-/* ── CHAT LAYOUT ── */
+/* CHAT LAYOUT */
 #s-chat{flex-direction:column}
 .chat-header{display:flex;align-items:center;justify-content:space-between;padding:0 12px;padding-top:var(--safe-t);height:calc(56px + var(--safe-t));background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:10;gap:8px}
 .hleft{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
@@ -78,41 +71,40 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .lock-badge{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:var(--muted2);flex-shrink:0}
 .hcenter{flex:1;display:flex;justify-content:center}
 @media(max-width:480px){.hcenter{display:none}}
-.cd-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--muted2);white-space:nowrap;cursor:default}
+.cd-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--muted2);white-space:nowrap}
 .cd-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
 .cd-dot.warn{background:var(--orange);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hright{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .icon-btn{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);transition:all .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .icon-btn:hover{border-color:var(--border2);color:var(--text)}
-.icon-btn.active{border-color:var(--accent)66;color:var(--accent);background:var(--accent-glow)}
 .icon-btn svg{width:15px;height:15px}
 #btn-menu{display:none}
 @media(max-width:600px){#btn-menu{display:flex}}
-
-/* ── BODY ── */
+/* BODY */
 .chat-body{display:flex;flex:1;overflow:hidden;min-height:0}
-
-/* ── DESKTOP SIDEBAR ── */
+/* SIDEBAR */
 .sidebar{width:210px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
 @media(max-width:600px){.sidebar{display:none}}
 .sb-section{padding:14px 10px 8px}
 .sb-label{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.8px;text-transform:uppercase;padding:0 4px;margin-bottom:6px}
-.u-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;margin-bottom:2px;position:relative}
-.u-item.me{background:var(--accent-glow)}
-.u-av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:11px;color:#fff;flex-shrink:0;position:relative}
+.u-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;margin-bottom:2px;position:relative;cursor:pointer;transition:background .1s}
+.u-item:hover{background:var(--surface2)}
+.u-item.me{background:var(--accent-glow);cursor:default}
+.u-item.me:hover{background:var(--accent-glow)}
+.u-av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;flex-shrink:0;position:relative}
 .sdot{position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;border:2px solid var(--surface)}
 .d-on{background:var(--green)}.d-off{background:var(--muted)}.d-typing{background:var(--accent);animation:pulse 1s ease infinite}
 .u-info{flex:1;min-width:0}
 .u-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nick-tag{font-size:9px;font-weight:700;color:var(--accent);margin-left:4px;opacity:.8}
 .u-sub{font-size:10px;font-weight:500;color:var(--muted)}
-.u-lastseen{font-size:9px;font-weight:500;color:var(--muted);margin-top:1px}
+.u-lastseen{font-size:9px;color:var(--muted);margin-top:1px}
 .badge{font-size:8px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 5px;flex-shrink:0}
-.kick-btn{width:22px;height:22px;border-radius:6px;background:none;border:1px solid transparent;color:var(--muted);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.kick-btn{width:22px;height:22px;border-radius:6px;background:none;border:1px solid transparent;color:var(--muted);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .15s}
 .kick-btn:hover{background:#ff5c5c22;border-color:#ff5c5c44;color:var(--red)}
 .u-item:hover .kick-btn{display:flex}
-
-/* ── INVITE SIDEBAR ── */
+/* INVITE SECTION */
 .inv-section{padding:12px;border-top:1px solid var(--border);margin-top:auto}
 .inv-slot{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer;transition:border-color .15s;background:var(--surface2)}
 .inv-slot:hover{border-color:var(--accent)66}
@@ -120,8 +112,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .inv-slot.pending{border-color:var(--accent)33}
 .new-inv-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;border:1px dashed var(--border2);cursor:pointer;font-size:11px;font-weight:700;color:var(--muted2);background:none;width:100%;transition:all .15s;font-family:var(--fh)}
 .new-inv-btn:hover{border-color:var(--accent)66;color:var(--accent)}
-
-/* ── SIDEBAR ACTIONS ── */
+/* SIDEBAR ACTIONS */
 .sb-actions{padding:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
 .sb-act-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:11px;font-weight:600;color:var(--muted2);transition:all .15s;width:100%;font-family:var(--fh);text-align:left}
 .sb-act-btn:hover{border-color:var(--accent)66;color:var(--text)}
@@ -133,8 +124,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .dnd-opt{padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--fh);transition:all .15s;flex:1;text-align:center}
 .dnd-opt:hover{border-color:var(--accent)66;color:var(--text)}
 .dnd-opt.active{border-color:var(--orange)66;color:var(--orange);background:#f0a03011}
-
-/* ── MOBILE SIDEBAR OVERLAY ── */
+/* MOBILE SIDEBAR */
 .mob-sb-ov{position:fixed;inset:0;z-index:80;pointer-events:none;display:none}
 .mob-sb-ov.open{pointer-events:all}
 @media(max-width:600px){.mob-sb-ov{display:block}}
@@ -145,42 +135,37 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .mob-sb-header{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 12px;padding-top:calc(16px + var(--safe-t));border-bottom:1px solid var(--border);flex-shrink:0}
 .mob-sb-title{font-weight:800;font-size:14px}
 .mob-sb-close{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted2);font-size:16px}
-
-/* ── ROOM EXPIRY WARNING ── */
+/* EXPIRY BANNER */
 .room-expiry-banner{position:fixed;top:calc(56px + var(--safe-t));left:0;right:0;background:#f0a03022;border-bottom:1px solid #f0a03044;padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:9;font-size:12px;font-weight:600;color:var(--orange);transform:translateY(-100%);transition:transform .3s ease}
 .room-expiry-banner.show{transform:translateY(0)}
 .reb-text{flex:1}
 .reb-extend{background:#f0a03033;border:1px solid #f0a03066;border-radius:6px;padding:5px 12px;color:var(--orange);font-family:var(--fh);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
 .reb-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;line-height:1}
-
-/* ── CHAT MAIN ── */
+/* CHAT MAIN */
 .chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;min-width:0}
-.chat-main::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4;pointer-events:none}
+.chat-main::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4;pointer-events:none;z-index:0}
+.chat-main.has-bg::after{content:'';position:absolute;inset:0;background:var(--chat-bg-img) center/cover;opacity:.15;pointer-events:none;z-index:0}
 .messages{flex:1;overflow-y:auto;padding:16px 12px 4px;display:flex;flex-direction:column;position:relative;z-index:1;scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .messages::-webkit-scrollbar{width:3px}
 .messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .sys-msg{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding:8px 0}
 .sys-msg span{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 12px}
-
-/* ── MSG GROUP ── */
+/* MSG GROUP */
 .msg-group{display:flex;flex-direction:column;margin-bottom:10px;animation:msgIn .22s cubic-bezier(.34,1.56,.64,1)}
 @keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.msg-group.own{align-items:flex-end}
-.msg-group.other{align-items:flex-start}
+.msg-group.own{align-items:flex-end}.msg-group.other{align-items:flex-start}
 .msg-meta{display:flex;align-items:center;gap:6px;padding:0 4px;margin-bottom:4px;font-size:11px;font-weight:600;color:var(--muted2)}
 .msg-group.own .msg-meta{flex-direction:row-reverse}
-.mm-av{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:9px;color:#fff}
+.mm-av{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;color:#fff}
 .mm-time{font-size:10px;color:var(--muted)}
-
-/* ── BUBBLES ── */
-.bubble-wrap{position:relative;max-width:min(340px,82vw);overflow:hidden}
-.msg-group.own .bubble-wrap{align-self:flex-end;overflow:visible}
-.msg-group.other .bubble-wrap{overflow:visible}
+/* BUBBLES */
+.bubble-wrap{position:relative;max-width:min(340px,82vw);overflow:visible}
+.msg-group.own .bubble-wrap{align-self:flex-end}
 .bubble{padding:10px 14px;font-size:15px;font-weight:500;line-height:1.5;word-break:break-word;border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:opacity .15s}
 .bubble:active{opacity:.85}
 .msg-group.other .bubble{background:var(--surface);border:1px solid var(--border2);border-bottom-left-radius:4px;color:var(--text)}
 .msg-group.own .bubble{background:var(--accent);border-bottom-right-radius:4px;color:#fff;font-weight:600}
-.bubble-actions{position:absolute;top:-40px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:5px;display:none;gap:2px;z-index:50;box-shadow:0 4px 20px #0008;animation:fadeUp .15s ease}
+.bubble-actions{position:absolute;top:-44px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:5px;display:none;gap:2px;z-index:50;box-shadow:0 4px 20px #0008;animation:fadeUp .15s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .bubble-wrap:hover .bubble-actions,.bubble-wrap.menu-open .bubble-actions{display:flex}
 .bact-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
@@ -191,49 +176,91 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .expiry-badge{font-size:10px;font-weight:700;margin-top:5px;opacity:.7}
 .msg-group.own .expiry-badge{color:#ffffffcc;text-align:right}
 .msg-group.other .expiry-badge{color:var(--muted2);text-align:left}
+/* EDITED BADGE */
+.edited-badge{font-size:10px;font-weight:600;opacity:.6;cursor:pointer;margin-top:3px;display:inline-block;text-decoration:underline dotted}
+.msg-group.own .edited-badge{color:#ffffffaa}
+.msg-group.other .edited-badge{color:var(--muted2)}
+/* MENTIONS */
+.mention-hi{color:var(--orange);font-weight:700;background:#f0a03018;border-radius:3px;padding:0 2px}
+.mention-me{color:var(--orange);font-weight:800;background:#f0a03030;border-radius:3px;padding:0 3px;animation:mePop .4s ease}
+@keyframes mePop{from{background:#f0a03070}to{background:#f0a03030}}
+/* SWIPE CONFIRM */
+.swipe-hint{position:absolute;right:-52px;top:50%;transform:translateY(-50%);background:var(--red);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;pointer-events:none;opacity:0;transition:opacity .1s}
+.del-confirm-bar{position:absolute;inset:0;background:#cc2222ee;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:800;color:#fff;opacity:0;pointer-events:none;transition:opacity .15s;z-index:10;backdrop-filter:blur(4px)}
+.del-confirm-bar.show{opacity:1;pointer-events:all}
+.del-confirm-bar button{border:1px solid #fff5;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--fh);background:rgba(255,255,255,.15);color:#fff}
+/* MEDIA BUBBLES */
+
+.gif-bubble{max-width:240px;border-radius:12px;overflow:hidden;cursor:pointer;display:block;margin:2px 0;border:1px solid var(--border2)}
+.gif-bubble img{width:100%;max-height:200px;object-fit:cover;display:block}
+
+/* EDIT INPUT */
+.edit-inp{background:var(--surface2);border:1px solid var(--accent)66;border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--fh);font-size:14px;font-weight:500;outline:none;width:100%;min-height:60px;resize:none;line-height:1.5;display:block}
+.edit-btns{display:flex;gap:6px;margin-top:6px;justify-content:flex-end}
+.edit-save{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-family:var(--fh);font-weight:700;font-size:12px;cursor:pointer}
+.edit-cancel{background:var(--surface2);border:1px solid var(--border2);color:var(--muted2);border-radius:8px;padding:6px 12px;font-family:var(--fh);font-weight:600;font-size:12px;cursor:pointer}
+/* READ RECEIPTS */
+.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
+.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
+.read-tick.seen{color:#90caf9}.read-tick.all{color:#42a5f5}
+.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
 .bubble-re{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
 .re-chip{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .re-chip:hover{border-color:var(--accent)66;transform:scale(1.05)}
 .re-chip .cnt{font-size:10px;font-weight:700;color:var(--muted2)}
-.ep{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease}
-.eo{width:33px;height:33px;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:7px;cursor:pointer;transition:background .1s}
-.eo:hover{background:var(--surface2)}
-.swipe-hint{position:absolute;right:-52px;top:50%;transform:translateY(-50%);background:var(--red);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;pointer-events:none;opacity:0;transition:opacity .1s}
-
-/* ── READ RECEIPTS ── */
-.read-receipt{display:flex;align-items:center;gap:4px;margin-top:3px;justify-content:flex-end;flex-wrap:wrap}
-.read-tick{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);line-height:1}
-.read-tick.seen{color:#90caf9}
-.read-tick.all{color:#42a5f5}
-.read-names{font-size:9px;font-weight:700;color:rgba(255,255,255,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-
-/* ── TYPING ── */
+/* TYPING */
 .typing-ind{padding:4px 12px;min-height:26px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;font-size:11px;font-weight:600;color:var(--muted)}
 .td{display:flex;gap:3px;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:5px 10px}
 .td span{width:5px;height:5px;border-radius:50%;background:var(--muted2);animation:tdot 1.2s ease infinite}
 .td span:nth-child(2){animation-delay:.2s}.td span:nth-child(3){animation-delay:.4s}
 @keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-
-/* ── INPUT ── */
-.input-area{padding:8px 12px;padding-bottom:calc(10px + var(--safe-b));position:relative;z-index:1;background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
+/* INPUT AREA */
+.input-area{padding:8px 12px;padding-bottom:calc(10px + var(--safe-b));position:relative;z-index:2;background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
 .reply-preview{display:none;background:var(--surface2);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted2);align-items:center;gap:8px}
 .reply-preview.show{display:flex}
 .reply-preview-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reply-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:0;line-height:1;flex-shrink:0}
-.input-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:9px 12px;transition:border-color .2s,box-shadow .2s}
+.input-box{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:9px 12px;transition:border-color .2s,box-shadow .2s}
 .input-box:focus-within{border-color:var(--accent)88;box-shadow:0 0 0 3px var(--accent-glow)}
 .msg-inp{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--fh);font-size:15px;font-weight:500;min-width:0;-webkit-appearance:none;caret-color:var(--accent)}
 .msg-inp::placeholder{color:var(--muted);font-weight:400}
-.emoji-tog{background:none;border:none;font-size:20px;cursor:pointer;opacity:.55;transition:opacity .15s,transform .15s;line-height:1;padding:0;flex-shrink:0}
-.emoji-tog:hover{opacity:1;transform:scale(1.15)}
+.media-btn{background:none;border:none;font-size:20px;cursor:pointer;opacity:.55;transition:opacity .15s,transform .15s;line-height:1;padding:0;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.media-btn:hover{opacity:1;transform:scale(1.15)}
+.media-btn.open{opacity:1}
 .expiry-sel{background:transparent;border:none;color:var(--muted2);font-family:var(--fm);font-size:11px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;flex-shrink:0;padding:0 2px}
-.send-btn{width:36px;height:36px;border-radius:10px;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.send-btn:hover{background:#7280ff;transform:scale(1.05)}
-.send-btn:active{transform:scale(.93)}
-.send-btn svg{width:16px;height:16px}
-#inp-ep{display:none;position:absolute;bottom:calc(100% + 4px);left:12px;z-index:100}
 
-/* ── MODAL ── */
+.send-btn{width:36px;height:36px;border-radius:10px;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.send-btn:hover{filter:brightness(1.15);transform:scale(1.05)}.send-btn:active{transform:scale(.93)}
+.send-btn svg{width:16px;height:16px}
+/* VOICE INDICATOR */
+
+.v-timer{font-family:var(--fm);font-size:13px;font-weight:700}
+/* MEDIA PANEL */
+.media-panel{position:absolute;bottom:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:16px 16px 0 0;display:none;flex-direction:column;z-index:50;max-height:340px;box-shadow:0 -8px 30px #0008}
+.media-panel.show{display:flex}
+.media-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 8px;flex-shrink:0}
+.media-tab{padding:10px 14px;background:none;border:none;color:var(--muted2);font-family:var(--fh);font-weight:700;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.media-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.media-content{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.emoji-search,.gif-search{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--fh);font-size:13px;outline:none;width:100%;margin-bottom:8px;-webkit-appearance:none}
+.emoji-cat{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:4px 2px 6px;display:block}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:4px}
+.eg{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:8px;cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.eg:hover{background:var(--surface2)}
+.gif-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gif-item{border-radius:8px;overflow:hidden;cursor:pointer;border:1px solid var(--border);aspect-ratio:4/3;background:var(--surface2);transition:border-color .15s}
+.gif-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gif-item:hover{border-color:var(--accent)66}
+.gif-msg{text-align:center;color:var(--muted2);font-size:12px;padding:20px;grid-column:1/-1}
+
+/* MENTION DROPDOWN */
+.mention-drop{position:absolute;bottom:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 -8px 20px #0008;z-index:60;overflow:hidden;display:none;animation:fadeUp .15s ease;margin-bottom:4px}
+.mention-drop.show{display:block}
+.mention-item{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.mention-item:hover,.mention-item.sel{background:var(--surface2)}
+.mention-av{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.mention-name{font-size:13px;font-weight:700}
+/* MODAL */
 .modal-ov{position:fixed;inset:0;background:#0d0f12ee;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;padding:16px}
 .modal-ov.show{opacity:1;pointer-events:all}
 .modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px 26px;width:400px;max-width:100%;display:flex;flex-direction:column;gap:14px;transform:translateY(16px);transition:transform .25s cubic-bezier(.34,1.4,.64,1);box-shadow:0 40px 80px #0008;position:relative}
@@ -244,39 +271,51 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .url-box{background:var(--surface2);border:1px solid var(--accent)44;border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s;word-break:break-all}
 .url-box:hover{border-color:var(--accent)88}
 .url-text{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px}
-.url-hint{font-size:11px;font-weight:500;color:var(--muted)}
+.url-hint{font-size:11px;color:var(--muted)}
+/* THEME */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-sw{border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .15s}
+.theme-sw.active{border-color:var(--accent)}
+.theme-sw-bg{height:50px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.theme-sw-lbl{padding:5px 8px;font-size:10px;font-weight:700;text-align:center;background:var(--surface2);color:var(--muted2)}
+/* NICK MODAL */
+.nick-hint{font-size:11px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 12px}
+/* EDIT HISTORY MODAL */
+.hist-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto}
+.hist-item{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.hist-text{font-size:13px;font-weight:500;line-height:1.5}
+.hist-time{font-size:10px;color:var(--muted);margin-top:4px}
+.hist-orig{border-left:3px solid var(--orange);padding-left:8px}
+/* UPLOAD PROGRESS */
 
-/* ── PWA BANNER ── */
+.prog-bar{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .2s}
+/* PWA */
 .pwa-banner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border2);padding:14px 18px;padding-bottom:calc(14px + var(--safe-b));display:flex;align-items:center;gap:12px;z-index:150;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.4,.64,1);box-shadow:0 -8px 30px #0008}
 .pwa-banner.show{transform:translateY(0)}
 .pwa-icon{width:44px;height:44px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .pwa-text{flex:1;min-width:0}
 .pwa-title{font-weight:800;font-size:14px}
-.pwa-sub{font-size:12px;font-weight:500;color:var(--muted2);margin-top:2px}
+.pwa-sub{font-size:12px;color:var(--muted2);margin-top:2px}
 .pwa-btns{display:flex;gap:8px;flex-shrink:0}
 .pwa-add{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:9px 16px;font-family:var(--fh);font-weight:700;font-size:13px;cursor:pointer}
 .pwa-skip{background:none;border:1px solid var(--border2);color:var(--muted2);border-radius:8px;padding:9px 12px;font-family:var(--fh);font-weight:600;font-size:13px;cursor:pointer}
-
-/* ── TOAST ── */
+/* TOAST */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;color:var(--text);z-index:300;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{border-color:var(--green)66;color:var(--green)}
-.toast.err{border-color:var(--red)66;color:var(--red)}
-
-/* ── LOADER ── */
+.toast.ok{border-color:var(--green)66;color:var(--green)}.toast.err{border-color:var(--red)66;color:var(--red)}
+/* LOADER */
 .full-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:16px;font-size:13px;font-weight:600;color:var(--muted2)}
 .spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── ENTRY ── */
+/* ENTRY */
 #s-entry{align-items:center;justify-content:center;flex-direction:column;position:relative;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
 .entry-card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 28px;width:400px;max-width:100%;display:flex;flex-direction:column;gap:14px;box-shadow:0 40px 80px #0008;text-align:center}
-.entry-logo{font-family:var(--fh);font-weight:900;font-size:38px;letter-spacing:-2px;margin-bottom:4px}
+.entry-logo{font-weight:900;font-size:38px;letter-spacing:-2px;margin-bottom:4px}
 .entry-logo span{color:var(--accent)}
-.entry-desc{font-size:13px;font-weight:500;color:var(--muted2);line-height:1.6}
+.entry-desc{font-size:13px;color:var(--muted2);line-height:1.6}
 .entry-tap-hint{position:absolute;bottom:12px;right:14px;font-size:9px;color:transparent;user-select:none;pointer-events:none}
-
-/* ── ROOM SWITCHER ── */
+/* ROOM SWITCHER */
 #s-rooms{align-items:center;justify-content:flex-start;flex-direction:column;position:relative;padding:env(safe-area-inset-top,24px) 16px 24px;overflow-y:auto}
 .rooms-header{width:100%;max-width:420px;display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px}
 .rooms-title{font-weight:900;font-size:22px;letter-spacing:-.5px}
@@ -287,26 +326,31 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .room-card-icon{width:42px;height:42px;border-radius:11px;background:var(--accent-glow);border:1px solid var(--accent)44;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .room-card-info{flex:1;min-width:0}
 .room-card-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.room-card-meta{font-size:11px;font-weight:500;color:var(--muted2);margin-top:2px}
+.room-card-meta{font-size:11px;color:var(--muted2);margin-top:2px}
 .room-card.expired{opacity:.4;cursor:default}
 .room-card.expired:hover{transform:none}
 .rooms-new-btn{width:100%;max-width:420px;padding:14px;background:none;border:1px dashed var(--border2);border-radius:14px;color:var(--muted2);font-family:var(--fh);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
 .rooms-new-btn:hover{border-color:var(--accent)66;color:var(--accent)}
-
 #btn-switch-room{display:none}
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:#000c;z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.lightbox.show{opacity:1;pointer-events:all}
+.lightbox img,.lightbox video{max-width:95vw;max-height:90vh;border-radius:8px;object-fit:contain}
+.lb-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:#fff2;color:#fff;font-size:20px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fh)}
 </style>
 </head>
 <body>
-
 <div id="loader" class="full-loader"><div class="spinner"></div><span>Načítám…</span></div>
-
-<!-- ROOM EXPIRY WARNING BANNER -->
 <div class="room-expiry-banner" id="room-expiry-banner">
   <span class="reb-text" id="reb-text">⚠️ Místnost brzy vyprší</span>
   <button class="reb-extend" onclick="extendRoom()">Prodloužit o měsíc</button>
   <button class="reb-dismiss" onclick="dismissExpiryBanner()">✕</button>
 </div>
-
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close">✕</button>
+  <img id="lb-img" src="" alt="">
+</div>
 <!-- ENTRY -->
 <div id="s-entry" class="screen grid-bg">
   <div class="entry-card" id="entry-card">
@@ -318,29 +362,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <span class="entry-tap-hint">····</span>
   </div>
 </div>
-
 <!-- ROOM SWITCHER -->
 <div id="s-rooms" class="screen grid-bg">
   <div class="rooms-header"><div class="rooms-title">Moje místnosti</div></div>
   <div class="rooms-list" id="rooms-list"></div>
   <button class="rooms-new-btn" onclick="show('s-create')">+ Vytvořit novou místnost</button>
 </div>
-
 <!-- HOME -->
 <div id="s-home" class="screen grid-bg">
   <div class="home-card">
     <div class="logo">Room<span>Chat</span></div>
     <p class="tagline">Trvalý chat pro malé skupiny.<br>Bez registrace. Zprávy mizí po 24h.</p>
     <div class="tag-pills">
-      <span class="pill">🔐 Zámek heslem</span>
-      <span class="pill">📨 Unikátní pozvánky</span>
-      <span class="pill">🗑️ Zprávy po 24h</span>
+      <span class="pill">🔐 Heslo</span><span class="pill">📨 Pozvánky</span><span class="pill">🗑️ Auto-mazání</span>
     </div>
     <button class="btn-p" onclick="show('s-create')">+ Vytvořit místnost</button>
     <button class="btn-s" onclick="show('s-join')">Připojit se kódem</button>
   </div>
 </div>
-
 <!-- CREATE -->
 <div id="s-create" class="screen grid-bg">
   <div class="form-card">
@@ -351,20 +390,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <input id="cr-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
     <input id="cr-pass" class="fi" type="password" placeholder="Heslo místnosti (volitelné)">
     <select id="cr-max" class="fsel">
-      <option value="2">Max. 2 uživatelé</option>
-      <option value="3">Max. 3 uživatelé</option>
-      <option value="4">Max. 4 uživatelé</option>
-      <option value="5" selected>Max. 5 uživatelů</option>
+      <option value="2">Max. 2 uživatelé</option><option value="3">Max. 3 uživatelé</option>
+      <option value="4">Max. 4 uživatelé</option><option value="5" selected>Max. 5 uživatelů</option>
     </select>
-    <label class="ftoggle">
-      <input type="checkbox" id="cr-inv" checked>
-      <span>🔒 Invite-only – bez tvého odkazu se nikdo nepřipojí</span>
-    </label>
+    <label class="ftoggle"><input type="checkbox" id="cr-inv" checked><span>🔒 Invite-only</span></label>
     <div id="cr-err" class="err"></div>
     <button class="btn-p" onclick="createRoom()">Vytvořit místnost →</button>
   </div>
 </div>
-
 <!-- JOIN -->
 <div id="s-join" class="screen grid-bg">
   <div class="form-card">
@@ -375,12 +408,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       oninput="this.value=this.value.toUpperCase()">
     <input id="jn-pass" class="fi" type="password" placeholder="Heslo místnosti" style="display:none">
     <input id="jn-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20" style="display:none">
-    <div id="jn-err" class="err"></div>
-    <div id="jn-info" class="info"></div>
+    <div id="jn-err" class="err"></div><div id="jn-info" class="info"></div>
     <button class="btn-p" id="jn-btn" onclick="joinByCode()">Hledat →</button>
   </div>
 </div>
-
 <!-- INVITE -->
 <div id="s-invite" class="screen grid-bg">
   <div class="form-card">
@@ -391,13 +422,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <button class="btn-p" onclick="joinByInvite()">Vstoupit →</button>
   </div>
 </div>
-
 <!-- CHAT -->
 <div id="s-chat" class="screen">
   <header class="chat-header">
     <div class="hleft">
-      <!-- Hamburger — mobile only -->
-      <div class="icon-btn" id="btn-menu" onclick="openMobSidebar()" title="Menu">
+      <div class="icon-btn" id="btn-menu" onclick="openMobSidebar()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
@@ -406,23 +435,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <div class="lock-badge" id="h-lock" style="display:none">🔒</div>
     </div>
     <div class="hcenter">
-      <div class="cd-badge" id="h-badge">
-        <div class="cd-dot" id="h-dot"></div>
-        <span id="h-badge-text">…</span>
-      </div>
+      <div class="cd-badge" id="h-badge"><div class="cd-dot" id="h-dot"></div><span id="h-badge-text">…</span></div>
     </div>
     <div class="hright">
       <div class="icon-btn" onclick="goToRooms()" id="btn-switch-room" title="Místnosti" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
-      <div class="icon-btn" onclick="copyCode()" title="Kopírovat kód">
+      <div class="icon-btn" onclick="copyCode()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </div>
     </div>
   </header>
-
   <div class="chat-body">
-    <!-- Desktop sidebar -->
     <aside class="sidebar" id="desktop-sidebar">
       <div class="sb-section">
         <div class="sb-label" id="sb-on-lbl">online — 0</div>
@@ -439,36 +463,47 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       </div>
       <div class="sb-actions" id="sb-actions"></div>
     </aside>
-
     <main class="chat-main" id="chat-main">
       <div class="messages" id="msgs"></div>
       <div class="typing-ind" id="typing"></div>
-      <div class="input-area">
+      <div class="input-area" id="input-area">
+        <div class="mention-drop" id="mention-drop"></div>
+        <div class="media-panel" id="media-panel">
+          <div class="media-tabs">
+            <button class="media-tab active" data-tab="emoji" onclick="switchTab('emoji')">😊 Emoji</button>
+            <button class="media-tab" data-tab="gif" onclick="switchTab('gif')">🎬 GIF</button>
+          </div>
+          <div class="media-content" id="tab-emoji">
+            <input class="emoji-search" id="emoji-search" placeholder="Hledat emoji…" oninput="filterEmoji(this.value)">
+            <div id="emoji-container"></div>
+          </div>
+          <div class="media-content" id="tab-gif" style="display:none">
+            <input class="gif-search" id="gif-search" placeholder="Hledat GIF…" oninput="debGif(this.value)">
+            <div class="gif-grid" id="gif-grid"><div class="gif-msg">Zadej hledání 🎬</div></div>
+          </div>
+
+        </div>
+
         <div class="reply-preview" id="reply-preview">
           <div class="reply-preview-text" id="reply-text"></div>
           <button class="reply-close" onclick="clearReply()">×</button>
         </div>
         <div class="input-box">
-          <button class="emoji-tog" onclick="toggleInpEmoji()">😊</button>
-          <input class="msg-inp" id="msg-inp" placeholder="Napiš zprávu…" autocomplete="off">
+          <button class="media-btn" id="media-btn" onclick="toggleMediaPanel()" title="Emoji / GIF / Média">😊</button>
+          <input class="msg-inp" id="msg-inp" placeholder="Napiš zprávu… (@zmínka)" autocomplete="off">
           <select class="expiry-sel" id="expiry-sel" title="Zpráva zmizí za…">
-            <option value="0">∞</option>
-            <option value="30">30s</option>
-            <option value="300">5m</option>
-            <option value="1800">30m</option>
-            <option value="3600">1h</option>
+            <option value="0">∞</option><option value="30">30s</option>
+            <option value="300">5m</option><option value="1800">30m</option><option value="3600">1h</option>
           </select>
           <button class="send-btn" onclick="sendMsg()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
-        <div id="inp-ep"><div class="ep" id="inp-ep-inner" style="position:static;animation:none;box-shadow:none"></div></div>
       </div>
     </main>
   </div>
 </div>
-
-<!-- MOBILE SIDEBAR OVERLAY -->
+<!-- MOBILE SIDEBAR -->
 <div class="mob-sb-ov" id="mob-sb-ov">
   <div class="mob-sb-backdrop" onclick="closeMobSidebar()"></div>
   <div class="mob-sb-panel" id="mob-sb-panel">
@@ -476,14 +511,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <span class="mob-sb-title" id="mob-sb-room-name">Místnost</span>
       <div class="mob-sb-close" onclick="closeMobSidebar()">✕</div>
     </div>
-    <div class="sb-section">
-      <div class="sb-label" id="mob-sb-on-lbl">online — 0</div>
-      <div id="mob-sb-on"></div>
-    </div>
-    <div id="mob-sb-off-sec" style="display:none" class="sb-section">
-      <div class="sb-label" id="mob-sb-off-lbl">offline — 0</div>
-      <div id="mob-sb-off"></div>
-    </div>
+    <div class="sb-section"><div class="sb-label" id="mob-sb-on-lbl">online — 0</div><div id="mob-sb-on"></div></div>
+    <div id="mob-sb-off-sec" style="display:none" class="sb-section"><div class="sb-label" id="mob-sb-off-lbl">offline — 0</div><div id="mob-sb-off"></div></div>
     <div class="inv-section" id="mob-sb-inv" style="display:none">
       <div class="sb-label" style="margin-bottom:8px">pozvánky (admin)</div>
       <div id="mob-sb-inv-list"></div>
@@ -492,7 +521,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <div class="sb-actions" id="mob-sb-actions"></div>
   </div>
 </div>
-
 <!-- MODALS -->
 <div class="modal-ov" id="m-new-inv">
   <div class="modal-card">
@@ -510,106 +538,85 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <h3 id="ci-title">Pozvánka</h3>
     <p>Zkopíruj odkaz a pošli jej. Jde použít jen jednou z jednoho zařízení.</p>
     <div class="url-box" onclick="doCopyInv()">
-      <div class="url-text" id="ci-url">…</div>
-      <div class="url-hint">👆 klikni pro zkopírování</div>
+      <div class="url-text" id="ci-url">…</div><div class="url-hint">👆 klikni pro zkopírování</div>
     </div>
     <button class="btn-p" onclick="doCopyInv()">📋 Kopírovat odkaz</button>
   </div>
 </div>
-
-<!-- PWA BANNER -->
+<div class="modal-ov" id="m-theme">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeM('m-theme')">✕</button>
+    <h3>🎨 Téma</h3>
+    <div class="theme-grid" id="theme-grid"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px">Vlastní pozadí chatu (URL obrázku):</p>
+    <input class="fi" id="custom-bg-url" placeholder="https://… URL fotky jako pozadí" oninput="applyCustomBg(this.value)">
+    <button class="btn-s" onclick="clearCustomBg()" style="font-size:12px;padding:10px">Odebrat vlastní pozadí</button>
+  </div>
+</div>
+<div class="modal-ov" id="m-nick">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeM('m-nick')">✕</button>
+    <h3>✏️ Přezdívka</h3>
+    <p id="nick-desc">Nastav lokální přezdívku — vidíš jen ty.</p>
+    <p class="nick-hint">Přezdívka se uloží jen u tebe v zařízení. Ostatní vidí původní jméno.</p>
+    <input id="nick-inp" class="fi" placeholder="Přezdívka (prázdné = výchozí)" maxlength="20">
+    <button class="btn-p" onclick="saveNick()">Uložit →</button>
+    <button class="btn-s" onclick="saveNick(true)" style="font-size:13px;padding:11px">Smazat přezdívku</button>
+  </div>
+</div>
+<div class="modal-ov" id="m-edit-hist">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeM('m-edit-hist')">✕</button>
+    <h3>📝 Historie úprav</h3>
+    <div class="hist-list" id="hist-list"></div>
+  </div>
+</div>
+<!-- PWA -->
 <div class="pwa-banner" id="pwa-banner">
   <div class="pwa-icon">💬</div>
-  <div class="pwa-text">
-    <div class="pwa-title">Přidat na plochu</div>
-    <div class="pwa-sub" id="pwa-sub">Otevři příště jedním kliknutím</div>
-  </div>
+  <div class="pwa-text"><div class="pwa-title">Přidat na plochu</div><div class="pwa-sub" id="pwa-sub">Otevři příště jedním kliknutím</div></div>
   <div class="pwa-btns">
     <button class="pwa-add" onclick="addToHomeScreen()">Přidat</button>
     <button class="pwa-skip" onclick="pwaDismiss()">Teď ne</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
-// ══════════════════════════════════════
-// FIREBASE
-// ══════════════════════════════════════
-const firebaseConfig = {
-  apiKey:            "AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",
-  authDomain:        "roomchat-6092c.firebaseapp.com",
-  projectId:         "roomchat-6092c",
-  storageBucket:     "roomchat-6092c.firebasestorage.app",
-  messagingSenderId: "681715608200",
-  appId:             "1:681715608200:web:cde43c08577bf279020d3d"
-};
+// ══ FIREBASE ══
+const firebaseConfig={apiKey:"AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",authDomain:"roomchat-6092c.firebaseapp.com",projectId:"roomchat-6092c",storageBucket:"roomchat-6092c.appspot.com",messagingSenderId:"681715608200",appId:"1:681715608200:web:cde43c08577bf279020d3d"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
-// ── SERVICE WORKER ────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-
-// ══════════════════════════════════════
-// CONSTANTS & STATE
-// ══════════════════════════════════════
-const COLORS  = ['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
-const EMOJIS  = ['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
-const ADMIN_HASH = '6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
-const ROOM_LIFETIME = 30 * 86400;   // 30 days in seconds
-const MSG_LIFETIME  = 86400000;     // 24h in ms
-
-const S = {
-  sid:null, roomId:null, slotId:null, username:null, color:null,
-  isAdmin:false, isAdminSession:false, roomData:null,
-  slots:{}, reads:{}, unsubs:[], heartbeat:null, countdown:null,
-  typingTO:null, pendingInvite:null, jnState:'code', jnRoomData:null,
-  replyTo:null, entryContext:null
+// ══ CONSTANTS ══
+const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
+const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
+const ROOM_LIFETIME=30*86400, MSG_LIFETIME=86400000;
+const GIPHY_KEY='dc6zaTOxFJmzC'; // demo key — nahraď vlastním z developers.giphy.com
+const EMOJIS_REACT=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
+const EMOJI_CATS={
+  '😀 Smajlíci':['😀','😃','😄','😁','😅','🤣','😂','😊','😇','🥰','😍','🤩','😘','😜','🤪','😎','🤓','🥳','😤','😡','😈','💀','😭','😢','🥺','😱','😳','🤯','😴','🤢','🥵','🥶','😵','🤠','😏','🙄','🤫','🤭','🫡'],
+  '👍 Gesta':['👍','👎','👋','🤝','🙏','👏','✊','💪','🫶','✌️','🤞','🤟','🤘','👆','👇','👉','👈','☝️','🤙','🖖','🫵','💅','🫂'],
+  '❤️ Symboly':['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','💕','💞','💓','💗','💖','💘','💝','💯','🔥','✨','⭐','🌟','💫','🎯','🚀','🎉','🎊','✅','❌','⚠️','💤','💬','💭','♾️'],
+  '🐱 Příroda':['🐱','🐶','🦊','🐸','🐼','🐨','🦁','🐯','🐮','🐷','🦄','🐲','🌸','🌺','🌻','🍀','🌈','☀️','🌙','⭐','🌊','🔥','❄️','⛄','🌍','🦋','🐝','🌵','🌴'],
+  '🍕 Jídlo':['🍕','🍔','🍟','🌮','🌯','🍜','🍣','🍩','🍪','🎂','🍫','🍬','🍭','☕','🧃','🥤','🍺','🥂','🍷','🧋','🍓','🍑','🍌','🍉','🍎','🍇','🥑','🧀','🍳','🥞'],
+  '🎮 Aktivity':['🎮','🕹️','🎲','🎯','🏆','🥇','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎸','🎻','🚀','✈️','🚗','⚽','🏀','🎾','🏊','🧗','🎿','🛹','🛼'],
 };
 
-let todayMsgCount = 0;
+// ══ STATE ══
+const S={sid:null,roomId:null,slotId:null,username:null,color:null,isAdmin:false,isAdminSession:false,roomData:null,slots:{},reads:{},unsubs:[],heartbeat:null,countdown:null,typingTO:null,jnState:'code',jnRoomData:null,replyTo:null,entryContext:null,nickEditSlotId:null,mentionStart:-1};
+let todayMsgCount=0,lastMsgCount=0;
 
-// ══════════════════════════════════════
-// UTILITIES
-// ══════════════════════════════════════
-const $ = id => document.getElementById(id);
-const rnd = (n=8) => Math.random().toString(36).slice(2,2+n).toUpperCase();
-const rndColor = () => COLORS[Math.floor(Math.random()*COLORS.length)];
-const initials = n => (n||'??').slice(0,2).toUpperCase();
-
-const fmtTime = ts => {
-  if(!ts) return '';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-};
-const fmtDate = ts => {
-  if(!ts) return '';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  const now = new Date();
-  if(d.toDateString()===now.toDateString()) return 'dnes '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-  const y = new Date(now); y.setDate(y.getDate()-1);
-  if(d.toDateString()===y.toDateString()) return 'včera '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString('cs',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-};
-const fmtCd = ms => {
-  if(ms<=0) return 'vypršela';
-  const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000);
-  if(d>0) return `${d}d ${h}h`;
-  return `${h}h ${String(m).padStart(2,'0')}m`;
-};
-const fmtExpiry = secs => {
-  if(!secs||secs<=0) return null;
-  if(secs<60) return `${secs}s`;
-  if(secs<3600) return `${Math.round(secs/60)}m`;
-  return `${Math.round(secs/3600)}h`;
-};
-const isOnline = slot => {
-  if(!slot.lastSeen) return false;
-  const t = slot.lastSeen.toDate ? slot.lastSeen.toDate() : new Date(slot.lastSeen);
-  return Date.now()-t.getTime()<50000;
-};
+// ══ UTILS ══
+const $=id=>document.getElementById(id);
+const rnd=(n=8)=>Math.random().toString(36).slice(2,2+n).toUpperCase();
+const rndColor=()=>COLORS[Math.floor(Math.random()*COLORS.length)];
+const initials=n=>(n||'??').slice(0,2).toUpperCase();
+const fmtTime=ts=>{if(!ts)return'';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});};
+const fmtDate=ts=>{if(!ts)return'';const d=ts.toDate?ts.toDate():new Date(ts);const now=new Date();if(d.toDateString()===now.toDateString())return'dnes '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});const y=new Date(now);y.setDate(y.getDate()-1);if(d.toDateString()===y.toDateString())return'včera '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString('cs',{day:'numeric',month:'numeric'})+' '+d.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});};
+const fmtCd=ms=>{if(ms<=0)return'vypršela';const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000);return d>0?`${d}d ${h}h`:`${h}h ${String(m).padStart(2,'0')}m`;};
+const fmtExp=s=>{if(!s||s<=0)return null;if(s<60)return`${s}s`;if(s<3600)return`${Math.round(s/60)}m`;return`${Math.round(s/3600)}h`;};
+const isOnline=slot=>{if(!slot.lastSeen)return false;const t=slot.lastSeen.toDate?slot.lastSeen.toDate():new Date(slot.lastSeen);return Date.now()-t.getTime()<50000;};
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');if(id!=='s-chat')$('room-expiry-banner').classList.remove('show');}
 function showErr(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
@@ -617,1128 +624,515 @@ function hideErr(id){$(id).classList.remove('show');}
 function showInfo(id,msg){const e=$(id);e.textContent=msg;e.classList.add('show');}
 function openM(id){$(id).classList.add('show');}
 function closeM(id){$(id).classList.remove('show');}
-function toast(msg,type=''){
-  const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
-  setTimeout(()=>t.className='toast',3000);
+function toast(msg,type=''){const t=$('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(()=>t.className='toast',3200);}
+async function hashStr(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+
+// ══ THEMES ══
+const THEMES=[{id:'dark',label:'Tmavé',bg:'#0d0f12',icon:'🌑'},{id:'darker',label:'Černé',bg:'#050608',icon:'⚫'},{id:'blue',label:'Modré',bg:'#080d1a',icon:'💙'},{id:'purple',label:'Fialové',bg:'#0e0818',icon:'💜'},{id:'forest',label:'Les',bg:'#080f08',icon:'🌿'},{id:'custom',label:'Vlastní',bg:null,icon:'🖼️'}];
+function applyTheme(id){document.documentElement.setAttribute('data-theme',id);localStorage.setItem('rc_theme',id);renderThemeGrid();}
+function applyCustomBg(url){
+  if(!url){clearCustomBg();return;}
+  const cm=$('chat-main');if(cm){cm.classList.add('has-bg');cm.style.setProperty('--chat-bg-img',`url('${url}')`);}
+  document.documentElement.setAttribute('data-theme','custom');
+  localStorage.setItem('rc_custom_bg',url);localStorage.setItem('rc_theme','custom');
+}
+function clearCustomBg(){
+  const cm=$('chat-main');if(cm){cm.classList.remove('has-bg');cm.style.removeProperty('--chat-bg-img');}
+  localStorage.removeItem('rc_custom_bg');
+  applyTheme('dark');$('custom-bg-url').value='';
+}
+function renderThemeGrid(){
+  const cur=document.documentElement.getAttribute('data-theme')||'dark';
+  const g=$('theme-grid');if(!g)return;
+  g.innerHTML=THEMES.map(t=>`<div class="theme-sw ${cur===t.id?'active':''}" onclick="applyTheme('${t.id}')"><div class="theme-sw-bg" style="background:${t.bg||'linear-gradient(135deg,#0d0f12,#5c6bff)'}">${t.icon}</div><div class="theme-sw-lbl">${t.label}</div></div>`).join('');
+}
+function initTheme(){
+  const saved=localStorage.getItem('rc_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+}
+initTheme();
+
+// ══ NICKNAMES ══
+function getNicks(){try{return JSON.parse(localStorage.getItem('rc_nicks_'+S.roomId)||'{}');}catch(e){return{};}}
+function getNick(slotId){return getNicks()[slotId]||null;}
+function openNickModal(slotId){
+  const slot=S.slots[slotId];if(!slot)return;
+  S.nickEditSlotId=slotId;
+  $('nick-desc').textContent=`Přezdívka pro ${slot.username} — vidíš jen ty.`;
+  $('nick-inp').value=getNick(slotId)||'';
+  openM('m-nick');setTimeout(()=>$('nick-inp').focus(),200);
+}
+function saveNick(del=false){
+  if(!S.nickEditSlotId)return;
+  const nicks=getNicks();
+  if(del||!$('nick-inp').value.trim()){delete nicks[S.nickEditSlotId];}
+  else{nicks[S.nickEditSlotId]=$('nick-inp').value.trim();}
+  localStorage.setItem('rc_nicks_'+S.roomId,JSON.stringify(nicks));
+  closeM('m-nick');renderSidebar();toast(del?'Přezdívka smazána':'Přezdívka uložena ✓','ok');
 }
 
-async function hashStr(str){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-// ══════════════════════════════════════
-// PWA + NOTIFICATIONS + DND
-// ══════════════════════════════════════
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault(); deferredPrompt=e;
-  if(!localStorage.getItem('pwa_d')) showPwaBanner('android');
-});
-function isIos(){return /iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;}
-function showPwaBanner(type){
-  if(type==='ios') $('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';
-  $('pwa-banner').classList.add('show');
-}
+// ══ PWA + NOTIF + DND ══
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('pwa_d'))showPwaBanner('android');});
+function isIos(){return/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;}
+function showPwaBanner(type){if(type==='ios')$('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';$('pwa-banner').classList.add('show');}
 function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setItem('pwa_d','1');}
-
-function addToHomeScreen(){
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});
-  } else if(isIos()){
-    toast('Safari → Sdílet → Přidat na plochu 📱');
-  } else {
-    toast('Appka je již nainstalována nebo použij Chrome 👆');
-  }
-  renderSidebarActions();
-}
-
-async function requestNotifPerm(){
-  if(!('Notification' in window)) return false;
-  if(Notification.permission==='default') await Notification.requestPermission();
-  return Notification.permission==='granted';
-}
-async function toggleNotifications(){
-  if(!('Notification' in window)){toast('Notifikace nejsou podporovány','err');return;}
-  if(Notification.permission==='granted'){
-    toast('Notifikace jsou zapnuty ✓','ok');
-  } else if(Notification.permission==='denied'){
-    toast('Notifikace jsou blokovány — povol je v nastavení prohlížeče','err');
-  } else {
-    const ok = await requestNotifPerm();
-    toast(ok ? 'Notifikace povoleny ✓' : 'Notifikace odmítnuty','ok');
-  }
-  renderSidebarActions();
-}
-
+function addToHomeScreen(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});}else if(isIos()){toast('Safari → Sdílet → Přidat na plochu 📱');}else{toast('Použij Chrome nebo appka již nainstalována');}renderSidebarActions();}
+async function requestNotifPerm(){if(!('Notification' in window))return false;if(Notification.permission==='default')await Notification.requestPermission();return Notification.permission==='granted';}
+async function toggleNotifications(){if(!('Notification' in window)){toast('Notifikace nejsou podporovány','err');return;}if(Notification.permission==='granted'){toast('Notifikace jsou zapnuty ✓','ok');}else if(Notification.permission==='denied'){toast('Notifikace blokovány — povol v nastavení prohlížeče','err');}else{const ok=await requestNotifPerm();toast(ok?'Notifikace povoleny ✓':'Notifikace odmítnuty');}renderSidebarActions();}
 function isDnd(){return Date.now()<parseInt(localStorage.getItem('rc_dnd')||0);}
-function setDnd(ms){
-  if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}
-  else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}
-  renderSidebarActions();
+function setDnd(ms){if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}renderSidebarActions();}
+function dndUntilMorning(){const m=new Date();m.setDate(m.getDate()+1);m.setHours(7,0,0,0);setDnd(m.getTime()-Date.now());}
+async function showPup(mentionMe=false){
+  if(isDnd())return;
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  if(document.visibilityState==='visible'&&document.hasFocus()&&!mentionMe)return;
+  const tag='rc-'+Date.now();const body=mentionMe?'Někdo tě zmínil! 📣':'Nová zpráva v místnosti';
+  try{if('serviceWorker' in navigator){let reg=await navigator.serviceWorker.getRegistration();if(!reg)reg=await navigator.serviceWorker.register('/sw.js');if(reg){await reg.showNotification('PUP',{body,tag,silent:true});return;}}new Notification('PUP',{body,tag,silent:true});}catch(e){}
 }
-function dndUntilMorning(){
-  const morning=new Date();morning.setDate(morning.getDate()+1);morning.setHours(7,0,0,0);
-  setDnd(morning.getTime()-Date.now());
+function playNotif(){if(isDnd())return;try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}}
+
+// ══ SIDEBAR ACTIONS ══
+function renderSidebarActions(){const h=_buildActHtml();const a=$('sb-actions'),b=$('mob-sb-actions');if(a)a.innerHTML=h;if(b)b.innerHTML=h;}
+function _buildActHtml(){
+  const ok='Notification' in window&&Notification.permission==='granted';
+  const dnd=isDnd();
+  const adm=S.isAdmin?`<button class="sb-act-btn" onclick="goToRooms();closeMobSidebar()"><span class="ico">🏠</span><span class="lbl">Přepnout místnost<span class="sub">výběr místností</span></span></button>`:'';
+  return `${adm}
+  <button class="sb-act-btn ${ok?'active':''}" onclick="toggleNotifications()"><span class="ico">${ok?'🔔':'🔕'}</span><span class="lbl">${ok?'Notifikace: ON':'Zapnout notifikace'}<span class="sub">${ok?(dnd?'nerušit aktivní':'klikni test'):'PUP při nové zprávě'}</span></span></button>
+  <button class="sb-act-btn" onclick="openM('m-theme');closeMobSidebar()"><span class="ico">🎨</span><span class="lbl">Změnit téma<span class="sub">barva, vlastní pozadí</span></span></button>
+  <button class="sb-act-btn" onclick="addToHomeScreen()"><span class="ico">📲</span><span class="lbl">Přidat na plochu<span class="sub">rychlý přístup</span></span></button>
+  <div style="padding:2px 0"><div style="font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.5px;padding:2px 4px 6px;text-transform:uppercase">Nerušit</div>
+  <div class="dnd-opts"><div class="dnd-opt ${dnd?'active':''}" onclick="setDnd(3600000)">1h</div><div class="dnd-opt" onclick="setDnd(14400000)">4h</div><div class="dnd-opt" onclick="dndUntilMorning()">ráno</div><div class="dnd-opt" onclick="setDnd(0)">vyp</div></div></div>`;
 }
 
-async function showPup(){
-  if(isDnd()) return;
-  if(!('Notification' in window)||Notification.permission!=='granted') return;
-  if(document.visibilityState==='visible'&&document.hasFocus()) return;
-  // Unique tag každé notifikace — iOS ignoruje renotify se stejným tagem
-  const tag='roomchat-'+Date.now();
+// ══ MOBILE SIDEBAR ══
+function openMobSidebar(){$('mob-sb-ov').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobSidebar(){$('mob-sb-ov').classList.remove('open');document.body.style.overflow='';}
+function _setupSwipeSidebar(){const main=$('chat-main');let sx=0,sy=0,tr=false;main.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;tr=sx<60;},{passive:true});main.addEventListener('touchmove',e=>{if(!tr)return;const dx=e.touches[0].clientX-sx,dy=Math.abs(e.touches[0].clientY-sy);if(dx>50&&dy<40){openMobSidebar();tr=false;}},{passive:true});main.addEventListener('touchend',()=>{tr=false;},{passive:true});}
+
+// ══ EXPIRY BANNER ══
+function checkRoomExpiry(){if(!S.isAdmin||!S.roomData?.expiresAt)return;const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);const msLeft=exp.getTime()-Date.now();const dl=msLeft/86400000;if(dl<3&&!sessionStorage.getItem('reb_d')){$('reb-text').textContent=dl<1?'⚠️ Místnost vyprší za méně než 24 hodin!':`⚠️ Místnost vyprší za ${Math.ceil(dl)} dny`;const dot=$('h-dot');if(dot)dot.classList.add('warn');$('room-expiry-banner').classList.add('show');}}
+function dismissExpiryBanner(){$('room-expiry-banner').classList.remove('show');sessionStorage.setItem('reb_d','1');}
+async function extendRoom(){const rid=S.roomId||new URLSearchParams(window.location.search).get('room')?.toUpperCase();if(!rid)return;try{const doc=await db.collection('rooms').doc(rid).get();if(!doc.exists)return toast('Místnost nenalezena','err');const exp=doc.data().expiresAt.toDate();const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);await db.collection('rooms').doc(rid).update({expiresAt:newExp});if(S.roomData)S.roomData.expiresAt=newExp;dismissExpiryBanner();if($('h-dot'))$('h-dot').classList.remove('warn');toast('Místnost prodloužena o 30 dní ✓','ok');if(S.roomId)updateHeaderBadge();}catch(e){toast('Chyba: '+e.message,'err');}}
+function updateHeaderBadge(){const exp=S.roomData?.expiresAt?.toDate?.();if(!exp)return;const ms=exp.getTime()-Date.now();const dl=ms/86400000;if(S.isAdmin&&dl<3){$('h-badge-text').textContent=`⚠️ vyprší za ${fmtCd(ms)}`;$('h-dot').classList.add('warn');}else{$('h-badge-text').textContent=`${todayMsgCount} zpráv dnes · 🗑️ po 24h`;$('h-dot').classList.remove('warn');}}
+
+// ══ STORAGE (localStorage + cookie) ══
+function _sc(n,v,d){const e=new Date(Date.now()+d*86400000).toUTCString();document.cookie=`${n}=${encodeURIComponent(v)};expires=${e};path=/;SameSite=Lax`;}
+function _gc(n){const m=document.cookie.match('(?:^|; )'+n+'=([^;]*)');return m?decodeURIComponent(m[1]):null;}
+function getRoomList(){try{const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');if(ls.length>0)return ls;const ck=_gc('rc_rooms');if(ck)return JSON.parse(ck);return[];}catch(e){return[];}}
+function saveRoomList(l){const j=JSON.stringify(l);localStorage.setItem('rc_rooms',j);_sc('rc_rooms',j,60);}
+function addToRoomList(roomId,slotId,name){const l=getRoomList().filter(r=>r.roomId!==roomId);l.unshift({roomId,slotId,name,ts:Date.now()});saveRoomList(l);}
+function getSid(){let s=localStorage.getItem('rc_sid')||_gc('rc_sid');if(!s)s=rnd(16);localStorage.setItem('rc_sid',s);_sc('rc_sid',s,60);return s;}
+function getUsername(){return localStorage.getItem('rc_username')||_gc('rc_username')||null;}
+function setUsername(u){localStorage.setItem('rc_username',u);_sc('rc_username',u,60);}
+
+function _addSysMsg(txt){const box=$('msgs');const el=document.createElement('div');el.className='sys-msg';el.innerHTML=`<span>${txt}</span>`;box.appendChild(el);box.scrollTop=box.scrollHeight;return el;}
+
+// ══ GIF SEARCH ══
+let _gifTO=null;
+function debGif(q){clearTimeout(_gifTO);if(!q.trim()){$('gif-grid').innerHTML='<div class="gif-msg">Zadej hledání 🎬</div>';return;}$('gif-grid').innerHTML='<div class="gif-msg">Hledám…</div>';_gifTO=setTimeout(()=>searchGifs(q),500);}
+async function searchGifs(q){
   try{
-    if('serviceWorker' in navigator){
-      let reg = await navigator.serviceWorker.getRegistration();
-      // SW mohl usnou — zkus znovu registrovat
-      if(!reg) reg = await navigator.serviceWorker.register('/sw.js');
-      if(reg){
-        await reg.showNotification('PUP',{
-          body:'Nová zpráva v místnosti',
-          tag,
-          silent:true,
-        });
-        return;
-      }
-    }
-    // Fallback desktop
-    const n=new Notification('PUP',{tag,silent:true});
-    n.onclick=()=>{window.focus();n.close();};
-    setTimeout(()=>n.close(),4000);
-  }catch(e){}
+    const r=await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=20&rating=g`);
+    const d=await r.json();
+    if(!d.data?.length){$('gif-grid').innerHTML='<div class="gif-msg">Nic nenalezeno 😕</div>';return;}
+    $('gif-grid').innerHTML=d.data.map(g=>`<div class="gif-item" onclick="sendGif('${g.images.fixed_height_small.url}','${g.images.original.url}')"><img src="${g.images.fixed_height_small.url}" loading="lazy"></div>`).join('');
+  }catch(e){$('gif-grid').innerHTML='<div class="gif-msg">Chyba načítání</div>';}
 }
-function playNotif(){
-  if(isDnd()) return;
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.frequency.value=800;o.type='sine';
-    g.gain.setValueAtTime(.12,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);
-    o.start();o.stop(ctx.currentTime+.25);
-  }catch(e){}
+async function sendGif(preview,full){
+  closeMediaPanel();if(!S.roomId)return;
+  try{await db.collection('rooms').doc(S.roomId).collection('messages').add({type:'gif',mediaUrl:full,previewUrl:preview,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}});}
+  catch(e){toast('Chyba: '+e.message,'err');}
 }
 
-// ══════════════════════════════════════
-// SIDEBAR ACTIONS RENDERER
-// ══════════════════════════════════════
-function renderSidebarActions(){
-  const html = _buildActionsHtml();
-  const el1=$('sb-actions'), el2=$('mob-sb-actions');
-  if(el1) el1.innerHTML=html;
-  if(el2) el2.innerHTML=html;
+// ══ EMOJI PANEL ══
+let _emojiBuilt=false;
+function buildEmoji(){
+  if(_emojiBuilt)return;_emojiBuilt=true;
+  const c=$('emoji-container');let h='';
+  for(const[cat,emojis] of Object.entries(EMOJI_CATS)){h+=`<span class="emoji-cat">${cat}</span><div class="emoji-grid">${emojis.map(e=>`<div class="eg" onclick="insertEmoji('${e}')">${e}</div>`).join('')}</div>`;}
+  c.innerHTML=h;
+}
+function filterEmoji(q){
+  buildEmoji();
+  const c=$('emoji-container');
+  if(!q.trim()){buildEmoji();c.style.display='';return;}
+  const all=Object.values(EMOJI_CATS).flat().filter(e=>e.includes(q));
+  c.innerHTML=`<div class="emoji-grid">${all.map(e=>`<div class="eg" onclick="insertEmoji('${e}')">${e}</div>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:8px">Nic</span>'}</div>`;
+}
+function insertEmoji(e){const inp=$('msg-inp');const p=inp.selectionStart;inp.value=inp.value.slice(0,p)+e+inp.value.slice(inp.selectionEnd);inp.selectionStart=inp.selectionEnd=p+e.length;inp.focus();}
+
+// ══ MEDIA PANEL ══
+function toggleMediaPanel(){const p=$('media-panel');const btn=$('media-btn');if(p.classList.toggle('show')){buildEmoji();btn.classList.add('open');}else{btn.classList.remove('open');}}
+function closeMediaPanel(){$('media-panel').classList.remove('show');$('media-btn').classList.remove('open');}
+function switchTab(tab){['emoji','gif'].forEach(t=>{$('tab-'+t).style.display=t===tab?'':'none';});document.querySelectorAll('.media-tab').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);});}
+
+// ══ @MENTIONS ══
+function setupMentions(){
+  const inp=$('msg-inp');
+  inp.addEventListener('input',()=>{
+    const val=inp.value,pos=inp.selectionStart;
+    let at=-1;
+    for(let i=pos-1;i>=0;i--){if(val[i]==='@'){at=i;break;}if(val[i]===' '||val[i]==='\n')break;}
+    if(at>=0){S.mentionStart=at;const q=val.slice(at+1,pos).toLowerCase();const users=Object.values(S.slots).filter(s=>s.username&&s.id!==S.slotId&&s.username.toLowerCase().includes(q));if(users.length){showMentionDrop(users);return;}}
+    hideMentionDrop();
+  });
+  inp.addEventListener('keydown',e=>{
+    const dd=$('mention-drop');if(!dd.classList.contains('show'))return;
+    const items=dd.querySelectorAll('.mention-item');const sel=dd.querySelector('.mention-item.sel');let idx=Array.from(items).indexOf(sel);
+    if(e.key==='ArrowDown'){e.preventDefault();const ni=items[Math.min(idx+1,items.length-1)];if(ni){if(sel)sel.classList.remove('sel');ni.classList.add('sel');}}
+    else if(e.key==='ArrowUp'){e.preventDefault();const pi=items[Math.max(idx-1,0)];if(pi){if(sel)sel.classList.remove('sel');pi.classList.add('sel');}}
+    else if(e.key==='Enter'||e.key==='Tab'){if(sel){e.preventDefault();completeMention(sel.dataset.u);}}
+    else if(e.key==='Escape'){hideMentionDrop();}
+  });
+}
+function showMentionDrop(users){
+  const dd=$('mention-drop');
+  dd.innerHTML=users.slice(0,5).map(u=>`<div class="mention-item" data-u="${u.username}" onclick="completeMention('${u.username}')"><div class="mention-av" style="background:${u.color}">${initials(u.username)}</div><span class="mention-name">@${u.username}</span></div>`).join('');
+  dd.classList.add('show');
+}
+function hideMentionDrop(){$('mention-drop').classList.remove('show');S.mentionStart=-1;}
+function completeMention(username){
+  const inp=$('msg-inp'),pos=inp.selectionStart;
+  const before=inp.value.slice(0,S.mentionStart),after=inp.value.slice(pos);
+  inp.value=before+'@'+username+' '+after;
+  inp.selectionStart=inp.selectionEnd=before.length+username.length+2;
+  inp.focus();hideMentionDrop();
+}
+function parseMentions(text){
+  if(!text)return'';
+  const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/@(\w+)/g,(m,n)=>{
+    const cls=n===S.username?'mention-me':'mention-hi';
+    return`<span class="${cls}">${m}</span>`;
+  });
 }
 
-function _buildActionsHtml(){
-  const notifOk = 'Notification' in window && Notification.permission==='granted';
-  const dnd = isDnd();
-  const notifLabel = notifOk ? 'Notifikace: zapnuto' : 'Zapnout notifikace';
-  const notifSub = notifOk ? (dnd?'nerušit je aktivní':'klikni pro test') : 'PUP při nové zprávě';
+// ══ LIGHTBOX ══
+function openLightbox(url){const lb=$('lightbox');$('lb-img').src=url;lb.classList.add('show');}
+function closeLightbox(){$('lightbox').classList.remove('show');$('lb-img').src='';}
 
-  const adminBtn = S.isAdmin ? `
-  <button class="sb-act-btn" onclick="goToRooms();closeMobSidebar()">
-    <span class="ico">🏠</span>
-    <span class="lbl">Přepnout místnost<span class="sub">zpět na výběr místností</span></span>
-  </button>` : '';
-
-  return `
-  ${adminBtn}
-  <button class="sb-act-btn ${notifOk?'active':''}" onclick="toggleNotifications()">
-    <span class="ico">${notifOk?'🔔':'🔕'}</span>
-    <span class="lbl">${notifLabel}<span class="sub">${notifSub}</span></span>
-  </button>
-  <button class="sb-act-btn" onclick="addToHomeScreen()">
-    <span class="ico">📲</span>
-    <span class="lbl">Přidat na plochu<span class="sub">rychlý přístup k místnosti</span></span>
-  </button>
-  <div style="padding:2px 0">
-    <div style="font-size:9px;font-weight:800;color:var(--muted);letter-spacing:1.5px;padding:2px 4px 6px;text-transform:uppercase">Nerušit</div>
-    <div class="dnd-opts">
-      <div class="dnd-opt ${dnd?'active':''}" onclick="setDnd(3600000)">1h</div>
-      <div class="dnd-opt" onclick="setDnd(14400000)">4h</div>
-      <div class="dnd-opt" onclick="dndUntilMorning()">ráno</div>
-      <div class="dnd-opt" onclick="setDnd(0)">vyp</div>
-    </div>
-  </div>`;
-}
-
-// ══════════════════════════════════════
-// MOBILE SIDEBAR
-// ══════════════════════════════════════
-function openMobSidebar(){
-  $('mob-sb-ov').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeMobSidebar(){
-  $('mob-sb-ov').classList.remove('open');
-  document.body.style.overflow='';
-}
-
-// Swipe right from left edge to open sidebar
-function _setupSwipeForSidebar(){
-  const main=$('chat-main');
-  let startX=0,startY=0,tracking=false;
-  main.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    tracking = startX<60; // only track if starting from left portion
-  },{passive:true});
-  main.addEventListener('touchmove',e=>{
-    if(!tracking) return;
-    const dx=e.touches[0].clientX-startX;
-    const dy=Math.abs(e.touches[0].clientY-startY);
-    if(dx>50&&dy<40){openMobSidebar();tracking=false;}
-  },{passive:true});
-  main.addEventListener('touchend',()=>{tracking=false;},{passive:true});
-}
-
-// ══════════════════════════════════════
-// ROOM EXPIRY BANNER
-// ══════════════════════════════════════
-function checkRoomExpiry(){
-  if(!S.isAdmin||!S.roomData?.expiresAt)return;
-  const exp=S.roomData.expiresAt.toDate?S.roomData.expiresAt.toDate():new Date(S.roomData.expiresAt);
-  const msLeft=exp.getTime()-Date.now();
-  const daysLeft=msLeft/86400000;
-  if(daysLeft<3&&!sessionStorage.getItem('reb_dismissed')){
-    const txt=daysLeft<1?'⚠️ Místnost vyprší za méně než 24 hodin!':`⚠️ Místnost vyprší za ${Math.ceil(daysLeft)} dny — prodloužit?`;
-    $('reb-text').textContent=txt;
-    const dot=$('h-dot');if(dot)dot.classList.add('warn');
-    $('room-expiry-banner').classList.add('show');
-  }
-}
-function dismissExpiryBanner(){
-  $('room-expiry-banner').classList.remove('show');
-  sessionStorage.setItem('reb_dismissed','1');
-}
-async function extendRoom(){
-  const roomId=S.roomId||new URLSearchParams(window.location.search).get('room')?.toUpperCase();
-  if(!roomId)return;
-  try{
-    const doc=await db.collection('rooms').doc(roomId).get();
-    if(!doc.exists)return toast('Místnost nenalezena','err');
-    const exp=doc.data().expiresAt.toDate();
-    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
-    await db.collection('rooms').doc(roomId).update({expiresAt:newExp});
-    if(S.roomData)S.roomData.expiresAt=newExp;
-    dismissExpiryBanner();
-    if($('h-dot'))$('h-dot').classList.remove('warn');
-    toast('Místnost prodloužena o 30 dní ✓','ok');
-    if(S.roomId)updateHeaderBadge();
-  }catch(e){toast('Chyba: '+e.message,'err');}
-}
-
-// ══════════════════════════════════════
-// HEADER BADGE
-// ══════════════════════════════════════
-function updateHeaderBadge(){
-  const exp = S.roomData?.expiresAt?.toDate?.();
-  if(!exp) return;
-  const msLeft = exp.getTime()-Date.now();
-  const daysLeft = msLeft/86400000;
-  let txt;
-  // ✅ Expiry warning only for admin
-  if(S.isAdmin && daysLeft<3){
-    txt = `⚠️ vyprší za ${fmtCd(msLeft)}`;
-    $('h-dot').classList.add('warn');
-  } else {
-    txt = `${todayMsgCount} zpráv dnes · 🗑️ po 24h`;
-    $('h-dot').classList.remove('warn');
-  }
-  $('h-badge-text').textContent = txt;
-}
-
-// ══════════════════════════════════════
-// STORAGE HELPERS (localStorage + cookie fallback for iOS standalone)
-// ══════════════════════════════════════
-function _setCookie(name,val,days){
-  const exp=new Date(Date.now()+days*86400000).toUTCString();
-  document.cookie=`${name}=${encodeURIComponent(val)};expires=${exp};path=/;SameSite=Lax`;
-}
-function _getCookie(name){
-  const m=document.cookie.match('(?:^|; )'+name+'=([^;]*)');
-  return m?decodeURIComponent(m[1]):null;
-}
-function getRoomList(){
-  try{
-    const ls=JSON.parse(localStorage.getItem('rc_rooms')||'[]');
-    if(ls.length>0)return ls;
-    const ck=_getCookie('rc_rooms');
-    if(ck)return JSON.parse(ck);
-    return[];
-  }catch(e){return[];}
-}
-function saveRoomList(list){
-  const json=JSON.stringify(list);
-  localStorage.setItem('rc_rooms',json);
-  _setCookie('rc_rooms',json,60);
-}
-function addToRoomList(roomId,slotId,name){
-  const list=getRoomList().filter(r=>r.roomId!==roomId);
-  list.unshift({roomId,slotId,name,ts:Date.now()});
-  saveRoomList(list);
-}
-function getSid(){
-  let sid=localStorage.getItem('rc_sid')||_getCookie('rc_sid');
-  if(!sid)sid=rnd(16);
-  localStorage.setItem('rc_sid',sid);
-  _setCookie('rc_sid',sid,60);
-  return sid;
-}
-function getUsername(){return localStorage.getItem('rc_username')||_getCookie('rc_username')||null;}
-function setUsername(u){localStorage.setItem('rc_username',u);_setCookie('rc_username',u,60);}
-
-// ══════════════════════════════════════
-// BOOT
-// ══════════════════════════════════════
+// ══ BOOT ══
 window.addEventListener('DOMContentLoaded',async()=>{
-  S.sid=getSid();
-  S.isAdminSession=localStorage.getItem('rc_admin')==='1';
-
-  // Migrate old format
-  const oldRoom=localStorage.getItem('rc_room'),oldSlot=localStorage.getItem('rc_slot');
-  if(oldRoom&&oldSlot){addToRoomList(oldRoom,oldSlot,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
-
-  const p=new URLSearchParams(window.location.search);
-  const rp=p.get('room'),ip=p.get('invite');
-
+  S.sid=getSid();S.isAdminSession=localStorage.getItem('rc_admin')==='1';
+  const old=localStorage.getItem('rc_room'),olds=localStorage.getItem('rc_slot');
+  if(old&&olds){addToRoomList(old,olds,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
+  const p=new URLSearchParams(window.location.search);const rp=p.get('room'),ip=p.get('invite');
   try{
-    if(rp&&ip){
-      await _prepareInviteEntry(rp.toUpperCase(),ip);
-    } else if(rp){
-      const roomId=rp.toUpperCase();
-      const stored=getRoomList().find(r=>r.roomId===roomId);
-      if(stored?.slotId){
-        await tryRejoin(roomId,stored.slotId,null,true);
-      } else {
-        $('jn-code').value=roomId;show('s-join');$('loader').style.display='none';
-      }
-    } else if(S.isAdminSession){
-      $('loader').style.display='none';
-      const list=getRoomList();
-      if(list.length===0){show('s-home');}else{await showRoomSwitcher();}
-    } else {
-      const list=getRoomList();
-      if(list.length===1){
-        S.entryContext={type:'rejoin',roomId:list[0].roomId,slotId:list[0].slotId};
-        const saved=getUsername();
-        if(saved){
-          await tryRejoin(list[0].roomId,list[0].slotId,saved,false);
-          return; // tryRejoin handles loader hide
-        }
-        $('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';
-      }
-      show('s-entry');$('loader').style.display='none';
-      _setupAdminTap();
+    if(rp&&ip){await _prepareInviteEntry(rp.toUpperCase(),ip);}
+    else if(rp){const rid=rp.toUpperCase();const st=getRoomList().find(r=>r.roomId===rid);if(st?.slotId){await tryRejoin(rid,st.slotId,null,true);}else{$('jn-code').value=rid;show('s-join');$('loader').style.display='none';}}
+    else if(S.isAdminSession){$('loader').style.display='none';const l=getRoomList();if(!l.length){show('s-home');}else{await showRoomSwitcher();}}
+    else{
+      const l=getRoomList();
+      if(l.length===1){S.entryContext={type:'rejoin',roomId:l[0].roomId,slotId:l[0].slotId};const sv=getUsername();if(sv){await tryRejoin(l[0].roomId,l[0].slotId,sv,false);return;}$('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';}
+      show('s-entry');$('loader').style.display='none';_setupAdminTap();
     }
-  }catch(e){
-    saveRoomList([]);
-    if(S.isAdminSession){show('s-home');}else{show('s-entry');}
-    $('loader').style.display='none';
-  }
+  }catch(e){saveRoomList([]);if(S.isAdminSession){show('s-home');}else{show('s-entry');}$('loader').style.display='none';}
 });
 
-// ══════════════════════════════════════
-// REJOIN
-// ══════════════════════════════════════
+// ══ REJOIN ══
 async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
   try{
-    const[sd,rd]=await Promise.all([
-      db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),
-      db.collection('rooms').doc(roomId).get()
-    ]);
-    if(rd.exists){
-      const rd2=rd.data();
-      if(Date.now()<rd2.expiresAt.toDate().getTime()){
-        if(sd.exists){
-          const slot=sd.data();
-          const uname=usernameOverride||slot.username||getUsername();
-          if(!uname){
-            S.entryContext={type:'rejoin',roomId,slotId};
-            S.roomData={...rd2};
-            show('s-entry');$('loader').style.display='none';
-            checkRoomExpiry();_setupAdminTap();return;
-          }
-          // ✅ Accept even if sessionId changed (iOS clears storage)
-          // Update sessionId + username if needed
-          const updates={};
-          if(slot.sessionId!==S.sid) updates.sessionId=S.sid;
-          if(usernameOverride&&usernameOverride!==slot.username) updates.username=uname;
-          if(Object.keys(updates).length>0){
-            await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);
-          }
-          S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;
-          S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;
-          S.roomData={...rd2};
-          const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);
-          if(S.isAdmin)$('btn-switch-room').style.display='';
-          // ✅ Keep ?room= in URL so iOS home screen icon works
-          history.replaceState({},'','?room='+roomId);
-          enterChat();return;
-        }
-      }
-    }
+    const[sd,rd]=await Promise.all([db.collection('rooms').doc(roomId).collection('slots').doc(slotId).get(),db.collection('rooms').doc(roomId).get()]);
+    if(rd.exists){const rd2=rd.data();if(Date.now()<rd2.expiresAt.toDate().getTime()){if(sd.exists){const slot=sd.data();const uname=usernameOverride||slot.username||getUsername();if(!uname){S.entryContext={type:'rejoin',roomId,slotId};S.roomData={...rd2};show('s-entry');$('loader').style.display='none';checkRoomExpiry();_setupAdminTap();return;}const updates={};if(slot.sessionId!==S.sid)updates.sessionId=S.sid;if(usernameOverride&&usernameOverride!==slot.username)updates.username=uname;if(Object.keys(updates).length)await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update(updates);S.roomId=roomId;S.slotId=slotId;S.username=uname;S.color=slot.color;S.isAdmin=S.isAdminSession&&rd2.adminSession===S.sid;S.roomData={...rd2};const list=getRoomList().map(r=>r.roomId===roomId?{...r,name:rd2.name}:r);saveRoomList(list);if(S.isAdmin)$('btn-switch-room').style.display='';history.replaceState({},'','?room='+roomId);enterChat();return;}}}
   }catch(e){}
-  // Rejoin failed
-  const list=getRoomList().filter(r=>r.roomId!==roomId);saveRoomList(list);
-  S.entryContext=null;
-  if(silentMode){
-    // Came from home screen icon, room may be gone - show home
-    show('s-home');$('loader').style.display='none';
-    toast('Místnost nenalezena nebo vypršela','err');
-  } else {
-    show('s-entry');$('loader').style.display='none';
-  }
+  saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));S.entryContext=null;
+  if(silentMode){show('s-home');$('loader').style.display='none';toast('Místnost nenalezena nebo vypršela','err');}
+  else{show('s-entry');$('loader').style.display='none';}
 }
 
-// ══════════════════════════════════════
-// CREATE ROOM (30 day lifetime)
-// ══════════════════════════════════════
+// ══ CREATE ROOM ══
 async function createRoom(){
   const name=$('cr-name').value.trim(),user=$('cr-user').value.trim(),pass=$('cr-pass').value,maxU=parseInt($('cr-max').value),invOnly=$('cr-inv').checked;
-  hideErr('cr-err');
-  if(!name)return showErr('cr-err','Zadej název místnosti');
-  if(!user)return showErr('cr-err','Zadej přezdívku');
+  hideErr('cr-err');if(!name)return showErr('cr-err','Zadej název místnosti');if(!user)return showErr('cr-err','Zadej přezdívku');
   const roomId=rnd(6),color=rndColor(),now=firebase.firestore.Timestamp.now();
-  // ✅ 30 days lifetime
   const expiresAt=new firebase.firestore.Timestamp(now.seconds+ROOM_LIFETIME,now.nanoseconds);
   try{
     await db.collection('rooms').doc(roomId).set({name,password:pass,maxUsers:maxU,inviteOnly:invOnly,createdAt:now,expiresAt,adminSession:S.sid,adminKey:ADMIN_HASH});
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
     await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
     await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} vytvořil/a místnost`,isSystem:true,timestamp:now});
-    S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;
-    S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
-    addToRoomList(roomId,sref.id,name);setUsername(user);
-    history.replaceState({},'','?room='+roomId);
-    $('btn-switch-room').style.display='';enterChat();
+    S.roomId=roomId;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=true;S.roomData={name,password:pass,maxUsers:maxU,inviteOnly:invOnly,expiresAt};
+    addToRoomList(roomId,sref.id,name);setUsername(user);history.replaceState({},'','?room='+roomId);$('btn-switch-room').style.display='';enterChat();
   }catch(e){showErr('cr-err','Chyba: '+e.message);}
 }
 
-// ══════════════════════════════════════
-// JOIN BY CODE
-// ══════════════════════════════════════
+// ══ JOIN BY CODE ══
 async function joinByCode(){
-  const code=$('jn-code').value.trim().toUpperCase();
-  hideErr('jn-err');$('jn-info').classList.remove('show');
-  if(S.jnState==='code'){
-    if(code.length<4)return showErr('jn-err','Zadej kód místnosti');
-    try{
-      const doc=await db.collection('rooms').doc(code).get();
-      if(!doc.exists)return showErr('jn-err','Místnost nenalezena');
-      const data=doc.data();
-      if(Date.now()>data.expiresAt.toDate().getTime())return showErr('jn-err','Tato místnost vypršela');
-      S.jnRoomData={...data,id:code};
-      if(data.password){$('jn-pass').style.display='';$('jn-btn').textContent='Ověřit heslo →';S.jnState='password';}
-      else{showInfo('jn-info',`Místnost „${data.name}" nalezena!`);$('jn-user').style.display='';$('jn-btn').textContent='Vstoupit →';S.jnState='username';}
-    }catch(e){showErr('jn-err','Chyba: '+e.message);}
-    return;
-  }
+  const code=$('jn-code').value.trim().toUpperCase();hideErr('jn-err');$('jn-info').classList.remove('show');
+  if(S.jnState==='code'){if(code.length<4)return showErr('jn-err','Zadej kód');try{const doc=await db.collection('rooms').doc(code).get();if(!doc.exists)return showErr('jn-err','Místnost nenalezena');const data=doc.data();if(Date.now()>data.expiresAt.toDate().getTime())return showErr('jn-err','Tato místnost vypršela');S.jnRoomData={...data,id:code};if(data.password){$('jn-pass').style.display='';$('jn-btn').textContent='Ověřit →';S.jnState='password';}else{showInfo('jn-info',`Místnost „${data.name}" nalezena!`);$('jn-user').style.display='';$('jn-btn').textContent='Vstoupit →';S.jnState='username';}}catch(e){showErr('jn-err','Chyba: '+e.message);}return;}
   if(S.jnState==='password'){if($('jn-pass').value!==S.jnRoomData.password)return showErr('jn-err','Špatné heslo');showInfo('jn-info','Heslo správné!');$('jn-user').style.display='';$('jn-btn').textContent='Vstoupit →';S.jnState='username';return;}
-  if(S.jnState==='username'){
-    const user=$('jn-user').value.trim();if(!user)return showErr('jn-err','Zadej přezdívku');
-    const ssnap=await db.collection('rooms').doc(S.jnRoomData.id).collection('slots').get();
-    if(ssnap.size>=S.jnRoomData.maxUsers)return showErr('jn-err','Místnost je plná');
-    const color=rndColor(),now=firebase.firestore.Timestamp.now();
-    const sref=db.collection('rooms').doc(S.jnRoomData.id).collection('slots').doc();
-    await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
-    await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
-    S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;
-    addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);setUsername(user);
-    history.replaceState({},'','?room='+S.jnRoomData.id);
-    enterChat();
-  }
+  if(S.jnState==='username'){const user=$('jn-user').value.trim();if(!user)return showErr('jn-err','Zadej přezdívku');const ssnap=await db.collection('rooms').doc(S.jnRoomData.id).collection('slots').get();if(ssnap.size>=S.jnRoomData.maxUsers)return showErr('jn-err','Místnost je plná');const color=rndColor(),now=firebase.firestore.Timestamp.now();const sref=db.collection('rooms').doc(S.jnRoomData.id).collection('slots').doc();await sref.set({name:user,username:user,color,sessionId:S.sid,isAdmin:false,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});await db.collection('rooms').doc(S.jnRoomData.id).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});S.roomId=S.jnRoomData.id;S.slotId=sref.id;S.username=user;S.color=color;S.isAdmin=false;S.roomData=S.jnRoomData;addToRoomList(S.jnRoomData.id,sref.id,S.jnRoomData.name);setUsername(user);history.replaceState({},'','?room='+S.jnRoomData.id);enterChat();}
 }
 
-// ══════════════════════════════════════
-// INVITE FLOW
-// ══════════════════════════════════════
+// ══ INVITE FLOW ══
 async function _prepareInviteEntry(roomId,token){
   try{
-    const[rd,ssnap]=await Promise.all([
-      db.collection('rooms').doc(roomId).get(),
-      db.collection('rooms').doc(roomId).collection('slots').where('inviteToken','==',token).limit(1).get()
-    ]);
+    const[rd,ssnap]=await Promise.all([db.collection('rooms').doc(roomId).get(),db.collection('rooms').doc(roomId).collection('slots').where('inviteToken','==',token).limit(1).get()]);
     if(!rd.exists){show('s-entry');toast('Místnost nenalezena','err');$('loader').style.display='none';return;}
-    const rdata=rd.data();
-    if(Date.now()>rdata.expiresAt.toDate().getTime()){show('s-entry');toast('Místnost vypršela','err');$('loader').style.display='none';return;}
+    const rdata=rd.data();if(Date.now()>rdata.expiresAt.toDate().getTime()){show('s-entry');toast('Místnost vypršela','err');$('loader').style.display='none';return;}
     if(ssnap.empty){show('s-entry');toast('Neplatná pozvánka','err');$('loader').style.display='none';return;}
     const sdoc=ssnap.docs[0],sdata=sdoc.data();
-    if(sdata.sessionId===S.sid&&sdata.username){
-      S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;
-      addToRoomList(roomId,sdoc.id,rdata.name);
-      history.replaceState({},'','?room='+roomId);
-      enterChat();return;
-    }
+    if(sdata.sessionId===S.sid&&sdata.username){S.roomId=roomId;S.slotId=sdoc.id;S.username=sdata.username;S.color=sdata.color;S.isAdmin=false;S.roomData=rdata;addToRoomList(roomId,sdoc.id,rdata.name);history.replaceState({},'','?room='+roomId);enterChat();return;}
     if(sdata.sessionId&&sdata.sessionId!==S.sid&&sdata.username){show('s-entry');toast('Odkaz byl již použit z jiného zařízení','err');$('loader').style.display='none';return;}
-    S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};
-    $('entry-desc').textContent=`Připojuješ se do místnosti „${rdata.name}"`;
-    const saved=getUsername();if(saved)$('entry-user').value=saved;
-    history.replaceState({},'','?room='+roomId);
-    S.roomData=rdata;
-    show('s-entry');$('loader').style.display='none';
-    checkRoomExpiry();
-    _setupAdminTap();
+    S.entryContext={type:'invite',roomId,token,slotId:sdoc.id,roomData:rdata};$('entry-desc').textContent=`Připojuješ se do „${rdata.name}"`;const sv=getUsername();if(sv)$('entry-user').value=sv;history.replaceState({},'','?room='+roomId);S.roomData=rdata;show('s-entry');$('loader').style.display='none';checkRoomExpiry();_setupAdminTap();
   }catch(e){show('s-entry');$('loader').style.display='none';toast('Chyba: '+e.message,'err');}
 }
+async function joinByInvite(){const user=$('inv-user').value.trim();hideErr('inv-err');if(!user)return showErr('inv-err','Zadej přezdívku');if(!S.entryContext)return showErr('inv-err','Chybí kontext pozvánky');const{roomId,slotId,roomData}=S.entryContext;const color=rndColor(),now=firebase.firestore.Timestamp.now();try{await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;addToRoomList(roomId,slotId,roomData.name);setUsername(user);history.replaceState({},'','?room='+roomId);enterChat();}catch(e){showErr('inv-err','Chyba: '+e.message);}}
 
-async function joinByInvite(){
-  const user=$('inv-user').value.trim();hideErr('inv-err');
-  if(!user)return showErr('inv-err','Zadej přezdívku');
-  if(!S.entryContext)return showErr('inv-err','Chybí kontext pozvánky');
-  const{roomId,slotId,roomData}=S.entryContext;
-  const color=rndColor(),now=firebase.firestore.Timestamp.now();
-  try{
-    await db.collection('rooms').doc(roomId).collection('slots').doc(slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
-    await db.collection('rooms').doc(roomId).collection('messages').add({text:`${user} se připojil/a přes pozvánku`,isSystem:true,timestamp:now});
-    S.roomId=roomId;S.slotId=slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=roomData;
-    addToRoomList(roomId,slotId,roomData.name);setUsername(user);
-    history.replaceState({},'','?room='+roomId);
-    enterChat();
-  }catch(e){showErr('inv-err','Chyba: '+e.message);}
-}
+// ══ ENTRY + ADMIN TAP ══
+function _setupAdminTap(){let taps=0,to=null;const card=$('entry-card');function onTap(){taps++;clearTimeout(to);to=setTimeout(()=>{taps=0;},800);if(taps>=4){taps=0;_showAdminPrompt();}}card.addEventListener('click',onTap);card.addEventListener('touchend',e=>{if(e.changedTouches.length===1)onTap();},{passive:true});}
+function _showAdminPrompt(){const pw=prompt('🔐 Admin heslo:');if(!pw)return;hashStr(pw).then(h=>{if(h===ADMIN_HASH){localStorage.setItem('rc_admin','1');S.isAdminSession=true;toast('✓ Admin aktivován','ok');setTimeout(async()=>{const l=getRoomList();if(!l.length){show('s-home');}else{$('loader').style.display='';await showRoomSwitcher();}},600);}else{toast('Špatné heslo','err');}});}
+async function entrySubmit(){const user=$('entry-user').value.trim();hideErr('entry-err');if(!user)return showErr('entry-err','Zadej přezdívku');setUsername(user);const ctx=S.entryContext;if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}if(ctx.type==='invite'){const color=rndColor(),now=firebase.firestore.Timestamp.now();try{await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);history.replaceState({},'','?room='+ctx.roomId);enterChat();}catch(e){showErr('entry-err','Chyba: '+e.message);}}else if(ctx.type==='rejoin'){await tryRejoin(ctx.roomId,ctx.slotId,user);}}
 
-// ══════════════════════════════════════
-// ENTRY SCREEN + ADMIN TAP
-// ══════════════════════════════════════
-function _setupAdminTap(){
-  let taps=0,tapTO=null;
-  const card=$('entry-card');
-  function onTap(){taps++;clearTimeout(tapTO);tapTO=setTimeout(()=>{taps=0;},800);if(taps>=4){taps=0;_showAdminPrompt();}}
-  card.addEventListener('click',onTap);
-  card.addEventListener('touchend',e=>{if(e.changedTouches.length===1)onTap();},{passive:true});
-}
-function _showAdminPrompt(){
-  const pw=prompt('🔐 Admin heslo:');if(!pw)return;
-  hashStr(pw).then(h=>{
-    if(h===ADMIN_HASH){
-      localStorage.setItem('rc_admin','1');S.isAdminSession=true;
-      toast('✓ Admin režim aktivován','ok');
-      setTimeout(async()=>{const list=getRoomList();if(list.length===0){show('s-home');}else{$('loader').style.display='';await showRoomSwitcher();}},600);
-    }else{toast('Špatné heslo','err');}
-  });
-}
-
-async function entrySubmit(){
-  const user=$('entry-user').value.trim();hideErr('entry-err');
-  if(!user)return showErr('entry-err','Zadej přezdívku');
-  setUsername(user);
-  const ctx=S.entryContext;
-  if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}
-  if(ctx.type==='invite'){
-    const color=rndColor(),now=firebase.firestore.Timestamp.now();
-    try{
-      await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});
-      await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});
-      S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;
-      addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);
-      history.replaceState({},'','?room='+ctx.roomId);
-      enterChat();
-    }catch(e){showErr('entry-err','Chyba: '+e.message);}
-  } else if(ctx.type==='rejoin'){
-    await tryRejoin(ctx.roomId,ctx.slotId,user);
-  }
-}
-
-// ══════════════════════════════════════
-// ROOM SWITCHER
-// ══════════════════════════════════════
+// ══ ROOM SWITCHER ══
 async function showRoomSwitcher(){
-  $('loader').style.display='none';
-  const container=$('rooms-list');
-  container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';
-  show('s-rooms');
+  $('loader').style.display='none';const container=$('rooms-list');container.innerHTML='<div style="color:var(--muted2);font-size:12px;text-align:center;padding:8px">Načítám…</div>';show('s-rooms');
   try{
-    const [snap1, snap2] = await Promise.all([
-      db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),
-      db.collection('rooms').where('adminSession','==',S.sid).get()
-    ]);
-    // Merge and deduplicate
-    const seen=new Set(); const docs=[];
-    [...snap1.docs,...snap2.docs].forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);docs.push(d);}});
+    const[s1,s2]=await Promise.all([db.collection('rooms').where('adminKey','==',ADMIN_HASH).get(),db.collection('rooms').where('adminSession','==',S.sid).get()]);
+    const seen=new Set();const docs=[];[...s1.docs,...s2.docs].forEach(d=>{if(!seen.has(d.id)){seen.add(d.id);docs.push(d);}});
     docs.sort((a,b)=>(b.data().createdAt?.toDate?.()??0)-(a.data().createdAt?.toDate?.()??0));
-    container.innerHTML='';
-    if(docs.length===0){show('s-home');return;}
+    container.innerHTML='';if(!docs.length){show('s-home');return;}
     const freshList=[];
     docs.forEach(doc=>{
-      const d=doc.data();
-      const expired=Date.now()>d.expiresAt.toDate().getTime();
-      if(!expired){const local=getRoomList().find(r=>r.roomId===doc.id);freshList.push({roomId:doc.id,slotId:local?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});}
-      const card=document.createElement('div');
-      card.className='room-card'+(expired?' expired':'');
-      const msLeft=d.expiresAt.toDate().getTime()-Date.now();
-      const rem=fmtCd(msLeft);
-      const daysLeft=msLeft/86400000;
-      const warnDot=daysLeft<3&&!expired?'⚠️ ':'';
-      card.innerHTML=`<div class="room-card-icon">💬</div>
-        <div class="room-card-info">
-          <div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div>
-          <div class="room-card-meta">${expired?'⚠️ vypršela':warnDot+'místnost vyprší za '+rem+(d.password?' · 🔒':'')}</div>
-        </div>
-        ${daysLeft<3&&!expired?`<button onclick="event.stopPropagation();extendRoomById('${doc.id}')" style="height:30px;padding:0 10px;border-radius:8px;background:#f0a03033;border:1px solid #f0a03066;color:var(--orange);cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap">+30d</button>`:''}
-        <button data-room-del="${doc.id}" onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Smazat místnost">🗑️</button>
-        ${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
+      const d=doc.data();const expired=Date.now()>d.expiresAt.toDate().getTime();
+      if(!expired){const loc=getRoomList().find(r=>r.roomId===doc.id);freshList.push({roomId:doc.id,slotId:loc?.slotId||null,name:d.name,ts:d.createdAt?.toDate?.().getTime()||0});}
+      const card=document.createElement('div');card.className='room-card'+(expired?' expired':'');
+      const msLeft=d.expiresAt.toDate().getTime()-Date.now();const rem=fmtCd(msLeft);const dl=msLeft/86400000;
+      card.innerHTML=`<div class="room-card-icon">💬</div><div class="room-card-info"><div class="room-card-name">${d.name||doc.id} <span style="font-size:9px;font-weight:800;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)44;border-radius:4px;padding:1px 6px;margin-left:6px">admin</span></div><div class="room-card-meta">${expired?'⚠️ vypršela':(dl<3?'⚠️ ':'')+'vyprší za '+rem+(d.password?' · 🔒':'')}</div></div>${dl<3&&!expired?`<button onclick="event.stopPropagation();extendRoomById('${doc.id}')" style="height:30px;padding:0 10px;border-radius:8px;background:#f0a03033;border:1px solid #f0a03066;color:var(--orange);cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0">+30d</button>`:''}<button data-rdel="${doc.id}" onclick="event.stopPropagation();deleteRoom('${doc.id}')" style="width:30px;height:30px;border-radius:8px;background:#ff5c5c11;border:1px solid #ff5c5c33;color:var(--red);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🗑️</button>${expired?'':'<div style="color:var(--muted);font-size:18px">›</div>'}`;
       if(!expired)card.onclick=()=>_adminEnterRoom(doc.id,doc.data());
       container.appendChild(card);
     });
     saveRoomList(freshList);
   }catch(e){container.innerHTML=`<div style="color:var(--red);font-size:12px;text-align:center;padding:8px">Chyba: ${e.message}</div>`;}
 }
-
-async function extendRoomById(roomId){
-  try{
-    const doc=await db.collection('rooms').doc(roomId).get();
-    if(!doc.exists)return toast('Místnost nenalezena','err');
-    const exp=doc.data().expiresAt.toDate();
-    const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);
-    await db.collection('rooms').doc(roomId).update({expiresAt:newExp});
-    toast('Místnost prodloužena o 30 dní ✓','ok');
-    showRoomSwitcher();
-  }catch(e){toast('Chyba: '+e.message,'err');}
-}
-
+async function extendRoomById(roomId){try{const doc=await db.collection('rooms').doc(roomId).get();if(!doc.exists)return toast('Nenalezena','err');const exp=doc.data().expiresAt.toDate();const newExp=new firebase.firestore.Timestamp(Math.floor(exp.getTime()/1000)+ROOM_LIFETIME,0);await db.collection('rooms').doc(roomId).update({expiresAt:newExp});toast('Prodloužena o 30 dní ✓','ok');showRoomSwitcher();}catch(e){toast('Chyba: '+e.message,'err');}}
 async function deleteRoom(roomId){
-  // iOS standalone blokuje confirm() — použijeme vlastní potvrzení
-  const card = document.querySelector(`[data-room-del="${roomId}"]`);
-  if(card && !card.dataset.confirmed){
-    card.dataset.confirmed = '1';
-    card.textContent = '✓ Potvrdit';
-    card.style.background = '#ff5c5c33';
-    card.style.borderColor = '#ff5c5c88';
-    card.style.width = '80px';
-    setTimeout(()=>{
-      if(card.dataset.confirmed){
-        delete card.dataset.confirmed;
-        card.textContent = '🗑️';
-        card.style.width = '30px';
-        card.style.background = '#ff5c5c11';
-        card.style.borderColor = '#ff5c5c33';
-      }
-    }, 3000);
-    return;
-  }
+  const card=document.querySelector(`[data-rdel="${roomId}"]`);
+  if(card&&!card.dataset.confirmed){card.dataset.confirmed='1';card.textContent='✓ Potvrdit';card.style.background='#ff5c5c33';card.style.borderColor='#ff5c5c88';card.style.width='80px';setTimeout(()=>{if(card.dataset.confirmed){delete card.dataset.confirmed;card.textContent='🗑️';card.style.width='30px';card.style.background='#ff5c5c11';card.style.borderColor='#ff5c5c33';}},3000);return;}
   try{
     const batch=db.batch();
-    const [msgs,slots,reads]=await Promise.all([
-      db.collection('rooms').doc(roomId).collection('messages').limit(500).get(),
-      db.collection('rooms').doc(roomId).collection('slots').limit(500).get(),
-      db.collection('rooms').doc(roomId).collection('reads').limit(500).get(),
-    ]);
-    msgs.forEach(d=>batch.delete(d.ref));
-    slots.forEach(d=>batch.delete(d.ref));
-    reads.forEach(d=>batch.delete(d.ref));
-    batch.delete(db.collection('rooms').doc(roomId));
-    await batch.commit();
-    saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));
-    toast('Místnost smazána','ok');
-    showRoomSwitcher();
+    const[msgs,slots,reads]=await Promise.all([db.collection('rooms').doc(roomId).collection('messages').limit(500).get(),db.collection('rooms').doc(roomId).collection('slots').limit(500).get(),db.collection('rooms').doc(roomId).collection('reads').limit(500).get()]);
+
+    msgs.forEach(d=>batch.delete(d.ref));slots.forEach(d=>batch.delete(d.ref));reads.forEach(d=>batch.delete(d.ref));
+    batch.delete(db.collection('rooms').doc(roomId));await batch.commit();
+    saveRoomList(getRoomList().filter(r=>r.roomId!==roomId));toast('Místnost smazána','ok');showRoomSwitcher();
   }catch(e){toast('Chyba: '+e.message,'err');}
 }
-
 async function _adminEnterRoom(roomId,roomData){
   try{
-    const slotsSnap=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
-    if(!slotsSnap.empty){
-      const sdoc=slotsSnap.docs[0],slot=sdoc.data();
-      S.roomId=roomId;S.slotId=sdoc.id;S.username=slot.username;S.color=slot.color;
-      S.isAdmin=true;S.roomData=roomData;
-      addToRoomList(roomId,sdoc.id,roomData.name);$('btn-switch-room').style.display='';
-      history.replaceState({},'','?room='+roomId);
-      enterChat();return;
-    }
-    const saved=getUsername()||'Admin';
-    const color=rndColor(),now=firebase.firestore.Timestamp.now();
+    const ss=await db.collection('rooms').doc(roomId).collection('slots').where('sessionId','==',S.sid).limit(1).get();
+    if(!ss.empty){const sdoc=ss.docs[0],slot=sdoc.data();S.roomId=roomId;S.slotId=sdoc.id;S.username=slot.username;S.color=slot.color;S.isAdmin=true;S.roomData=roomData;addToRoomList(roomId,sdoc.id,roomData.name);$('btn-switch-room').style.display='';history.replaceState({},'','?room='+roomId);enterChat();return;}
+    const sv=getUsername()||'Admin';const color=rndColor(),now=firebase.firestore.Timestamp.now();
     const sref=db.collection('rooms').doc(roomId).collection('slots').doc();
-    await sref.set({name:saved,username:saved,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
-    S.roomId=roomId;S.slotId=sref.id;S.username=saved;S.color=color;S.isAdmin=true;S.roomData=roomData;
-    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';
-    history.replaceState({},'','?room='+roomId);
-    enterChat();
+    await sref.set({name:sv,username:sv,color,sessionId:S.sid,isAdmin:true,online:true,lastSeen:now,typing:false,typingAt:null,joinedAt:now,inviteToken:null});
+    S.roomId=roomId;S.slotId=sref.id;S.username=sv;S.color=color;S.isAdmin=true;S.roomData=roomData;
+    addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';history.replaceState({},'','?room='+roomId);enterChat();
   }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
+function goToRooms(){S.unsubs.forEach(u=>u());S.unsubs=[];clearInterval(S.heartbeat);clearInterval(S.countdown);S.roomId=null;S.slotId=null;S.isAdmin=false;S.roomData=null;S.username=null;S.color=null;S.replyTo=null;$('btn-switch-room').style.display='none';$('sb-inv').style.display='none';$('mob-sb-inv').style.display='none';$('room-expiry-banner').classList.remove('show');showRoomSwitcher();}
 
-function goToRooms(){
-  S.unsubs.forEach(u=>u());S.unsubs=[];
-  clearInterval(S.heartbeat);clearInterval(S.countdown);
-  S.roomId=null;S.slotId=null;S.isAdmin=false;S.roomData=null;
-  S.username=null;S.color=null;S.replyTo=null;
-  $('btn-switch-room').style.display='none';$('sb-inv').style.display='none';
-  $('mob-sb-inv').style.display='none';
-  $('room-expiry-banner').classList.remove('show');
-  showRoomSwitcher();
-}
-
-// ══════════════════════════════════════
-// ENTER CHAT
-// ══════════════════════════════════════
+// ══ ENTER CHAT ══
 function enterChat(){
-  $('loader').style.display='none';show('s-chat');
-  requestNotifPerm();
-  $('h-name').textContent='╱ '+S.roomData.name;
-  $('mob-sb-room-name').textContent=S.roomData.name;
+  $('loader').style.display='none';show('s-chat');requestNotifPerm();
+  $('h-name').textContent='╱ '+S.roomData.name;$('mob-sb-room-name').textContent=S.roomData.name;
   if(S.roomData.password)$('h-lock').style.display='';
-  updateHeaderBadge();
-  S.countdown=setInterval(updateHeaderBadge,60000);
+  updateHeaderBadge();S.countdown=setInterval(updateHeaderBadge,60000);
   if(S.isAdmin){$('sb-inv').style.display='';$('mob-sb-inv').style.display='';$('btn-switch-room').style.display='';}
-  renderSidebarActions();
-  checkRoomExpiry();
-  _setupSwipeForSidebar();
+  renderSidebarActions();renderThemeGrid();checkRoomExpiry();
+  _setupSwipeSidebar();setupMentions();
 
-  const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{
-    S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});
-    renderSidebar();renderTyping();
-  });
-  S.unsubs.push(uSlots);
+  // Apply saved custom bg
+  const savedBg=localStorage.getItem('rc_custom_bg');
+  if(savedBg&&localStorage.getItem('rc_theme')==='custom'){applyCustomBg(savedBg);$('custom-bg-url').value=savedBg;}
 
-  const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{
-    snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});
-    _updateReadTicks();
-  });
-  S.unsubs.push(uReads);
-
-  // ✅ Load messages from last 24h (older ones get cleaned up)
+  const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});S.unsubs.push(uSlots);
+  const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});_updateReadTicks();});S.unsubs.push(uReads);
   const cutoff=new Date(Date.now()-MSG_LIFETIME);
-  const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages')
-    .where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff))
-    .orderBy('timestamp','asc').limitToLast(200)
-    .onSnapshot(snap=>renderMessages(snap));
-  S.unsubs.push(uMsgs);
+  const uMsgs=db.collection('rooms').doc(S.roomId).collection('messages').where('timestamp','>',firebase.firestore.Timestamp.fromDate(cutoff)).orderBy('timestamp','asc').limitToLast(200).onSnapshot(snap=>renderMessages(snap));S.unsubs.push(uMsgs);
 
-  heartbeat();S.heartbeat=setInterval(heartbeat,20000);
-  setInterval(cleanExpired,10000);
-
+  heartbeat();S.heartbeat=setInterval(heartbeat,20000);setInterval(cleanExpired,15000);
   const inp=$('msg-inp');
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!$('mention-drop').classList.contains('show')){e.preventDefault();sendMsg();}});
   inp.addEventListener('input',onTyping);
   inp.addEventListener('focus',()=>setTimeout(()=>$('msgs').scrollTop=$('msgs').scrollHeight,300));
-
   document.addEventListener('click',e=>{
-    if(!e.target.closest('#inp-ep')&&!e.target.closest('.emoji-tog'))$('inp-ep').style.display='none';
+    if(!e.target.closest('#media-panel')&&!e.target.closest('#media-btn'))closeMediaPanel();
+    if(!e.target.closest('#mention-drop')&&!e.target.closest('#msg-inp'))hideMentionDrop();
     if(!e.target.closest('.ep')&&!e.target.closest('.bact-btn'))document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
     if(!e.target.closest('.bubble-wrap'))document.querySelectorAll('.bubble-wrap.menu-open').forEach(w=>w.classList.remove('menu-open'));
   });
   setTimeout(()=>{if(isIos()&&!window.navigator.standalone&&!localStorage.getItem('pwa_d'))showPwaBanner('ios');},3000);
 }
-
-async function heartbeat(){
-  if(!S.roomId||!S.slotId)return;
-  try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
-}
-
-// ✅ Clean expired messages AND messages older than 24h
+async function heartbeat(){if(!S.roomId||!S.slotId)return;try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}}
 async function cleanExpired(){
   if(!S.roomId)return;
   try{
-    const batch=db.batch();
-    const now=new Date();
-    const cutoff=firebase.firestore.Timestamp.fromDate(new Date(Date.now()-MSG_LIFETIME));
+    const batch=db.batch();const cutoff=firebase.firestore.Timestamp.fromDate(new Date(Date.now()-MSG_LIFETIME));
+    const[s1,s2]=await Promise.all([db.collection('rooms').doc(S.roomId).collection('messages').where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(new Date())).limit(10).get(),db.collection('rooms').doc(S.roomId).collection('messages').where('timestamp','<',cutoff).limit(10).get()]);
+    const all=[...s1.docs,...s2.docs];
 
-    // Delete messages with expiresAt in the past
-    const snap1=await db.collection('rooms').doc(S.roomId).collection('messages')
-      .where('expiresAt','<=',firebase.firestore.Timestamp.fromDate(now)).limit(10).get();
-    snap1.forEach(d=>batch.delete(d.ref));
-
-    // Delete messages older than 24h (all messages)
-    const snap2=await db.collection('rooms').doc(S.roomId).collection('messages')
-      .where('timestamp','<',cutoff).limit(10).get();
-    snap2.forEach(d=>batch.delete(d.ref));
-
-    if(!snap1.empty||!snap2.empty) await batch.commit();
+    all.forEach(d=>batch.delete(d.ref));
+    if(all.length)await batch.commit();
   }catch(e){}
 }
 
-// ══════════════════════════════════════
-// READ RECEIPTS
-// ══════════════════════════════════════
+// ══ READ RECEIPTS ══
 const _readDone=new Set();
-const _viewObserver=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObserver.unobserve(e.target);}});
-},{threshold:0.8});
+const _viewObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const id=e.target.dataset.msgid;if(id)_markRead(id);_viewObs.unobserve(e.target);}});},{threshold:0.8});
+async function _markRead(msgId){if(_readDone.has(msgId)||!S.roomId||!S.slotId)return;_readDone.add(msgId);try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId).set({[S.slotId]:Date.now()},{merge:true});}catch(e){}}
+function _updateReadTicks(){document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{const msgId=rr.dataset.msgid,sender=rr.dataset.sender;const reads=S.reads[msgId]||{};const readers=Object.keys(reads).filter(id=>id!==sender);const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);const tick=rr.querySelector('.read-tick'),nm=rr.querySelector('.read-names');if(!tick)return;if(!readers.length){tick.textContent='✓';tick.className='read-tick';}else if(others.length&&readers.length>=others.length){tick.textContent='✓✓';tick.className='read-tick all';}else{tick.textContent='✓✓';tick.className='read-tick seen';}if(nm){nm.textContent=readers.map(id=>S.slots[id]?.username).filter(Boolean).join(', ');}});}
 
-async function _markRead(msgId){
-  if(_readDone.has(msgId)||!S.roomId||!S.slotId)return;
-  _readDone.add(msgId);
-  try{await db.collection('rooms').doc(S.roomId).collection('reads').doc(msgId).set({[S.slotId]:Date.now()},{merge:true});}catch(e){}
-}
-
-function _updateReadTicks(){
-  document.querySelectorAll('.read-receipt[data-msgid]').forEach(rr=>{
-    const msgId=rr.dataset.msgid,sender=rr.dataset.sender;
-    const reads=S.reads[msgId]||{};
-    const readers=Object.keys(reads).filter(id=>id!==sender);
-    const others=Object.values(S.slots).filter(s=>s.username&&s.id!==sender);
-    const tick=rr.querySelector('.read-tick'),nm=rr.querySelector('.read-names');
-    if(!tick)return;
-    if(readers.length===0){tick.textContent='✓';tick.className='read-tick';}
-    else if(others.length>0&&readers.length>=others.length){tick.textContent='✓✓';tick.className='read-tick all';}
-    else{tick.textContent='✓✓';tick.className='read-tick seen';}
-    if(nm){const names=readers.map(id=>S.slots[id]?.username).filter(Boolean);nm.textContent=names.join(', ');}
-  });
-}
-
-// ══════════════════════════════════════
-// EXPIRY COUNTDOWN ON MESSAGES
-// ══════════════════════════════════════
+// ══ EXPIRY COUNTDOWN ══
 const _cdTimers={};
-function _startCountdown(msgId,exp,badgeEl,wrapEl){
-  if(_cdTimers[msgId])return;
-  function tick(){
-    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    if(rem<=0){
-      clearInterval(_cdTimers[msgId]);delete _cdTimers[msgId];
-      const grp=wrapEl.closest('.msg-group');
-      if(grp){const ws=grp.querySelectorAll('.bubble-wrap');if(ws.length<=1)grp.remove();else wrapEl.remove();}
-      return;
-    }
-    badgeEl.textContent=`⏱ zmizí za ${fmtExpiry(rem)}`;
-  }
-  tick();_cdTimers[msgId]=setInterval(tick,1000);
-}
+function _startCd(msgId,exp,badgeEl,wrapEl){if(_cdTimers[msgId])return;function tick(){const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));if(rem<=0){clearInterval(_cdTimers[msgId]);delete _cdTimers[msgId];const grp=wrapEl.closest('.msg-group');if(grp){const ws=grp.querySelectorAll('.bubble-wrap');if(ws.length<=1)grp.remove();else wrapEl.remove();}return;}badgeEl.textContent=`⏱ zmizí za ${fmtExp(rem)}`;}tick();_cdTimers[msgId]=setInterval(tick,1000);}
 
-// ══════════════════════════════════════
-// SIDEBAR
-// ══════════════════════════════════════
+// ══ SIDEBAR ══
 function renderSidebar(){
-  const online=[],offline=[];
-  Object.values(S.slots).forEach(s=>{if(s.username)(isOnline(s)?online:offline).push(s);});
-
-  // Desktop
-  $('sb-on-lbl').textContent=`online — ${online.length}`;
-  $('sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
-  if(offline.length>0){
-    $('sb-off-sec').style.display='';
-    $('sb-off-lbl').textContent=`offline — ${offline.length}`;
-    $('sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');
-  } else $('sb-off-sec').style.display='none';
+  const on=[],off=[];Object.values(S.slots).forEach(s=>{if(s.username)(isOnline(s)?on:off).push(s);});
+  $('sb-on-lbl').textContent=`online — ${on.length}`;$('sb-on').innerHTML=on.map(s=>uHtml(s,true)).join('');
+  if(off.length){$('sb-off-sec').style.display='';$('sb-off-lbl').textContent=`offline — ${off.length}`;$('sb-off').innerHTML=off.map(s=>uHtml(s,false)).join('');}else $('sb-off-sec').style.display='none';
   if(S.isAdmin)renderInvSlots();
-
-  // Mobile
-  $('mob-sb-on-lbl').textContent=`online — ${online.length}`;
-  $('mob-sb-on').innerHTML=online.map(s=>uHtml(s,true)).join('');
-  if(offline.length>0){
-    $('mob-sb-off-sec').style.display='';
-    $('mob-sb-off-lbl').textContent=`offline — ${offline.length}`;
-    $('mob-sb-off').innerHTML=offline.map(s=>uHtml(s,false)).join('');
-  } else $('mob-sb-off-sec').style.display='none';
+  $('mob-sb-on-lbl').textContent=`online — ${on.length}`;$('mob-sb-on').innerHTML=on.map(s=>uHtml(s,true)).join('');
+  if(off.length){$('mob-sb-off-sec').style.display='';$('mob-sb-off-lbl').textContent=`offline — ${off.length}`;$('mob-sb-off').innerHTML=off.map(s=>uHtml(s,false)).join('');}else $('mob-sb-off-sec').style.display='none';
   if(S.isAdmin)renderMobInvSlots();
 }
-
-function uHtml(slot,forceOnline){
-  const me=slot.id===S.slotId,on=forceOnline;
-  const typing=slot.typing&&slot.typingAt&&(Date.now()-(slot.typingAt.toDate?.().getTime()??0))<5000;
-  const dotCls=typing?'d-typing':(on?'d-on':'d-off');
-  const lastSeen=!on&&slot.lastSeen?`<div class="u-lastseen">byl/a: ${fmtDate(slot.lastSeen)}</div>`:'';
-  const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" data-kick="${slot.id}" onclick="kickUser('${slot.id}')" title="Vyhodit">✕</button>`:'';
-  return `<div class="u-item${me?' me':''}">
-    <div class="u-av" style="background:${slot.color}">${initials(slot.username)}<div class="sdot ${dotCls}"></div></div>
-    <div class="u-info">
-      <div class="u-name">${slot.username}</div>
-      <div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div>
-      ${lastSeen}
-    </div>
-    ${me?`<span class="badge">${slot.isAdmin?'admin':'ty'}</span>`:''}
-    ${!me&&slot.isAdmin?'<span class="badge">admin</span>':''}
-    ${kickBtn}
-  </div>`;
+function uHtml(slot,on){
+  const me=slot.id===S.slotId;const typing=slot.typing&&slot.typingAt&&(Date.now()-(slot.typingAt.toDate?.().getTime()??0))<5000;const dotCls=typing?'d-typing':(on?'d-on':'d-off');const nick=getNick(slot.id);const ls=!on&&slot.lastSeen?`<div class="u-lastseen">byl/a: ${fmtDate(slot.lastSeen)}</div>`:'';const kickBtn=S.isAdmin&&!me&&!slot.isAdmin?`<button class="kick-btn" data-kick="${slot.id}" onclick="kickUser('${slot.id}')">✕</button>`:'';
+  return`<div class="u-item${me?' me':''}" ${!me?`onclick="openNickModal('${slot.id}')" title="Přezdívka"`:''}><div class="u-av" style="background:${slot.color}">${initials(slot.username)}<div class="sdot ${dotCls}"></div></div><div class="u-info"><div class="u-name">${slot.username}${nick?`<span class="nick-tag">(${nick})</span>`:''}</div><div class="u-sub">${typing?'píše…':(on?'online':'offline')}</div>${ls}</div>${me?`<span class="badge">${slot.isAdmin?'admin':'ty'}</span>`:''}${!me&&slot.isAdmin?'<span class="badge">admin</span>':''}${kickBtn}</div>`;
 }
-
-function renderInvSlots(){
-  const total=S.roomData.maxUsers,used=Object.values(S.slots).length;
-  const invSlots=Object.values(S.slots).filter(s=>s.inviteToken);
-  $('sb-inv-list').innerHTML=_invSlotsHtml(invSlots);
-  $('sb-new-inv').style.display=used>=total?'none':'';
-}
-function renderMobInvSlots(){
-  const total=S.roomData.maxUsers,used=Object.values(S.slots).length;
-  const invSlots=Object.values(S.slots).filter(s=>s.inviteToken);
-  $('mob-sb-inv-list').innerHTML=_invSlotsHtml(invSlots);
-}
-function _invSlotsHtml(invSlots){
-  return invSlots.map(s=>{
-    const active=s.username&&s.sessionId;
-    return `<div class="inv-slot ${active?'used':'pending'}" onclick="${active?'':'showCopyInvM(\''+s.inviteToken+'\',\''+s.name+'\')'}">
-      <div style="flex:1;min-width:0"><div class="inv-slot-name">${s.name||'?'}</div><div class="inv-slot-st">${active?'✓ připojen/a':'čeká'}</div></div>
-      ${!active?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`:''}
-    </div>`;
-  }).join('');
-}
-
+function renderInvSlots(){const total=S.roomData.maxUsers,used=Object.values(S.slots).length;const inv=Object.values(S.slots).filter(s=>s.inviteToken);$('sb-inv-list').innerHTML=_invHtml(inv);$('sb-new-inv').style.display=used>=total?'none':'';}
+function renderMobInvSlots(){const inv=Object.values(S.slots).filter(s=>s.inviteToken);$('mob-sb-inv-list').innerHTML=_invHtml(inv);}
+function _invHtml(invSlots){return invSlots.map(s=>{const active=s.username&&s.sessionId;return`<div class="inv-slot ${active?'used':'pending'}" onclick="${active?'':'showCopyInvM(\''+s.inviteToken+'\',\''+s.name+'\')'}"><div style="flex:1;min-width:0"><div>${s.name||'?'}</div><div style="font-size:9px;color:var(--muted);margin-top:2px">${active?'✓ připojen/a':'čeká'}</div></div>${!active?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>':''}</div>`;}).join('');}
 function openNewInvModal(){$('ni-name').value='';hideErr('ni-err');openM('m-new-inv');}
-async function createInvite(){
-  const name=$('ni-name').value.trim();hideErr('ni-err');if(!name)return showErr('ni-err','Zadej jméno pro slot');
-  const total=S.roomData.maxUsers,ssnap=await db.collection('rooms').doc(S.roomId).collection('slots').get();
-  if(ssnap.size>=total){showErr('ni-err','Místnost je plná');return;}
-  const token=rnd(12).toLowerCase();
-  try{
-    await db.collection('rooms').doc(S.roomId).collection('slots').doc().set({name,username:null,color:null,sessionId:null,isAdmin:false,online:false,lastSeen:null,typing:false,typingAt:null,joinedAt:null,inviteToken:token});
-    closeM('m-new-inv');showCopyInvM(token,name);
-  }catch(e){showErr('ni-err','Chyba: '+e.message);}
-}
-function showCopyInvM(token,name){
-  const url=`${location.origin}${location.pathname}?room=${S.roomId}&invite=${token}`;
-  $('ci-title').textContent=`Pozvánka pro ${name}`;$('ci-url').textContent=url;openM('m-copy-inv');
-}
+async function createInvite(){const name=$('ni-name').value.trim();hideErr('ni-err');if(!name)return showErr('ni-err','Zadej jméno');const ssnap=await db.collection('rooms').doc(S.roomId).collection('slots').get();if(ssnap.size>=S.roomData.maxUsers){showErr('ni-err','Místnost je plná');return;}const token=rnd(12).toLowerCase();try{await db.collection('rooms').doc(S.roomId).collection('slots').doc().set({name,username:null,color:null,sessionId:null,isAdmin:false,online:false,lastSeen:null,typing:false,typingAt:null,joinedAt:null,inviteToken:token});closeM('m-new-inv');showCopyInvM(token,name);}catch(e){showErr('ni-err','Chyba: '+e.message);}}
+function showCopyInvM(token,name){const url=`${location.origin}${location.pathname}?room=${S.roomId}&invite=${token}`;$('ci-title').textContent=`Pozvánka pro ${name}`;$('ci-url').textContent=url;openM('m-copy-inv');}
 function doCopyInv(){navigator.clipboard.writeText($('ci-url').textContent).then(()=>toast('Odkaz zkopírován! 📋','ok'));}
 function copyCode(){navigator.clipboard.writeText(S.roomId).then(()=>toast(`Kód ${S.roomId} zkopírován!`,'ok'));}
+async function kickUser(slotId){const btn=document.querySelector(`.kick-btn[data-kick="${slotId}"]`);if(btn&&!btn.dataset.confirmed){btn.dataset.confirmed='1';btn.textContent='✓?';btn.style.background='#ff5c5c33';setTimeout(()=>{if(btn.dataset.confirmed){delete btn.dataset.confirmed;btn.textContent='✕';btn.style.background='';}},2500);return;}try{const slot=S.slots[slotId];await db.collection('rooms').doc(S.roomId).collection('slots').doc(slotId).delete();if(slot?.username)await db.collection('rooms').doc(S.roomId).collection('messages').add({text:`${slot.username} byl/a odstraněn/a adminem`,isSystem:true,timestamp:firebase.firestore.FieldValue.serverTimestamp()});toast('Uživatel vyhozen','ok');}catch(e){toast('Chyba: '+e.message,'err');}}
 
-// ── KICK USER ──
-async function kickUser(slotId){
-  // iOS standalone blokuje confirm() — dvoukrokové potvrzení
-  const btn = document.querySelector(`.kick-btn[data-kick="${slotId}"]`);
-  if(btn && !btn.dataset.confirmed){
-    btn.dataset.confirmed='1';
-    btn.textContent='✓?';
-    btn.style.background='#ff5c5c33';
-    setTimeout(()=>{if(btn.dataset.confirmed){delete btn.dataset.confirmed;btn.textContent='✕';btn.style.background='';}},2500);
-    return;
-  }
-  try{
-    const slot=S.slots[slotId];
-    await db.collection('rooms').doc(S.roomId).collection('slots').doc(slotId).delete();
-    if(slot?.username){
-      await db.collection('rooms').doc(S.roomId).collection('messages').add({
-        text:`${slot.username} byl/a odstraněn/a adminem`,isSystem:true,
-        timestamp:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-    toast('Uživatel vyhozen','ok');
-  }catch(e){toast('Chyba: '+e.message,'err');}
-}
-
-// ══════════════════════════════════════
-// MESSAGES
-// ══════════════════════════════════════
-let lastMsgCount=0;
-
+// ══ MESSAGES ══
 function renderMessages(snap){
-  const box=$('msgs');
-  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
-  const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;
-  lastMsgCount=snap.size;
-
-  // Count today's messages
-  const midnight=new Date();midnight.setHours(0,0,0,0);
-  let cnt=0;
-  snap.forEach(doc=>{
-    const d=doc.data();
-    if(!d.isSystem&&d.timestamp){
-      const t=d.timestamp.toDate?d.timestamp.toDate():new Date(d.timestamp);
-      if(t>=midnight)cnt++;
-    }
-  });
-  todayMsgCount=cnt;
-  updateHeaderBadge();
-
+  const box=$('msgs');const atBot=box.scrollHeight-box.scrollTop-box.clientHeight<100;const hasNew=snap.size>lastMsgCount&&lastMsgCount>0;lastMsgCount=snap.size;
+  const midnight=new Date();midnight.setHours(0,0,0,0);let cnt=0,mentionMe=false;
+  snap.forEach(doc=>{const d=doc.data();if(!d.isSystem&&d.timestamp){const t=d.timestamp.toDate?d.timestamp.toDate():new Date(d.timestamp);if(t>=midnight)cnt++;}if(hasNew&&d.slotId!==S.slotId&&d.text&&d.text.includes('@'+S.username)){const t=d.timestamp?.toDate?.();if(t&&Date.now()-t.getTime()<3000)mentionMe=true;}});
+  todayMsgCount=cnt;updateHeaderBadge();
   box.innerHTML='';let lastUser=null;
   snap.forEach(doc=>{
     const msg={id:doc.id,...doc.data()};
     if(msg.expiresAt){const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);if(Date.now()>exp.getTime())return;}
     if(msg.isSystem){const el=document.createElement('div');el.className='sys-msg';el.innerHTML=`<span>${msg.text}</span>`;box.appendChild(el);lastUser=null;return;}
-    const own=msg.slotId===S.slotId,newGroup=msg.username!==lastUser;
-    if(newGroup){
-      const g=document.createElement('div');g.className=`msg-group ${own?'own':'other'}`;
-      g.innerHTML=`<div class="msg-meta"><div class="mm-av" style="background:${msg.color}">${initials(msg.username)}</div><span>${msg.username}</span><span class="mm-time">${fmtTime(msg.timestamp)}</span></div>`;
-      g.appendChild(makeBubbleWrap(msg));box.appendChild(g);
-    }else{
-      const last=box.querySelector('.msg-group:last-child');if(last)last.appendChild(makeBubbleWrap(msg));
-    }
+    const own=msg.slotId===S.slotId,newGrp=msg.username!==lastUser;
+    const nick=getNick(msg.slotId)||msg.username;
+    if(newGrp){const g=document.createElement('div');g.className=`msg-group ${own?'own':'other'}`;g.innerHTML=`<div class="msg-meta"><div class="mm-av" style="background:${msg.color}">${initials(msg.username)}</div><span>${nick}</span><span class="mm-time">${fmtTime(msg.timestamp)}</span></div>`;g.appendChild(makeBubble(msg));box.appendChild(g);}
+    else{const last=box.querySelector('.msg-group:last-child');if(last)last.appendChild(makeBubble(msg));}
     lastUser=msg.username;
   });
-
-  if(atBottom)box.scrollTop=box.scrollHeight;
-  if(hasNew){
-    const ld=Array.from(snap.docs).pop()?.data();
-    if(ld&&ld.slotId!==S.slotId){playNotif();showPup();}
-  }
+  if(atBot)box.scrollTop=box.scrollHeight;
+  if(hasNew){const ld=Array.from(snap.docs).pop()?.data();if(ld&&ld.slotId!==S.slotId){playNotif();showPup(mentionMe);}if(mentionMe)toast(`📣 @${S.username} — tě někdo zmínil!`);}
 }
 
-function makeBubbleWrap(msg){
+function makeBubble(msg){
   const own=msg.slotId===S.slotId;
-  const wrap=document.createElement('div');wrap.className='bubble-wrap';wrap.style.overflow='visible';
-
-  // Admin can swipe-delete any message
-  if(S.isAdmin){
-    const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';
-    wrap.appendChild(sh);setupSwipe(wrap,msg.id);
-  }
-
+  const wrap=document.createElement('div');wrap.className='bubble-wrap';
+  if(S.isAdmin){const sh=document.createElement('div');sh.className='swipe-hint';sh.textContent='🗑️';wrap.appendChild(sh);setupSwipe(wrap,msg.id);}
   const b=document.createElement('div');b.className='bubble';
-  if(msg.replyTo){
-    const qbar=document.createElement('div');qbar.className='quote-bar';
-    qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${msg.replyTo.text.slice(0,80)}${msg.replyTo.text.length>80?'…':''}</div>`;
-    b.appendChild(qbar);
+  // Reply quote
+  if(msg.replyTo){const qbar=document.createElement('div');qbar.className='quote-bar';qbar.innerHTML=`<div class="quote-name">${msg.replyTo.username}</div><div>${(msg.replyTo.text||'[GIF]').slice(0,80)}</div>`;b.appendChild(qbar);}
+  // Content by type
+  if(msg.type==='gif'){
+    const gw=document.createElement('div');gw.className='gif-bubble';const gimg=document.createElement('img');gimg.src=msg.mediaUrl;gimg.alt='GIF';gw.appendChild(gimg);gw.onclick=()=>openLightbox(msg.mediaUrl);b.appendChild(gw);
+  }else{
+    const txt=document.createElement('div');txt.innerHTML=parseMentions(msg.text||'');b.appendChild(txt);
   }
-  const txt=document.createElement('div');txt.textContent=msg.text;b.appendChild(txt);
-
-  if(msg.expiresAt){
-    const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);
-    const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));
-    const eb=document.createElement('div');eb.className='expiry-badge';
-    eb.textContent=`⏱ zmizí za ${fmtExpiry(rem)||'chvíli'}`;b.appendChild(eb);
-    _startCountdown(msg.id,exp,eb,wrap);
-  }
-
-  if(own){
-    const rr=document.createElement('div');rr.className='read-receipt';rr.dataset.msgid=msg.id;rr.dataset.sender=S.slotId;
-    const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);
-    const nm=document.createElement('span');nm.className='read-names';rr.appendChild(nm);
-    b.appendChild(rr);
-  }
-  if(!own){wrap.dataset.msgid=msg.id;_viewObserver.observe(wrap);}
-
-  const re=document.createElement('div');re.className='bubble-re';
-  const reactions=msg.reactions||{};
-  Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{
-    const chip=document.createElement('div');chip.className='re-chip';
-    chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;
-    chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);
-  });
-  b.appendChild(re);
-
-  // Actions menu
+  // Edited badge
+  if(msg.edited){const eb=document.createElement('span');eb.className='edited-badge';eb.textContent='✏️ upraveno';eb.onclick=e=>{e.stopPropagation();showEditHistory(msg.editHistory||[],msg.text);};b.appendChild(eb);}
+  // Expiry
+  if(msg.expiresAt){const exp=msg.expiresAt.toDate?msg.expiresAt.toDate():new Date(msg.expiresAt);const rem=Math.max(0,Math.floor((exp.getTime()-Date.now())/1000));const eb=document.createElement('div');eb.className='expiry-badge';eb.textContent=`⏱ zmizí za ${fmtExp(rem)||'chvíli'}`;b.appendChild(eb);_startCd(msg.id,exp,eb,wrap);}
+  // Read receipts (own)
+  if(own){const rr=document.createElement('div');rr.className='read-receipt';rr.dataset.msgid=msg.id;rr.dataset.sender=S.slotId;const tick=document.createElement('span');tick.className='read-tick';tick.textContent='✓';rr.appendChild(tick);const nm=document.createElement('span');nm.className='read-names';rr.appendChild(nm);b.appendChild(rr);}
+  if(!own){wrap.dataset.msgid=msg.id;_viewObs.observe(wrap);}
+  // Del confirm bar
+  const dcBar=document.createElement('div');dcBar.className='del-confirm-bar';dcBar.innerHTML=`<span>🗑️ Opravdu smazat?</span><button onclick="deleteMsg('${msg.id}')">Smazat</button><button onclick="this.closest('.del-confirm-bar').classList.remove('show')">Zrušit</button>`;b.appendChild(dcBar);
+  // Reactions
+  const re=document.createElement('div');re.className='bubble-re';const reactions=msg.reactions||{};Object.keys(reactions).filter(k=>reactions[k]>0).forEach(emoji=>{const chip=document.createElement('div');chip.className='re-chip';chip.innerHTML=`${emoji} <span class="cnt">${reactions[emoji]}</span>`;chip.onclick=()=>addReaction(msg.id,emoji);re.appendChild(chip);});b.appendChild(re);
+  // Actions
   const acts=document.createElement('div');acts.className='bubble-actions';
-
-  const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';
-  btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
-
-  const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';
-  btnRe.onclick=ev=>{ev.stopPropagation();toggleBubbleEp(msg.id,b);};
-
-  // ✅ Copy message button
-  const btnCopy=document.createElement('div');btnCopy.className='bact-btn';btnCopy.textContent='📋';btnCopy.title='Kopírovat';
-  btnCopy.onclick=ev=>{ev.stopPropagation();copyMsg(msg.text);wrap.classList.remove('menu-open');};
-
+  const btnReply=document.createElement('div');btnReply.className='bact-btn';btnReply.textContent='↩️';btnReply.title='Citovat';btnReply.onclick=ev=>{ev.stopPropagation();setReply(msg);wrap.classList.remove('menu-open');};
+  const btnRe=document.createElement('div');btnRe.className='bact-btn';btnRe.textContent='😊';btnRe.title='Reakce';btnRe.onclick=ev=>{ev.stopPropagation();toggleEp(msg.id,b);};
+  const btnCopy=document.createElement('div');btnCopy.className='bact-btn';btnCopy.textContent='📋';btnCopy.title='Kopírovat';btnCopy.onclick=ev=>{ev.stopPropagation();copyMsg(msg.text||msg.mediaUrl||'');wrap.classList.remove('menu-open');};
   acts.appendChild(btnReply);acts.appendChild(btnRe);acts.appendChild(btnCopy);
-
-  if(S.isAdmin){
-    const btnDel=document.createElement('div');btnDel.className='bact-btn';btnDel.textContent='🗑️';btnDel.title='Smazat';
-    btnDel.onclick=ev=>{ev.stopPropagation();deleteMsg(msg.id);};
-    acts.appendChild(btnDel);
-  }
+  // Edit (own text)
+  if(own&&(!msg.type||msg.type==='text'||!msg.type)){const btnEdit=document.createElement('div');btnEdit.className='bact-btn';btnEdit.textContent='✏️';btnEdit.title='Upravit';btnEdit.onclick=ev=>{ev.stopPropagation();startEdit(msg.id,msg.text||'',b,wrap);};acts.appendChild(btnEdit);}
+  if(S.isAdmin){const btnDel=document.createElement('div');btnDel.className='bact-btn';btnDel.textContent='🗑️';btnDel.title='Smazat';btnDel.onclick=ev=>{ev.stopPropagation();deleteMsg(msg.id);};acts.appendChild(btnDel);}
   wrap.appendChild(acts);wrap.appendChild(b);
-
-  let lpTO;
-  wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),400);},{passive:true});
-  wrap.addEventListener('touchend',()=>clearTimeout(lpTO),{passive:true});
-  wrap.addEventListener('touchmove',()=>clearTimeout(lpTO),{passive:true});
+  let lpTO;wrap.addEventListener('touchstart',()=>{lpTO=setTimeout(()=>wrap.classList.add('menu-open'),420);},{passive:true});wrap.addEventListener('touchend',()=>clearTimeout(lpTO),{passive:true});wrap.addEventListener('touchmove',()=>clearTimeout(lpTO),{passive:true});
   return wrap;
 }
 
-function toggleBubbleEp(msgId,bubbleEl){
-  document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());
-  const ep=document.createElement('div');ep.className='ep';ep.dataset.msg=msgId;
-  ep.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease';
-  EMOJIS.forEach(e=>{
-    const o=document.createElement('div');o.className='eo';o.textContent=e;
-    o.onclick=()=>{addReaction(msgId,e);ep.remove();};ep.appendChild(o);
-  });
-  bubbleEl.style.position='relative';bubbleEl.appendChild(ep);
-}
-
-async function addReaction(msgId,emoji){
-  try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update({[`reactions.${emoji}`]:firebase.firestore.FieldValue.increment(1)});}catch(e){}
-}
-
+function toggleEp(msgId,bubbleEl){document.querySelectorAll('.ep[data-msg]').forEach(p=>p.remove());const ep=document.createElement('div');ep.className='ep';ep.dataset.msg=msgId;ep.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:220px;z-index:100;box-shadow:0 8px 24px #0008;animation:fadeUp .15s ease';EMOJIS_REACT.forEach(e=>{const o=document.createElement('div');o.style.cssText='width:33px;height:33px;display:flex;align-items:center;justify-content:center;font-size:18px;border-radius:7px;cursor:pointer';o.textContent=e;o.onclick=()=>{addReaction(msgId,e);ep.remove();};ep.appendChild(o);});bubbleEl.style.position='relative';bubbleEl.appendChild(ep);}
+async function addReaction(msgId,emoji){try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).update({[`reactions.${emoji}`]:firebase.firestore.FieldValue.increment(1)});}catch(e){}}
 async function deleteMsg(msgId){
-  try{await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();}
-  catch(e){toast('Nelze smazat: '+e.message,'err');}
-}
+  try{
+    const doc=await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).get();
 
-function copyMsg(text){
-  navigator.clipboard.writeText(text).then(()=>toast('Zpráva zkopírována 📋','ok')).catch(()=>{
-    // Fallback
-    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-    toast('Zpráva zkopírována 📋','ok');
-  });
+    await db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId).delete();
+  }catch(e){toast('Nelze smazat: '+e.message,'err');}
 }
+function copyMsg(text){if(!text)return;navigator.clipboard.writeText(text).then(()=>toast('Zkopírováno 📋','ok')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Zkopírováno 📋','ok');});}
 
-// ── SWIPE DELETE ──
+// ══ SWIPE DELETE s potvrzením ══
 function setupSwipe(wrap,msgId){
-  let startX=0,dx=0,swipeActive=false;
-  wrap.addEventListener('touchstart',e=>{
-    startX=e.touches[0].clientX;dx=0;
-    // Only activate swipe if NOT starting from far left (avoid conflict with sidebar swipe)
-    swipeActive=startX>60;
-  },{passive:true});
-  wrap.addEventListener('touchmove',e=>{
-    if(!swipeActive)return;
-    dx=e.touches[0].clientX-startX;
-    if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}
-  },{passive:true});
+  let sx=0,dx=0,act=false;
+  wrap.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;dx=0;act=sx>60;},{passive:true});
+  wrap.addEventListener('touchmove',e=>{if(!act)return;dx=e.touches[0].clientX-sx;if(dx<0){wrap.style.transform=`translateX(${Math.max(dx,-70)}px)`;const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=Math.min(-dx/70,1);}},{passive:true});
   wrap.addEventListener('touchend',()=>{
-    if(swipeActive&&dx<-60)deleteMsg(msgId);
-    wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;swipeActive=false;
+    if(act&&dx<-60){const bar=wrap.querySelector('.del-confirm-bar');if(bar){bar.classList.add('show');setTimeout(()=>bar.classList.remove('show'),4500);}}
+    wrap.style.transform='';const sh=wrap.querySelector('.swipe-hint');if(sh)sh.style.opacity=0;act=false;
   },{passive:true});
 }
 
-// ── REPLY ──
-function setReply(msg){
-  S.replyTo={id:msg.id,text:msg.text,username:msg.username};
-  $('reply-text').textContent=`${msg.username}: ${msg.text.slice(0,60)}`;
-  $('reply-preview').classList.add('show');$('msg-inp').focus();
+// ══ EDIT ZPRÁVY ══
+function startEdit(msgId,currentText,bubbleEl,wrapEl){
+  // Save original HTML
+  bubbleEl.dataset.origHtml=bubbleEl.innerHTML;
+  bubbleEl.innerHTML=`<textarea class="edit-inp" id="edit-ta-${msgId}" rows="2">${currentText}</textarea><div class="edit-btns"><button class="edit-cancel" onclick="cancelEdit('${msgId}')">Zrušit</button><button class="edit-save" onclick="saveEdit('${msgId}')">Uložit</button></div>`;
+  const ta=$('edit-ta-'+msgId);if(!ta)return;
+  ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';ta.focus();ta.selectionStart=ta.selectionEnd=ta.value.length;
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveEdit(msgId);}if(e.key==='Escape')cancelEdit(msgId);});
+  wrapEl.classList.remove('menu-open');
+  // Store wrapEl ref
+  bubbleEl._wrapEl=wrapEl;
 }
+function cancelEdit(msgId){const ta=$('edit-ta-'+msgId);if(!ta)return;const bubble=ta.closest('.bubble');if(bubble&&bubble.dataset.origHtml)bubble.innerHTML=bubble.dataset.origHtml;}
+async function saveEdit(msgId){
+  const ta=$('edit-ta-'+msgId);if(!ta)return;const newText=ta.value.trim();if(!newText)return;
+  try{
+    const docRef=db.collection('rooms').doc(S.roomId).collection('messages').doc(msgId);
+    const doc=await docRef.get();if(!doc.exists)return;
+    const data=doc.data();const hist=data.editHistory||[];
+    hist.push({text:data.text,editedAt:firebase.firestore.Timestamp.now()});
+    await docRef.update({text:newText,edited:true,editHistory:hist,editedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  }catch(e){toast('Chyba úpravy: '+e.message,'err');}
+}
+function showEditHistory(hist,currentText){
+  const list=$('hist-list');
+  list.innerHTML=`<div class="hist-item"><div class="hist-text" style="font-weight:700">📍 Aktuální</div><div class="hist-text">${currentText}</div></div>`+[...hist].reverse().map(h=>`<div class="hist-item hist-orig"><div class="hist-time">${fmtDate(h.editedAt)} — před úpravou</div><div class="hist-text">${h.text}</div></div>`).join('');
+  openM('m-edit-hist');
+}
+
+// ══ REPLY ══
+function setReply(msg){const prev=msg.type==='gif'?'[GIF]':(msg.text||'');S.replyTo={id:msg.id,text:prev,username:msg.username};$('reply-text').textContent=`${msg.username}: ${prev.slice(0,60)}`;$('reply-preview').classList.add('show');$('msg-inp').focus();}
 function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show');}
 
-// ══════════════════════════════════════
-// SEND
-// ══════════════════════════════════════
-async function sendMsg(){
-  const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
-  const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();
-  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};
-  if(S.replyTo)msgData.replyTo=S.replyTo;
-  if(expirySecs>0){
-    // Individual short timer
-    msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
-  }
-  // Note: all messages are cleaned by cleanExpired() after 24h regardless
-  clearReply();
-  try{
-    const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
-    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id)
-      .set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
-  }catch(e){toast('Chyba při odesílání','err');}
-}
+// ══ SEND ══
+async function sendMsg(){const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();hideMentionDrop();const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};if(S.replyTo)msgData.replyTo=S.replyTo;if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);clearReply();try{const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id).set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});}catch(e){toast('Chyba při odesílání','err');}}
 
-// ══════════════════════════════════════
-// TYPING
-// ══════════════════════════════════════
-function onTyping(){
-  clearTimeout(S.typingTO);
-  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId)
-    .update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
-  S.typingTO=setTimeout(clearTyping,3000);
-}
-function clearTyping(){
-  clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;
-  db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});
-}
-function renderTyping(){
-  const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);
-  if(!typers.length){$('typing').innerHTML='';return;}
-  $('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;
-}
-
-// ══════════════════════════════════════
-// EMOJI INPUT
-// ══════════════════════════════════════
-function toggleInpEmoji(){
-  const ep=$('inp-ep');
-  if(ep.style.display===''){ep.style.display='none';return;}
-  const inner=$('inp-ep-inner');
-  if(!inner.querySelector('.eo')){
-    EMOJIS.forEach(e=>{
-      const o=document.createElement('div');o.className='eo';o.textContent=e;
-      o.onclick=()=>{$('msg-inp').value+=' '+e;$('msg-inp').focus();ep.style.display='none';};
-      inner.appendChild(o);
-    });
-  }
-  ep.style.display='';
-}
+// ══ TYPING ══
+function onTyping(){clearTimeout(S.typingTO);db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});S.typingTO=setTimeout(clearTyping,3000);}
+function clearTyping(){clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});}
+function renderTyping(){const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);if(!typers.length){$('typing').innerHTML='';return;}$('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;}
 </script>
 </body>
 </html>
