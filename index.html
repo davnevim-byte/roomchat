@@ -337,6 +337,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 .lightbox.show{opacity:1;pointer-events:all}
 .lightbox img,.lightbox video{max-width:95vw;max-height:90vh;border-radius:8px;object-fit:contain}
 .lb-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:#fff2;color:#fff;font-size:20px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fh)}
+
+/* ── CALL BAR ── */
+.call-bar{display:none;align-items:center;gap:8px;padding:8px 14px;background:#071207;border-bottom:1px solid #3ecf6b33;flex-shrink:0;position:relative;z-index:5}
+.call-bar.show{display:flex}
+.call-bar-info{flex:1;min-width:0}
+.call-bar-title{font-size:11px;font-weight:800;color:var(--green);display:flex;align-items:center;gap:5px}
+.call-dot-anim{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse .8s ease infinite;flex-shrink:0}
+.call-bar-names{font-size:10px;color:var(--muted2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-act{padding:5px 12px;border-radius:7px;border:none;font-family:var(--fh);font-weight:700;font-size:11px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.call-act.join{background:var(--green);color:#fff}
+.call-act.join:hover{filter:brightness(1.1)}
+.call-act.leave{background:#ff5c5c22;border:1px solid #ff5c5c44;color:var(--red)}
+.call-act.mute{background:var(--surface2);border:1px solid var(--border2);color:var(--muted2);display:none}
+.call-act.mute.on{background:#f0a03022;border-color:#f0a03044;color:var(--orange)}
+/* ── ADMIN BTN ── */
+.admin-entry-btn{position:absolute;bottom:14px;right:16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--fh);font-weight:700;font-size:11px;padding:4px 10px;cursor:pointer;transition:all .15s}
+.admin-entry-btn:hover{border-color:var(--accent)66;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -359,7 +376,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
     <input id="entry-user" class="fi" placeholder="Tvoje přezdívka" maxlength="20">
     <div id="entry-err" class="err"></div>
     <button class="btn-p" onclick="entrySubmit()">Vstoupit →</button>
-    <span class="entry-tap-hint">····</span>
+    <button class="admin-entry-btn" id="admin-entry-btn" onclick="_showAdminPrompt()" style="display:none">🔐 Admin</button>
   </div>
 </div>
 <!-- ROOM SWITCHER -->
@@ -441,6 +458,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <div class="icon-btn" onclick="goToRooms()" id="btn-switch-room" title="Místnosti" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </div>
+      <div class="icon-btn" id="btn-call" onclick="startCall()" title="Zahájit hovor" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+      </div>
       <div class="icon-btn" onclick="copyCode()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       </div>
@@ -464,6 +484,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
       <div class="sb-actions" id="sb-actions"></div>
     </aside>
     <main class="chat-main" id="chat-main">
+      <div class="call-bar" id="call-bar">
+        <div class="call-bar-info">
+          <div class="call-bar-title"><div class="call-dot-anim"></div>Probíhá hovor</div>
+          <div class="call-bar-names" id="call-bar-names"></div>
+        </div>
+        <button class="call-act mute" id="call-mute-btn" onclick="toggleMute()">🎤</button>
+        <button class="call-act join" id="call-join-btn" onclick="joinCall()">📞 Připojit</button>
+        <button class="call-act leave" id="call-leave-btn" onclick="leaveCall()" style="display:none">📵 Ukončit</button>
+      </div>
       <div class="messages" id="msgs"></div>
       <div class="typing-ind" id="typing"></div>
       <div class="input-area" id="input-area">
@@ -592,7 +621,9 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch
 const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
 const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
 const ROOM_LIFETIME=30*86400, MSG_LIFETIME=86400000;
-const GIPHY_KEY='dc6zaTOxFJmzC'; // demo key — nahraď vlastním z developers.giphy.com
+const GIPHY_KEY='dc6zaTOxFJmzC';
+const METERED_KEY='de4d2a11b1e75f3a5ef7547ccc338163f44c';
+const METERED_HOST='roomchat.metered.live'; // demo key — nahraď vlastním z developers.giphy.com
 const EMOJIS_REACT=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
 const EMOJI_CATS={
   '😀 Smajlíci':['😀','😃','😄','😁','😅','🤣','😂','😊','😇','🥰','😍','🤩','😘','😜','🤪','😎','🤓','🥳','😤','😡','😈','💀','😭','😢','🥺','😱','😳','🤯','😴','🤢','🥵','🥶','😵','🤠','😏','🙄','🤫','🤭','🫡'],
@@ -629,12 +660,13 @@ async function hashStr(str){const buf=await crypto.subtle.digest('SHA-256',new T
 
 // ══ THEMES ══
 const THEMES=[{id:'dark',label:'Tmavé',bg:'#0d0f12',icon:'🌑'},{id:'darker',label:'Černé',bg:'#050608',icon:'⚫'},{id:'blue',label:'Modré',bg:'#080d1a',icon:'💙'},{id:'purple',label:'Fialové',bg:'#0e0818',icon:'💜'},{id:'forest',label:'Les',bg:'#080f08',icon:'🌿'},{id:'custom',label:'Vlastní',bg:null,icon:'🖼️'}];
-function applyTheme(id){document.documentElement.setAttribute('data-theme',id);localStorage.setItem('rc_theme',id);renderThemeGrid();}
+function applyTheme(id){document.documentElement.setAttribute('data-theme',id);localStorage.setItem('rc_theme',id);renderThemeGrid();if(S.roomId)db.collection('rooms').doc(S.roomId).update({theme:id,customBg:null}).catch(()=>{});}
 function applyCustomBg(url){
   if(!url){clearCustomBg();return;}
   const cm=$('chat-main');if(cm){cm.classList.add('has-bg');cm.style.setProperty('--chat-bg-img',`url('${url}')`);}
   document.documentElement.setAttribute('data-theme','custom');
   localStorage.setItem('rc_custom_bg',url);localStorage.setItem('rc_theme','custom');
+  if(S.roomId)db.collection('rooms').doc(S.roomId).update({theme:'custom',customBg:url}).catch(()=>{});
 }
 function clearCustomBg(){
   const cm=$('chat-main');if(cm){cm.classList.remove('has-bg');cm.style.removeProperty('--chat-bg-img');}
@@ -815,21 +847,37 @@ function closeLightbox(){$('lightbox').classList.remove('show');$('lb-img').src=
 
 // ══ BOOT ══
 window.addEventListener('DOMContentLoaded',async()=>{
-  S.sid=getSid();S.isAdminSession=localStorage.getItem('rc_admin')==='1';
+  S.sid=getSid();
+  const wasAdmin=localStorage.getItem('rc_admin')==='1';
+  S.isAdminSession=false; // require re-auth every session
   const old=localStorage.getItem('rc_room'),olds=localStorage.getItem('rc_slot');
   if(old&&olds){addToRoomList(old,olds,'');localStorage.removeItem('rc_room');localStorage.removeItem('rc_slot');}
   const p=new URLSearchParams(window.location.search);const rp=p.get('room'),ip=p.get('invite');
-  try{
-    if(rp&&ip){await _prepareInviteEntry(rp.toUpperCase(),ip);}
-    else if(rp){const rid=rp.toUpperCase();const st=getRoomList().find(r=>r.roomId===rid);if(st?.slotId){await tryRejoin(rid,st.slotId,null,true);}else{$('jn-code').value=rid;show('s-join');$('loader').style.display='none';}}
-    else if(S.isAdminSession){$('loader').style.display='none';const l=getRoomList();if(!l.length){show('s-home');}else{await showRoomSwitcher();}}
-    else{
-      const l=getRoomList();
-      if(l.length===1){S.entryContext={type:'rejoin',roomId:l[0].roomId,slotId:l[0].slotId};const sv=getUsername();if(sv){await tryRejoin(l[0].roomId,l[0].slotId,sv,false);return;}$('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';}
-      show('s-entry');$('loader').style.display='none';_setupAdminTap();
-    }
-  }catch(e){saveRoomList([]);if(S.isAdminSession){show('s-home');}else{show('s-entry');}$('loader').style.display='none';}
+  if(wasAdmin){
+    show('s-entry');$('loader').style.display='none';
+    const adminBtn=$('admin-entry-btn');if(adminBtn)adminBtn.style.display='';
+    _setupAdminTap();
+    setTimeout(()=>_showAdminPromptWithCallback(async()=>{
+      $('loader').style.display='';
+      try{await _bootProceed(rp,ip);}catch(e){show('s-home');$('loader').style.display='none';}
+    }),350);
+    return;
+  }
+  try{await _bootProceed(rp,ip);}catch(e){saveRoomList([]);show('s-entry');$('loader').style.display='none';}
 });
+
+async function _bootProceed(rp,ip){
+  if(rp&&ip){await _prepareInviteEntry(rp.toUpperCase(),ip);}
+  else if(rp){const rid=rp.toUpperCase();const st=getRoomList().find(r=>r.roomId===rid);if(st?.slotId){await tryRejoin(rid,st.slotId,null,true);}else{$('jn-code').value=rid;show('s-join');$('loader').style.display='none';}}
+  else if(S.isAdminSession){$('loader').style.display='none';const l=getRoomList();if(!l.length){show('s-home');}else{await showRoomSwitcher();}}
+  else{
+    const l=getRoomList();
+    if(l.length===1){S.entryContext={type:'rejoin',roomId:l[0].roomId,slotId:l[0].slotId};const sv=getUsername();if(sv){await tryRejoin(l[0].roomId,l[0].slotId,sv,false);return;}$('entry-desc').textContent='Uprav přezdívku nebo rovnou vstup';}
+    show('s-entry');$('loader').style.display='none';
+    const adminBtn=$('admin-entry-btn');if(adminBtn)adminBtn.style.display='none';
+    _setupAdminTap();
+  }
+}
 
 // ══ REJOIN ══
 async function tryRejoin(roomId,slotId,usernameOverride,silentMode){
@@ -883,7 +931,19 @@ async function joinByInvite(){const user=$('inv-user').value.trim();hideErr('inv
 
 // ══ ENTRY + ADMIN TAP ══
 function _setupAdminTap(){let taps=0,to=null;const card=$('entry-card');function onTap(){taps++;clearTimeout(to);to=setTimeout(()=>{taps=0;},800);if(taps>=4){taps=0;_showAdminPrompt();}}card.addEventListener('click',onTap);card.addEventListener('touchend',e=>{if(e.changedTouches.length===1)onTap();},{passive:true});}
-function _showAdminPrompt(){const pw=prompt('🔐 Admin heslo:');if(!pw)return;hashStr(pw).then(h=>{if(h===ADMIN_HASH){localStorage.setItem('rc_admin','1');S.isAdminSession=true;toast('✓ Admin aktivován','ok');setTimeout(async()=>{const l=getRoomList();if(!l.length){show('s-home');}else{$('loader').style.display='';await showRoomSwitcher();}},600);}else{toast('Špatné heslo','err');}});}
+function _showAdminPrompt(){_showAdminPromptWithCallback(null);}
+function _showAdminPromptWithCallback(onSuccess){
+  const pw=prompt('🔐 Admin heslo:');if(!pw)return;
+  hashStr(pw).then(async h=>{
+    if(h===ADMIN_HASH){
+      localStorage.setItem('rc_admin','1');S.isAdminSession=true;
+      const adminBtn=$('admin-entry-btn');if(adminBtn)adminBtn.style.display='';
+      toast('✓ Admin aktivován','ok');
+      if(onSuccess){setTimeout(onSuccess,300);}
+      else{setTimeout(async()=>{const l=getRoomList();if(!l.length){show('s-home');}else{$('loader').style.display='';await showRoomSwitcher();}},600);}
+    }else{toast('Špatné heslo','err');}
+  });
+}
 async function entrySubmit(){const user=$('entry-user').value.trim();hideErr('entry-err');if(!user)return showErr('entry-err','Zadej přezdívku');setUsername(user);const ctx=S.entryContext;if(!ctx){showErr('entry-err','Žádná místnost k dispozici');return;}if(ctx.type==='invite'){const color=rndColor(),now=firebase.firestore.Timestamp.now();try{await db.collection('rooms').doc(ctx.roomId).collection('slots').doc(ctx.slotId).update({username:user,color,sessionId:S.sid,online:true,lastSeen:now,joinedAt:now});await db.collection('rooms').doc(ctx.roomId).collection('messages').add({text:`${user} se připojil/a`,isSystem:true,timestamp:now});S.roomId=ctx.roomId;S.slotId=ctx.slotId;S.username=user;S.color=color;S.isAdmin=false;S.roomData=ctx.roomData;addToRoomList(ctx.roomId,ctx.slotId,ctx.roomData.name);history.replaceState({},'','?room='+ctx.roomId);enterChat();}catch(e){showErr('entry-err','Chyba: '+e.message);}}else if(ctx.type==='rejoin'){await tryRejoin(ctx.roomId,ctx.slotId,user);}}
 
 // ══ ROOM SWITCHER ══
@@ -931,7 +991,7 @@ async function _adminEnterRoom(roomId,roomData){
     addToRoomList(roomId,sref.id,roomData.name);$('btn-switch-room').style.display='';history.replaceState({},'','?room='+roomId);enterChat();
   }catch(e){toast('Chyba vstupu: '+e.message,'err');}
 }
-function goToRooms(){S.unsubs.forEach(u=>u());S.unsubs=[];clearInterval(S.heartbeat);clearInterval(S.countdown);S.roomId=null;S.slotId=null;S.isAdmin=false;S.roomData=null;S.username=null;S.color=null;S.replyTo=null;$('btn-switch-room').style.display='none';$('sb-inv').style.display='none';$('mob-sb-inv').style.display='none';$('room-expiry-banner').classList.remove('show');showRoomSwitcher();}
+function goToRooms(){if(CALL.active)leaveCall();S.unsubs.forEach(u=>u());S.unsubs=[];clearInterval(S.heartbeat);clearInterval(S.countdown);S.roomId=null;S.slotId=null;S.isAdmin=false;S.roomData=null;S.username=null;S.color=null;S.replyTo=null;$('btn-switch-room').style.display='none';$('sb-inv').style.display='none';$('mob-sb-inv').style.display='none';$('room-expiry-banner').classList.remove('show');showRoomSwitcher();}
 
 // ══ ENTER CHAT ══
 function enterChat(){
@@ -943,9 +1003,32 @@ function enterChat(){
   renderSidebarActions();renderThemeGrid();checkRoomExpiry();
   _setupSwipeSidebar();setupMentions();
 
-  // Apply saved custom bg
-  const savedBg=localStorage.getItem('rc_custom_bg');
-  if(savedBg&&localStorage.getItem('rc_theme')==='custom'){applyCustomBg(savedBg);$('custom-bg-url').value=savedBg;}
+  // Subscribe to room doc: theme (shared) + call state
+  const uRoom=db.collection('rooms').doc(S.roomId).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    const d=snap.data();S.roomData={...S.roomData,...d};
+    // Apply shared theme
+    if(d.theme){
+      if(d.theme==='custom'&&d.customBg){
+        const cm=$('chat-main');if(cm){cm.classList.add('has-bg');cm.style.setProperty('--chat-bg-img',`url('${d.customBg}')`);}
+        document.documentElement.setAttribute('data-theme','custom');
+        const inp=$('custom-bg-url');if(inp)inp.value=d.customBg;
+      }else if(d.theme!=='custom'){
+        const cm=$('chat-main');if(cm){cm.classList.remove('has-bg');cm.style.removeProperty('--chat-bg-img');}
+        document.documentElement.setAttribute('data-theme',d.theme);
+      }
+      renderThemeGrid();
+    }
+    // Update call bar
+    _updateCallBar(d);
+  });
+  S.unsubs.push(uRoom);
+
+  // Show call button
+  const callBtn=$('btn-call');if(callBtn)callBtn.style.display='';
+
+  // Setup call signaling listener
+  setupCallSignaling();
 
   const uSlots=db.collection('rooms').doc(S.roomId).collection('slots').onSnapshot(snap=>{S.slots={};snap.forEach(d=>{S.slots[d.id]={id:d.id,...d.data()};});renderSidebar();renderTyping();});S.unsubs.push(uSlots);
   const uReads=db.collection('rooms').doc(S.roomId).collection('reads').onSnapshot(snap=>{snap.docChanges().forEach(ch=>{S.reads[ch.doc.id]=ch.doc.data();});_updateReadTicks();});S.unsubs.push(uReads);
@@ -1133,6 +1216,180 @@ async function sendMsg(){const inp=$('msg-inp'),text=inp.value.trim();if(!text)r
 function onTyping(){clearTimeout(S.typingTO);db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});S.typingTO=setTimeout(clearTyping,3000);}
 function clearTyping(){clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:false}).catch(()=>{});}
 function renderTyping(){const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);if(!typers.length){$('typing').innerHTML='';return;}$('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;}
+
+// ══════════════════════════════════════
+// CALLING (WebRTC + Metered TURN)
+// ══════════════════════════════════════
+const CALL={active:false,muted:false,localStream:null,peers:{},audioEls:{},iceServers:null};
+
+async function _fetchIceServers(){
+  if(CALL.iceServers)return CALL.iceServers;
+  try{
+    const r=await fetch(`https://${METERED_HOST}/api/v1/turn/credentials?apiKey=${METERED_KEY}`);
+    CALL.iceServers=await r.json();
+  }catch(e){CALL.iceServers=[{urls:'stun:stun.l.google.com:19302'}];}
+  return CALL.iceServers;
+}
+
+async function _waitIce(pc){
+  return new Promise(resolve=>{
+    if(pc.iceGatheringState==='complete'){resolve();return;}
+    const to=setTimeout(resolve,4000);
+    pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete'){clearTimeout(to);resolve();}};
+  });
+}
+
+function _getAudioEl(peerId){
+  if(CALL.audioEls[peerId])return CALL.audioEls[peerId];
+  const el=document.createElement('audio');
+  el.id='rc-aud-'+peerId;el.autoplay=true;el.setAttribute('playsinline','');el.style.display='none';
+  document.body.appendChild(el);CALL.audioEls[peerId]=el;return el;
+}
+
+function _cleanupPeer(peerId){
+  if(CALL.peers[peerId]){CALL.peers[peerId].close();delete CALL.peers[peerId];}
+  if(CALL.audioEls[peerId]){CALL.audioEls[peerId].remove();delete CALL.audioEls[peerId];}
+}
+
+function _makePc(peerId,iceServers){
+  if(CALL.peers[peerId])return CALL.peers[peerId];
+  const pc=new RTCPeerConnection({iceServers});
+  CALL.peers[peerId]=pc;
+  if(CALL.localStream)CALL.localStream.getTracks().forEach(t=>pc.addTrack(t,CALL.localStream));
+  pc.ontrack=e=>{const el=_getAudioEl(peerId);if(el.srcObject!==e.streams[0])el.srcObject=e.streams[0];};
+  pc.onconnectionstatechange=()=>{if(['disconnected','failed','closed'].includes(pc.connectionState))_cleanupPeer(peerId);};
+  return pc;
+}
+
+async function _createOffer(peerId){
+  if(CALL.peers[peerId])return;
+  const ice=await _fetchIceServers();
+  const pc=_makePc(peerId,ice);
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await _waitIce(pc);
+  await db.collection('rooms').doc(S.roomId).collection('callSignals').doc(`${S.slotId}_${peerId}`).set({
+    from:S.slotId,to:peerId,offer:JSON.stringify(pc.localDescription),answer:null,
+    created:firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+async function _handleOffer(docId,sig){
+  if(CALL.peers[sig.from])return;
+  const ice=await _fetchIceServers();
+  const pc=_makePc(sig.from,ice);
+  await pc.setRemoteDescription(JSON.parse(sig.offer));
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await _waitIce(pc);
+  await db.collection('rooms').doc(S.roomId).collection('callSignals').doc(docId).update({answer:JSON.stringify(pc.localDescription)});
+}
+
+async function _handleAnswer(sig){
+  const pc=CALL.peers[sig.to];
+  if(!pc||pc.remoteDescription)return;
+  await pc.setRemoteDescription(JSON.parse(sig.answer));
+}
+
+function setupCallSignaling(){
+  const unsub=db.collection('rooms').doc(S.roomId).collection('callSignals').onSnapshot(snap=>{
+    if(!CALL.active)return;
+    snap.docChanges().forEach(async ch=>{
+      const sig=ch.doc.data();if(!sig)return;
+      if(sig.to===S.slotId&&sig.offer&&!sig.answer&&ch.type==='added')await _handleOffer(ch.doc.id,sig);
+      else if(sig.from===S.slotId&&sig.answer)await _handleAnswer(sig);
+    });
+  });
+  S.unsubs.push(unsub);
+}
+
+async function startCall(){
+  if(CALL.active)return;
+  // Must be triggered by user gesture (iOS requirement)
+  try{
+    CALL.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+  }catch(e){
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError')toast('Povol přístup k mikrofonu v nastavení prohlížeče','err');
+    else toast('Mikrofon není dostupný','err');
+    return;
+  }
+  CALL.active=true;CALL.muted=false;
+  try{
+    await db.collection('rooms').doc(S.roomId).update({callActive:true,callParticipants:firebase.firestore.FieldValue.arrayUnion(S.slotId)});
+  }catch(e){toast('Chyba při zahájení hovoru','err');CALL.active=false;CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;return;}
+  _updateCallBar();
+  // Connect to existing participants
+  const snap=await db.collection('rooms').doc(S.roomId).get();
+  const parts=(snap.data()?.callParticipants||[]).filter(p=>p!==S.slotId);
+  for(const pid of parts)await _createOffer(pid).catch(()=>{});
+}
+
+async function joinCall(){await startCall();}
+
+async function leaveCall(){
+  if(!CALL.active)return;
+  CALL.active=false;
+  CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;
+  Object.keys(CALL.peers).forEach(pid=>_cleanupPeer(pid));
+  if(!S.roomId||!S.slotId){_updateCallBar();return;}
+  try{
+    await db.collection('rooms').doc(S.roomId).update({callParticipants:firebase.firestore.FieldValue.arrayRemove(S.slotId)});
+    const snap=await db.collection('rooms').doc(S.roomId).get();
+    if(!(snap.data()?.callParticipants||[]).length){
+      await db.collection('rooms').doc(S.roomId).update({callActive:false,callParticipants:[]});
+      const sigs=await db.collection('rooms').doc(S.roomId).collection('callSignals').get();
+      if(!sigs.empty){const b=db.batch();sigs.forEach(d=>b.delete(d.ref));await b.commit();}
+    }
+  }catch(e){}
+  _updateCallBar();
+}
+
+function toggleMute(){
+  if(!CALL.localStream)return;
+  CALL.muted=!CALL.muted;
+  CALL.localStream.getAudioTracks().forEach(t=>{t.enabled=!CALL.muted;});
+  const btn=$('call-mute-btn');
+  if(btn){btn.textContent=CALL.muted?'🔇':'🎤';btn.classList.toggle('on',CALL.muted);}
+}
+
+function _updateCallBar(data){
+  const d=data||S.roomData;
+  const bar=$('call-bar');if(!bar)return;
+  const allParts=d?.callParticipants||[];
+  // Filter to online only (handles crashed sessions)
+  const parts=allParts.filter(pid=>pid===S.slotId||isOnline(S.slots[pid]||{}));
+  const active=d?.callActive&&parts.length>0;
+  if(active){
+    bar.classList.add('show');
+    const namesEl=$('call-bar-names');
+    if(namesEl)namesEl.textContent=parts.map(pid=>S.slots[pid]?.username||'?').join(', ');
+    const joinBtn=$('call-join-btn'),leaveBtn=$('call-leave-btn'),muteBtn=$('call-mute-btn');
+    if(joinBtn)joinBtn.style.display=CALL.active?'none':'';
+    if(leaveBtn)leaveBtn.style.display=CALL.active?'':'none';
+    if(muteBtn)muteBtn.style.display=CALL.active?'':'none';
+  }else{
+    bar.classList.remove('show');
+    if(CALL.active){
+      // Call ended by others
+      CALL.active=false;CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;
+      Object.keys(CALL.peers).forEach(pid=>_cleanupPeer(pid));
+      toast('Hovor byl ukončen');
+    }
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener('pagehide',()=>{
+  if(CALL.active&&S.roomId&&S.slotId){
+    // Best-effort cleanup via keepalive fetch (Firestore REST)
+    try{
+      const proj='roomchat-6092c';const db_='(default)';
+      const url=`https://firestore.googleapis.com/v1/projects/${proj}/databases/${db_}/documents:commit`;
+      const body=JSON.stringify({writes:[{transform:{document:`projects/${proj}/databases/${db_}/documents/rooms/${S.roomId}`,fieldTransforms:[{fieldPath:'callParticipants',removeAllFromArray:{values:[{stringValue:S.slotId}]}}]}}]});
+      navigator.sendBeacon(url,new Blob([body],{type:'application/json'}));
+    }catch(e){}
+  }
+});
 </script>
 </body>
 </html>
