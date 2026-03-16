@@ -1218,110 +1218,263 @@ function clearTyping(){clearTimeout(S.typingTO);if(!S.roomId||!S.slotId)return;d
 function renderTyping(){const typers=Object.values(S.slots).filter(s=>s.id!==S.slotId&&s.typing&&s.typingAt&&(Date.now()-(s.typingAt.toDate?.().getTime()??0))<5000);if(!typers.length){$('typing').innerHTML='';return;}$('typing').innerHTML=`<div class="td"><span></span><span></span><span></span></div><span>${typers.map(s=>s.username).join(', ')} ${typers.length===1?'píše':'píší'}…</span>`;}
 
 // ══════════════════════════════════════
-// CALLING (WebRTC + Metered TURN)
 // ══════════════════════════════════════
-const CALL={active:false,muted:false,localStream:null,peers:{},audioEls:{},iceServers:null};
+// CALLING v2 — Trickle ICE + Metered TURN
+// ══════════════════════════════════════
+const CALL={
+  active:false, muted:false,
+  localStream:null,
+  peers:{},      // peerId -> RTCPeerConnection
+  audioEls:{},   // peerId -> <audio>
+  iceServers:null,
+  sigUnsubs:{},  // peerId -> unsubscribe fn for candidate listener
+};
 
+// ── ICE servers ──
 async function _fetchIceServers(){
   if(CALL.iceServers)return CALL.iceServers;
   try{
     const r=await fetch(`https://${METERED_HOST}/api/v1/turn/credentials?apiKey=${METERED_KEY}`);
-    CALL.iceServers=await r.json();
-  }catch(e){CALL.iceServers=[{urls:'stun:stun.l.google.com:19302'}];}
+    const data=await r.json();
+    // Validate response is an array
+    if(Array.isArray(data)&&data.length>0){
+      CALL.iceServers=data;
+    }else{
+      throw new Error('bad response');
+    }
+  }catch(e){
+    // Fallback to Google STUN
+    CALL.iceServers=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+  }
   return CALL.iceServers;
 }
 
-async function _waitIce(pc){
-  return new Promise(resolve=>{
-    if(pc.iceGatheringState==='complete'){resolve();return;}
-    const to=setTimeout(resolve,4000);
-    pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete'){clearTimeout(to);resolve();}};
-  });
-}
-
+// ── Audio element ──
 function _getAudioEl(peerId){
   if(CALL.audioEls[peerId])return CALL.audioEls[peerId];
   const el=document.createElement('audio');
-  el.id='rc-aud-'+peerId;el.autoplay=true;el.setAttribute('playsinline','');el.style.display='none';
-  document.body.appendChild(el);CALL.audioEls[peerId]=el;return el;
+  el.autoplay=true;
+  el.setAttribute('playsinline','');
+  el.style.display='none';
+  document.body.appendChild(el);
+  CALL.audioEls[peerId]=el;
+  return el;
 }
 
+// ── Cleanup single peer ──
 function _cleanupPeer(peerId){
-  if(CALL.peers[peerId]){CALL.peers[peerId].close();delete CALL.peers[peerId];}
+  try{if(CALL.peers[peerId])CALL.peers[peerId].close();}catch(e){}
+  delete CALL.peers[peerId];
   if(CALL.audioEls[peerId]){CALL.audioEls[peerId].remove();delete CALL.audioEls[peerId];}
+  if(CALL.sigUnsubs[peerId]){CALL.sigUnsubs[peerId]();delete CALL.sigUnsubs[peerId];}
 }
 
+// ── Build RTCPeerConnection ──
 function _makePc(peerId,iceServers){
   if(CALL.peers[peerId])return CALL.peers[peerId];
-  const pc=new RTCPeerConnection({iceServers});
+  const pc=new RTCPeerConnection({iceServers,iceCandidatePoolSize:10});
   CALL.peers[peerId]=pc;
-  if(CALL.localStream)CALL.localStream.getTracks().forEach(t=>pc.addTrack(t,CALL.localStream));
-  pc.ontrack=e=>{const el=_getAudioEl(peerId);if(el.srcObject!==e.streams[0])el.srcObject=e.streams[0];};
-  pc.onconnectionstatechange=()=>{if(['disconnected','failed','closed'].includes(pc.connectionState))_cleanupPeer(peerId);};
+  // Add local tracks
+  if(CALL.localStream){
+    CALL.localStream.getTracks().forEach(t=>pc.addTrack(t,CALL.localStream));
+  }
+  // Play remote audio
+  pc.ontrack=e=>{
+    const el=_getAudioEl(peerId);
+    if(e.streams&&e.streams[0]){
+      el.srcObject=e.streams[0];
+      // iOS requires resume after user gesture
+      el.play().catch(()=>{});
+    }
+  };
+  // Connection monitoring
+  pc.onconnectionstatechange=()=>{
+    const s=pc.connectionState;
+    if(s==='failed'){
+      // Try ICE restart
+      if(CALL.active&&CALL.localStream){
+        pc.restartIce();
+      }
+    }
+    if(s==='closed'||s==='disconnected'){
+      setTimeout(()=>{if(pc.connectionState==='closed'||pc.connectionState==='disconnected')_cleanupPeer(peerId);},5000);
+    }
+  };
   return pc;
 }
 
+// ── Offerer side: create offer + stream ICE candidates ──
 async function _createOffer(peerId){
   if(CALL.peers[peerId])return;
   const ice=await _fetchIceServers();
   const pc=_makePc(peerId,ice);
+  const sigDocId=`${S.slotId}_${peerId}`;
+  const sigRef=db.collection('rooms').doc(S.roomId).collection('callSignals').doc(sigDocId);
+
+  // Stream ICE candidates to Firestore as they arrive (trickle ICE)
+  pc.onicecandidate=async e=>{
+    if(e.candidate){
+      try{
+        await sigRef.update({
+          offerCandidates:firebase.firestore.FieldValue.arrayUnion(JSON.stringify(e.candidate.toJSON()))
+        });
+      }catch(err){}
+    }
+  };
+
+  // Listen for answer + answer candidates from peer
+  const unsub=sigRef.onSnapshot(async snap=>{
+    const data=snap.data();if(!data)return;
+    const peerPc=CALL.peers[peerId];if(!peerPc)return;
+    // Set remote description when answer arrives
+    if(data.answer&&!peerPc.remoteDescription){
+      try{await peerPc.setRemoteDescription(JSON.parse(data.answer));}catch(e){}
+    }
+    // Add answer ICE candidates
+    if(data.answerCandidates&&peerPc.remoteDescription){
+      const added=peerPc._addedCandidates||(peerPc._addedCandidates=new Set());
+      for(const c of data.answerCandidates){
+        if(!added.has(c)){
+          added.add(c);
+          try{await peerPc.addIceCandidate(new RTCIceCandidate(JSON.parse(c)));}catch(e){}
+        }
+      }
+    }
+  });
+  CALL.sigUnsubs[peerId]=unsub;
+
+  // Create and send offer
   const offer=await pc.createOffer();
   await pc.setLocalDescription(offer);
-  await _waitIce(pc);
-  await db.collection('rooms').doc(S.roomId).collection('callSignals').doc(`${S.slotId}_${peerId}`).set({
-    from:S.slotId,to:peerId,offer:JSON.stringify(pc.localDescription),answer:null,
+  await sigRef.set({
+    from:S.slotId,
+    to:peerId,
+    offer:JSON.stringify(pc.localDescription),
+    answer:null,
+    offerCandidates:[],
+    answerCandidates:[],
     created:firebase.firestore.FieldValue.serverTimestamp()
   });
 }
 
-async function _handleOffer(docId,sig){
-  if(CALL.peers[sig.from])return;
+// ── Answerer side: handle incoming offer ──
+async function _handleOffer(sigDocId,sig){
+  const peerId=sig.from;
+  if(CALL.peers[peerId])return; // already connected
+  if(!CALL.active)return; // not in call
   const ice=await _fetchIceServers();
-  const pc=_makePc(sig.from,ice);
+  const pc=_makePc(peerId,ice);
+  const sigRef=db.collection('rooms').doc(S.roomId).collection('callSignals').doc(sigDocId);
+
+  // Stream our ICE candidates as answer candidates
+  pc.onicecandidate=async e=>{
+    if(e.candidate){
+      try{
+        await sigRef.update({
+          answerCandidates:firebase.firestore.FieldValue.arrayUnion(JSON.stringify(e.candidate.toJSON()))
+        });
+      }catch(err){}
+    }
+  };
+
+  // Listen for offer ICE candidates from peer
+  const unsub=sigRef.onSnapshot(async snap=>{
+    const data=snap.data();if(!data)return;
+    const peerPc=CALL.peers[peerId];if(!peerPc)return;
+    if(data.offerCandidates&&peerPc.remoteDescription){
+      const added=peerPc._addedCandidates||(peerPc._addedCandidates=new Set());
+      for(const c of data.offerCandidates){
+        if(!added.has(c)){
+          added.add(c);
+          try{await peerPc.addIceCandidate(new RTCIceCandidate(JSON.parse(c)));}catch(e){}
+        }
+      }
+    }
+  });
+  CALL.sigUnsubs[peerId]=unsub;
+
+  // Set remote description (offer)
   await pc.setRemoteDescription(JSON.parse(sig.offer));
+
+  // Add any existing offer candidates that already arrived
+  if(sig.offerCandidates){
+    const added=pc._addedCandidates||(pc._addedCandidates=new Set());
+    for(const c of sig.offerCandidates){
+      if(!added.has(c)){
+        added.add(c);
+        try{await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(c)));}catch(e){}
+      }
+    }
+  }
+
+  // Create and send answer
   const answer=await pc.createAnswer();
   await pc.setLocalDescription(answer);
-  await _waitIce(pc);
-  await db.collection('rooms').doc(S.roomId).collection('callSignals').doc(docId).update({answer:JSON.stringify(pc.localDescription)});
+  await sigRef.update({answer:JSON.stringify(pc.localDescription)});
 }
 
-async function _handleAnswer(sig){
-  const pc=CALL.peers[sig.to];
-  if(!pc||pc.remoteDescription)return;
-  await pc.setRemoteDescription(JSON.parse(sig.answer));
-}
-
+// ── Signaling listener (always active while in room) ──
 function setupCallSignaling(){
   const unsub=db.collection('rooms').doc(S.roomId).collection('callSignals').onSnapshot(snap=>{
-    if(!CALL.active)return;
     snap.docChanges().forEach(async ch=>{
+      if(ch.type==='removed')return;
       const sig=ch.doc.data();if(!sig)return;
-      if(sig.to===S.slotId&&sig.offer&&!sig.answer&&ch.type==='added')await _handleOffer(ch.doc.id,sig);
-      else if(sig.from===S.slotId&&sig.answer)await _handleAnswer(sig);
+      // Incoming offer for me — handle if I'm in the call
+      if(sig.to===S.slotId&&sig.offer&&!sig.answer&&ch.type==='added'){
+        if(CALL.active)await _handleOffer(ch.doc.id,sig).catch(()=>{});
+      }
     });
   });
   S.unsubs.push(unsub);
 }
 
-async function startCall(){
-  if(CALL.active)return;
-  // Must be triggered by user gesture (iOS requirement)
+// ── Start call (first person) or join call ──
+async function _acquireStream(){
+  if(CALL.localStream)return true;
   try{
     CALL.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    // iOS: resume AudioContext (must happen in user gesture)
+    try{
+      const ac=new(window.AudioContext||window.webkitAudioContext)();
+      if(ac.state==='suspended')await ac.resume();
+      // Connect stream to keep iOS audio session alive
+      const src=ac.createMediaStreamSource(CALL.localStream);
+      src.connect(ac.destination);
+    }catch(e){}
+    return true;
   }catch(e){
-    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError')toast('Povol přístup k mikrofonu v nastavení prohlížeče','err');
-    else toast('Mikrofon není dostupný','err');
-    return;
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+      toast('Povol přístup k mikrofonu v nastavení prohlížeče','err');
+    }else{
+      toast('Mikrofon není dostupný: '+e.message,'err');
+    }
+    return false;
   }
+}
+
+async function startCall(){
+  if(CALL.active)return;
+  if(!await _acquireStream())return;
   CALL.active=true;CALL.muted=false;
   try{
-    await db.collection('rooms').doc(S.roomId).update({callActive:true,callParticipants:firebase.firestore.FieldValue.arrayUnion(S.slotId)});
-  }catch(e){toast('Chyba při zahájení hovoru','err');CALL.active=false;CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;return;}
+    await db.collection('rooms').doc(S.roomId).update({
+      callActive:true,
+      callParticipants:firebase.firestore.FieldValue.arrayUnion(S.slotId)
+    });
+  }catch(e){
+    toast('Chyba při zahájení hovoru','err');
+    CALL.active=false;CALL.localStream.getTracks().forEach(t=>t.stop());CALL.localStream=null;
+    return;
+  }
   _updateCallBar();
-  // Connect to existing participants
-  const snap=await db.collection('rooms').doc(S.roomId).get();
-  const parts=(snap.data()?.callParticipants||[]).filter(p=>p!==S.slotId);
-  for(const pid of parts)await _createOffer(pid).catch(()=>{});
+  // Connect to everyone already in the call (we send offers to them)
+  try{
+    const snap=await db.collection('rooms').doc(S.roomId).get();
+    const parts=(snap.data()?.callParticipants||[]).filter(p=>p!==S.slotId);
+    for(const pid of parts){
+      await _createOffer(pid).catch(e=>console.warn('offer failed:',pid,e));
+    }
+  }catch(e){}
 }
 
 async function joinCall(){await startCall();}
@@ -1329,14 +1482,20 @@ async function joinCall(){await startCall();}
 async function leaveCall(){
   if(!CALL.active)return;
   CALL.active=false;
-  CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;
+  // Stop local audio
+  if(CALL.localStream){CALL.localStream.getTracks().forEach(t=>t.stop());CALL.localStream=null;}
+  // Close all peer connections
   Object.keys(CALL.peers).forEach(pid=>_cleanupPeer(pid));
   if(!S.roomId||!S.slotId){_updateCallBar();return;}
   try{
-    await db.collection('rooms').doc(S.roomId).update({callParticipants:firebase.firestore.FieldValue.arrayRemove(S.slotId)});
+    await db.collection('rooms').doc(S.roomId).update({
+      callParticipants:firebase.firestore.FieldValue.arrayRemove(S.slotId)
+    });
     const snap=await db.collection('rooms').doc(S.roomId).get();
-    if(!(snap.data()?.callParticipants||[]).length){
+    const remaining=snap.data()?.callParticipants||[];
+    if(remaining.length===0){
       await db.collection('rooms').doc(S.roomId).update({callActive:false,callParticipants:[]});
+      // Clean up signaling docs
       const sigs=await db.collection('rooms').doc(S.roomId).collection('callSignals').get();
       if(!sigs.empty){const b=db.batch();sigs.forEach(d=>b.delete(d.ref));await b.commit();}
     }
@@ -1356,13 +1515,16 @@ function _updateCallBar(data){
   const d=data||S.roomData;
   const bar=$('call-bar');if(!bar)return;
   const allParts=d?.callParticipants||[];
-  // Filter to online only (handles crashed sessions)
-  const parts=allParts.filter(pid=>pid===S.slotId||isOnline(S.slots[pid]||{}));
-  const active=d?.callActive&&parts.length>0;
+  const active=d?.callActive&&allParts.length>0;
   if(active){
     bar.classList.add('show');
     const namesEl=$('call-bar-names');
-    if(namesEl)namesEl.textContent=parts.map(pid=>S.slots[pid]?.username||'?').join(', ');
+    if(namesEl){
+      namesEl.textContent=allParts.map(pid=>{
+        const slot=S.slots[pid];
+        return slot?.username||(pid===S.slotId?S.username:'?');
+      }).filter(Boolean).join(', ');
+    }
     const joinBtn=$('call-join-btn'),leaveBtn=$('call-leave-btn'),muteBtn=$('call-mute-btn');
     if(joinBtn)joinBtn.style.display=CALL.active?'none':'';
     if(leaveBtn)leaveBtn.style.display=CALL.active?'':'none';
@@ -1370,18 +1532,17 @@ function _updateCallBar(data){
   }else{
     bar.classList.remove('show');
     if(CALL.active){
-      // Call ended by others
-      CALL.active=false;CALL.localStream?.getTracks().forEach(t=>t.stop());CALL.localStream=null;
+      CALL.active=false;
+      if(CALL.localStream){CALL.localStream.getTracks().forEach(t=>t.stop());CALL.localStream=null;}
       Object.keys(CALL.peers).forEach(pid=>_cleanupPeer(pid));
       toast('Hovor byl ukončen');
     }
   }
 }
 
-// Cleanup on page unload
+// ── Cleanup on page unload ──
 window.addEventListener('pagehide',()=>{
   if(CALL.active&&S.roomId&&S.slotId){
-    // Best-effort cleanup via keepalive fetch (Firestore REST)
     try{
       const proj='roomchat-6092c';const db_='(default)';
       const url=`https://firestore.googleapis.com/v1/projects/${proj}/databases/${db_}/documents:commit`;
