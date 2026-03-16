@@ -9,6 +9,16 @@
 <meta name="apple-mobile-web-app-title" content="RoomChat">
 <meta name="theme-color" content="#0d0f12">
 <title>RoomChat</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
+<meta name="apple-mobile-web-app-title" content="RoomChat">
+<meta name="msapplication-TileImage" content="/icons/icon-144x144.png">
+<meta name="msapplication-TileColor" content="#0d0f12">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -615,13 +625,86 @@ body{background:var(--bg);color:var(--text);font-family:var(--fh);font-weight:50
 const firebaseConfig={apiKey:"AIzaSyBJjoNzhe9x6-9TKBBiMOqIXIr7TniqJ28",authDomain:"roomchat-6092c.firebaseapp.com",projectId:"roomchat-6092c",storageBucket:"roomchat-6092c.appspot.com",messagingSenderId:"681715608200",appId:"1:681715608200:web:cde43c08577bf279020d3d"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+// ── SERVICE WORKER + PUSH ──
+const VAPID_PUBLIC_KEY = 'BEv4FB_obIJQN0EKp9_ulz_uC_PgpqaFVZeJP2cCZa_wHBJzv73PeF-EcEJW8kT7Nls03vII1WFlk0p1BaGarD0';
+
+function _urlBase64ToUint8(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from(Array.from(raw).map(c => c.charCodeAt(0)));
+}
+
+let _swReg = null;
+
+async function _initSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    _swReg = await navigator.serviceWorker.register('/sw.js');
+    // Listen for messages from SW (e.g. notification click)
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'NOTIFICATION_CLICK' && e.data.roomId) {
+        // If we're already in that room, just focus — otherwise navigate
+        if (S.roomId === e.data.roomId) {
+          window.focus();
+        } else {
+          window.location.href = '/?room=' + e.data.roomId;
+        }
+      }
+    });
+  } catch(e) { console.warn('SW registration failed:', e); }
+}
+
+async function _subscribePush() {
+  if (!_swReg) return null;
+  try {
+    let sub = await _swReg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await _swReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: _urlBase64ToUint8(VAPID_PUBLIC_KEY)
+      });
+    }
+    // Save subscription to Firestore (per slot)
+    if (S.roomId && S.slotId && sub) {
+      const subJson = JSON.stringify(sub.toJSON());
+      db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId)
+        .update({ pushSub: subJson }).catch(() => {});
+    }
+    return sub;
+  } catch(e) { return null; }
+}
+
+function _clearBadge() {
+  if (_swReg && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_BADGE' });
+  }
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+}
+
+function _setBadge(count) {
+  if (_swReg && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'SET_BADGE', count });
+  }
+  if ('setAppBadge' in navigator) {
+    if (count > 0) navigator.setAppBadge(count).catch(() => {});
+    else navigator.clearAppBadge().catch(() => {});
+  }
+}
+
+// Clear badge when app is focused
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') _clearBadge();
+});
+window.addEventListener('focus', () => _clearBadge());
+
+_initSW();
 
 // ══ CONSTANTS ══
 const COLORS=['#5c6bff','#00b4a0','#e0415c','#d97706','#7c3aed','#0891b2','#059669','#db2777'];
 const ADMIN_HASH='6c1d09e991650e6647d9c8abba921b5916a49af4f2c49b2bda1e497761284e7a';
 const ROOM_LIFETIME=30*86400, MSG_LIFETIME=86400000;
-const GIPHY_KEY='dc6zaTOxFJmzC';
+const GIPHY_KEY='BZPzm9boeWEPc2HBRsg4m2JlvMSNjmDE';
 const METERED_KEY='de4d2a11b1e75f3a5ef7547ccc338163f44c';
 const METERED_HOST='roomchat.metered.live'; // demo key — nahraď vlastním z developers.giphy.com
 const EMOJIS_REACT=['👍','❤️','😂','😮','😢','🔥','🎉','👏','🤔','💯'];
@@ -710,17 +793,34 @@ function isIos(){return/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.na
 function showPwaBanner(type){if(type==='ios')$('pwa-sub').textContent='Safari → Sdílet → Přidat na plochu';$('pwa-banner').classList.add('show');}
 function pwaDismiss(){$('pwa-banner').classList.remove('show');localStorage.setItem('pwa_d','1');}
 function addToHomeScreen(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;pwaDismiss();});}else if(isIos()){toast('Safari → Sdílet → Přidat na plochu 📱');}else{toast('Použij Chrome nebo appka již nainstalována');}renderSidebarActions();}
-async function requestNotifPerm(){if(!('Notification' in window))return false;if(Notification.permission==='default')await Notification.requestPermission();return Notification.permission==='granted';}
+async function requestNotifPerm(){
+  if(!('Notification' in window))return false;
+  if(Notification.permission==='default')await Notification.requestPermission();
+  const granted=Notification.permission==='granted';
+  if(granted)_subscribePush().catch(()=>{});
+  return granted;
+}
 async function toggleNotifications(){if(!('Notification' in window)){toast('Notifikace nejsou podporovány','err');return;}if(Notification.permission==='granted'){toast('Notifikace jsou zapnuty ✓','ok');}else if(Notification.permission==='denied'){toast('Notifikace blokovány — povol v nastavení prohlížeče','err');}else{const ok=await requestNotifPerm();toast(ok?'Notifikace povoleny ✓':'Notifikace odmítnuty');}renderSidebarActions();}
 function isDnd(){return Date.now()<parseInt(localStorage.getItem('rc_dnd')||0);}
 function setDnd(ms){if(ms===0){localStorage.removeItem('rc_dnd');toast('Nerušit vypnuto');}else{localStorage.setItem('rc_dnd',Date.now()+ms);toast('Nerušit zapnuto 🔕');}renderSidebarActions();}
 function dndUntilMorning(){const m=new Date();m.setDate(m.getDate()+1);m.setHours(7,0,0,0);setDnd(m.getTime()-Date.now());}
+let _unreadCount=0;
 async function showPup(mentionMe=false){
   if(isDnd())return;
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   if(document.visibilityState==='visible'&&document.hasFocus()&&!mentionMe)return;
-  const tag='rc-'+Date.now();const body=mentionMe?'Někdo tě zmínil! 📣':'Nová zpráva v místnosti';
-  try{if('serviceWorker' in navigator){let reg=await navigator.serviceWorker.getRegistration();if(!reg)reg=await navigator.serviceWorker.register('/sw.js');if(reg){await reg.showNotification('PUP',{body,tag,silent:true});return;}}new Notification('PUP',{body,tag,silent:true});}catch(e){}
+  _unreadCount++;
+  _setBadge(_unreadCount);
+  const tag='rc-'+Date.now();
+  const body=mentionMe?'Někdo tě zmínil! 📣':'Nová zpráva v místnosti';
+  const roomId=S.roomId||null;
+  try{
+    if(_swReg){
+      await _swReg.showNotification('PUP',{body,icon:'/icons/icon-192x192.png',badge:'/icons/icon-72x72.png',tag,silent:true,vibrate:[200,100,200],data:{url:location.href,roomId}});
+      return;
+    }
+    new Notification('PUP',{body,tag,silent:true});
+  }catch(e){}
 }
 function playNotif(){if(isDnd())return;try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.25);o.start();o.stop(ctx.currentTime+.25);}catch(e){}}
 
@@ -774,8 +874,10 @@ async function searchGifs(q){
 }
 async function sendGif(preview,full){
   closeMediaPanel();if(!S.roomId)return;
-  try{await db.collection('rooms').doc(S.roomId).collection('messages').add({type:'gif',mediaUrl:full,previewUrl:preview,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}});}
-  catch(e){toast('Chyba: '+e.message,'err');}
+  try{
+    await db.collection('rooms').doc(S.roomId).collection('messages').add({type:'gif',mediaUrl:full,previewUrl:preview,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}});
+    _triggerPush({text:'',type:'gif'});
+  }catch(e){toast('Chyba: '+e.message,'err');}
 }
 
 // ══ EMOJI PANEL ══
@@ -1047,6 +1149,10 @@ function enterChat(){
     if(!e.target.closest('.bubble-wrap'))document.querySelectorAll('.bubble-wrap.menu-open').forEach(w=>w.classList.remove('menu-open'));
   });
   setTimeout(()=>{if(isIos()&&!window.navigator.standalone&&!localStorage.getItem('pwa_d'))showPwaBanner('ios');},3000);
+  // Subscribe push after entering room (slotId now known)
+  if(Notification.permission==='granted')setTimeout(()=>_subscribePush().catch(()=>{}),2000);
+  // Clear badge on entry
+  _clearBadge();
 }
 async function heartbeat(){if(!S.roomId||!S.slotId)return;try{await db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}}
 async function cleanExpired(){
@@ -1112,7 +1218,7 @@ function renderMessages(snap){
     else{const last=box.querySelector('.msg-group:last-child');if(last)last.appendChild(makeBubble(msg));}
     lastUser=msg.username;
   });
-  if(atBot)box.scrollTop=box.scrollHeight;
+  if(atBot){box.scrollTop=box.scrollHeight;if(document.visibilityState==='visible'){_unreadCount=0;_clearBadge();}}
   if(hasNew){const ld=Array.from(snap.docs).pop()?.data();if(ld&&ld.slotId!==S.slotId){playNotif();showPup(mentionMe);}if(mentionMe)toast(`📣 @${S.username} — tě někdo zmínil!`);}
 }
 
@@ -1210,7 +1316,32 @@ function setReply(msg){const prev=msg.type==='gif'?'[GIF]':(msg.text||'');S.repl
 function clearReply(){S.replyTo=null;$('reply-preview').classList.remove('show');}
 
 // ══ SEND ══
-async function sendMsg(){const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;const expirySecs=parseInt($('expiry-sel').value)||0;inp.value='';clearTyping();hideMentionDrop();const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};if(S.replyTo)msgData.replyTo=S.replyTo;if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);clearReply();try{const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id).set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});}catch(e){toast('Chyba při odesílání','err');}}
+async function sendMsg(){
+  const inp=$('msg-inp'),text=inp.value.trim();if(!text)return;
+  const expirySecs=parseInt($('expiry-sel').value)||0;
+  inp.value='';clearTyping();hideMentionDrop();
+  const msgData={text,slotId:S.slotId,username:S.username,color:S.color,timestamp:firebase.firestore.FieldValue.serverTimestamp(),reactions:{}};
+  if(S.replyTo)msgData.replyTo=S.replyTo;
+  if(expirySecs>0)msgData.expiresAt=new firebase.firestore.Timestamp(Math.floor(Date.now()/1000)+expirySecs,0);
+  clearReply();
+  try{
+    const ref=await db.collection('rooms').doc(S.roomId).collection('messages').add(msgData);
+    db.collection('rooms').doc(S.roomId).collection('reads').doc(ref.id).set({[S.slotId]:Date.now()},{merge:true}).catch(()=>{});
+    // Trigger push notifications for users with closed app
+    _triggerPush({text,type:'text'});
+  }catch(e){toast('Chyba při odesílání','err');
+  }
+}
+
+function _triggerPush({text,type}){
+  if(!S.roomId||!S.slotId)return;
+  // Fire-and-forget — don't block UI
+  fetch('/api/notify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({roomId:S.roomId,senderSlotId:S.slotId,username:S.username,text,type})
+  }).catch(()=>{});
+}
 
 // ══ TYPING ══
 function onTyping(){clearTimeout(S.typingTO);db.collection('rooms').doc(S.roomId).collection('slots').doc(S.slotId).update({typing:true,typingAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});S.typingTO=setTimeout(clearTyping,3000);}
