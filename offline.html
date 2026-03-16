@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RoomChat — Offline</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f12;color:#f2f4fa;font-family:'Inter',system-ui,sans-serif;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:24px;text-align:center;-webkit-font-smoothing:antialiased}
+.icon{width:80px;height:80px;background:#13161b;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:8px;border:1px solid #ffffff22}
+h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+p{font-size:14px;color:#9aa3b8;line-height:1.6;max-width:280px}
+.retry-btn{margin-top:8px;padding:12px 28px;background:#5c6bff;border:none;border-radius:12px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.retry-btn:hover{filter:brightness(1.15)}
+.retry-btn:active{transform:scale(.96)}
+.dots{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:#5a6072;animation:pulse 1.4s ease infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,60%,100%{opacity:.3;transform:scale(1)}30%{opacity:1;transform:scale(1.2)}}
+</style>
+</head>
+<body>
+<div class="icon">💬</div>
+<h1>Jsi offline</h1>
+<p>RoomChat potřebuje připojení k internetu. Zkontroluj Wi-Fi nebo mobilní data.</p>
+<button class="retry-btn" onclick="location.reload()">Zkusit znovu</button>
+<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+<script>
+// Auto-retry when back online
+window.addEventListener('online', () => location.reload());
+// Check every 5s
+setInterval(() => { if(navigator.onLine) location.reload(); }, 5000);
+</script>
+</body>
+</html>
