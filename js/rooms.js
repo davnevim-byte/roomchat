@@ -442,6 +442,7 @@ async function _adminEnterRoom(roomId, roomData) {
 function goToRooms() {
   // Ukonči případný hovor
   if (typeof endCall === 'function') endCall();
+  if (typeof cleanupMediaBlobUrls === 'function') cleanupMediaBlobUrls();
 
   // Odhlás Firestore listenery
   S.unsubs.forEach(u => u());
