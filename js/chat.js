@@ -145,6 +145,7 @@ function enterChat() {
 
   // ── Signaling pro volání ──
   if (typeof setupCallSignaling === 'function') setupCallSignaling();
+  if (typeof setupMediaSignaling === 'function') setupMediaSignaling();
 
   // ── Input event listenery ──
   _setupInputListeners();
