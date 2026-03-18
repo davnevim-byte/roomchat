@@ -596,28 +596,6 @@ async function deleteRoom(roomId) {
 // ─────────────────────────────────────────────
 
 /**
- * Otevře modal nastavení místnosti.
- * Předvyplní aktuální hodnoty.
- */
-function openRoomSettings() {
-  if (!S.isAdmin) return;
-
-  // Předvyplň hodnoty
-  const lockCb    = $('rs-lock-cb');
-  const invCb     = $('rs-invonly-cb');
-  const maxSel    = $('rs-max-users');
-  const ltSel     = $('rs-msg-lifetime');
-
-  if (lockCb)  lockCb.checked  = !!S.roomData?.locked;
-  if (invCb)   invCb.checked   = !!S.roomData?.inviteOnly;
-  if (maxSel)  maxSel.value    = String(S.roomData?.maxUsers ?? 5);
-  if (ltSel)   ltSel.value     = String(S.roomData?.msgLifetime ?? DEFAULT_MSG_LIFETIME);
-
-  openM('m-room-settings');
-  closeMobSidebar();
-}
-
-/**
  * Přepne uzamčení místnosti (nikdo nový se nemůže připojit).
  */
 async function toggleRoomLock() {
