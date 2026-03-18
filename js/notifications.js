@@ -19,10 +19,10 @@
 // ─────────────────────────────────────────────
 
 /** Registrovaný ServiceWorkerRegistration objekt */
-let _swReg = null;
+var _swReg = null;
 
 /** Počet nepřečtených zpráv pro badge */
-let _unreadCount = 0;
+var _unreadCount = 0;
 
 /**
  * Inicializuje Service Worker.
