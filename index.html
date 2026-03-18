@@ -48,6 +48,7 @@
   <script src="/js/dm.js"></script>
   <script src="/js/chat.js"></script>
   <script src="/js/media.js"></script>
+  <script src="/js/voice.js"></script>
   <script src="/js/auth.js"></script>
 </head>
 <body>
@@ -426,6 +427,8 @@
         <div class="input-box">
           <button class="media-btn" id="media-btn"
                   onclick="toggleMediaPanel()" title="Emoji / GIF">😊</button>
+          <button class="media-btn" id="voice-btn"
+                  onclick="toggleVoiceRecord()" title="Hlasová zpráva">🎤</button>
           <button class="media-btn" id="photo-btn"
                   onclick="openMediaPicker()" title="Poslat fotku / video">📷</button>
           <input class="msg-inp" id="msg-inp"
