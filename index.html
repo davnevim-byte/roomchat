@@ -46,9 +46,11 @@
   <script src="/js/rooms.js"></script>
   <script src="/js/calls.js"></script>
   <script src="/js/dm.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="/js/chat.js"></script>
   <script src="/js/media.js"></script>
   <script src="/js/voice.js"></script>
+  <script src="/js/invite.js"></script>
   <script src="/js/auth.js"></script>
 </head>
 <body>
@@ -492,6 +494,15 @@
 <!-- ══════════════════════════════════════════
      MODALY
 ══════════════════════════════════════════ -->
+
+<!-- Invite modal -->
+<div class="modal-ov" id="m-invite">
+  <div class="modal-card" style="gap:14px">
+    <button class="modal-close" onclick="closeM('m-invite')">✕</button>
+    <h3>📨 Pozvat do místnosti</h3>
+    <div id="m-invite-content"></div>
+  </div>
+</div>
 
 <!-- Nová pozvánka -->
 <div class="modal-ov" id="m-new-inv">
