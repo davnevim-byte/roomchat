@@ -47,6 +47,7 @@
   <script src="/js/calls.js"></script>
   <script src="/js/dm.js"></script>
   <script src="/js/chat.js"></script>
+  <script src="/js/media.js"></script>
   <script src="/js/auth.js"></script>
 </head>
 <body>
@@ -425,6 +426,8 @@
         <div class="input-box">
           <button class="media-btn" id="media-btn"
                   onclick="toggleMediaPanel()" title="Emoji / GIF">😊</button>
+          <button class="media-btn" id="photo-btn"
+                  onclick="openMediaPicker()" title="Poslat fotku / video">📷</button>
           <input class="msg-inp" id="msg-inp"
                  placeholder="Napiš zprávu… (@zmínka)"
                  autocomplete="off">
