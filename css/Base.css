@@ -1,0 +1,407 @@
+/**
+ * RoomChat — base.css
+ * ─────────────────────────────────────────────
+ * Zodpovědnost:
+ *   • CSS reset
+ *   • :root proměnné (design tokeny)
+ *   • Témata (data-theme atributy)
+ *   • Utility třídy
+ *   • Základní typografie
+ *   • Safe area insets (iOS notch)
+ * ─────────────────────────────────────────────
+ */
+
+
+/* ─────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin:     0;
+  padding:    0;
+}
+
+/* ─────────────────────────────────────────────
+   DESIGN TOKENY — výchozí téma (dark)
+───────────────────────────────────────────── */
+
+:root {
+  /* Pozadí */
+  --bg:       #0d0f12;
+  --surface:  #13161b;
+  --surface2: #1a1e26;
+
+  /* Bordery */
+  --border:  #ffffff12;
+  --border2: #ffffff22;
+
+  /* Text */
+  --text:   #f2f4fa;
+  --muted:  #5a6072;
+  --muted2: #9aa3b8;
+
+  /* Akcent */
+  --accent:      #5c6bff;
+  --accent-glow: #5c6bff33;
+
+  /* Stavové barvy */
+  --green:  #3ecf6b;
+  --red:    #ff5c5c;
+  --orange: #f0a030;
+
+  /* Typografie */
+  --fh: 'Inter',   sans-serif;
+  --fm: 'DM Mono', monospace;
+
+  /* Safe area insets (iOS notch / Dynamic Island) */
+  --safe-t: env(safe-area-inset-top,    0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left,   0px);
+  --safe-r: env(safe-area-inset-right,  0px);
+
+  /* Chat pozadí (vlastní obrázek) */
+  --chat-bg-img: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   TÉMATA
+───────────────────────────────────────────── */
+
+[data-theme="darker"] {
+  --bg:       #050608;
+  --surface:  #0a0c0f;
+  --surface2: #0f1219;
+}
+
+[data-theme="blue"] {
+  --bg:          #080d1a;
+  --surface:     #0d1526;
+  --surface2:    #121e33;
+  --accent:      #3b82f6;
+  --accent-glow: #3b82f633;
+}
+
+[data-theme="purple"] {
+  --bg:          #0e0818;
+  --surface:     #160e26;
+  --surface2:    #1d1333;
+  --accent:      #8b5cf6;
+  --accent-glow: #8b5cf633;
+}
+
+[data-theme="forest"] {
+  --bg:          #080f08;
+  --surface:     #0d150d;
+  --surface2:    #121c12;
+  --accent:      #22c55e;
+  --accent-glow: #22c55e33;
+}
+
+
+/* ─────────────────────────────────────────────
+   ZÁKLADNÍ ELEMENTY
+───────────────────────────────────────────── */
+
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
+body {
+  background:              var(--bg);
+  color:                   var(--text);
+  font-family:             var(--fh);
+  font-weight:             500;
+  height:                  100vh;
+  height:                  -webkit-fill-available;
+  overflow:                hidden;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Výběr textu */
+::selection {
+  background: var(--accent);
+  color:      #fff;
+}
+
+
+/* ─────────────────────────────────────────────
+   SCROLLBAR (webkit)
+───────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background:    var(--border2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+
+/* ─────────────────────────────────────────────
+   FORMULÁŘOVÉ ELEMENTY — základy
+───────────────────────────────────────────── */
+
+input,
+select,
+textarea,
+button {
+  font-family: var(--fh);
+}
+
+/* Odstraň autocomplete pozadí (Chrome) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow:      0 0 0 1000px var(--surface2) inset;
+  -webkit-text-fill-color: var(--text);
+  transition:              background-color 5000s ease-in-out 0s;
+}
+
+/* ─────────────────────────────────────────────
+   GRID POZADÍ (dekorativní mřížka na screenech)
+───────────────────────────────────────────── */
+
+.grid-bg::before {
+  content:          '';
+  position:         absolute;
+  inset:            0;
+  pointer-events:   none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:  40px 40px;
+  opacity:          .6;
+  z-index:          0;
+}
+
+
+/* ─────────────────────────────────────────────
+   UTILITY TŘÍDY
+───────────────────────────────────────────── */
+
+/* Flex helpers */
+.flex        { display: flex; }
+.flex-col    { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-1      { flex: 1; }
+.shrink-0    { flex-shrink: 0; }
+
+/* Text helpers */
+.truncate {
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  white-space:   nowrap;
+}
+
+/* Visibility */
+.hidden  { display: none !important; }
+.visible { display: block !important; }
+
+
+/* ─────────────────────────────────────────────
+   FORMULÁŘOVÉ KOMPONENTY
+───────────────────────────────────────────── */
+
+/* Text input */
+.fi {
+  background:      var(--surface2);
+  border:          1px solid var(--border2);
+  border-radius:   10px;
+  padding:         13px 14px;
+  color:           var(--text);
+  font-family:     var(--fh);
+  font-size:       14px;
+  font-weight:     600;
+  outline:         none;
+  transition:      border-color .2s, box-shadow .2s;
+  width:           100%;
+  -webkit-appearance: none;
+}
+
+.fi:focus {
+  border-color: var(--accent)88;
+  box-shadow:   0 0 0 3px var(--accent-glow);
+}
+
+.fi::placeholder {
+  color:       var(--muted);
+  font-weight: 400;
+}
+
+/* Select */
+.fsel {
+  background:      var(--surface2);
+  border:          1px solid var(--border2);
+  border-radius:   10px;
+  padding:         13px 14px;
+  color:           var(--text);
+  font-family:     var(--fh);
+  font-size:       14px;
+  font-weight:     600;
+  outline:         none;
+  width:           100%;
+  cursor:          pointer;
+  -webkit-appearance: none;
+}
+
+.fsel:focus {
+  border-color: var(--accent)88;
+  box-shadow:   0 0 0 3px var(--accent-glow);
+}
+
+/* Checkbox toggle řádek */
+.ftoggle {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  padding:     11px 14px;
+  background:  var(--surface2);
+  border:      1px solid var(--border);
+  border-radius: 10px;
+  cursor:      pointer;
+}
+
+.ftoggle input[type="checkbox"] {
+  accent-color: var(--accent);
+  width:        17px;
+  height:       17px;
+  cursor:       pointer;
+  flex-shrink:  0;
+}
+
+.ftoggle span {
+  font-size:   13px;
+  font-weight: 500;
+  color:       var(--muted2);
+  line-height: 1.4;
+}
+
+/* Error / info hlášky */
+.err {
+  background:    #ff5c5c11;
+  border:        1px solid #ff5c5c44;
+  border-radius: 8px;
+  padding:       10px 14px;
+  font-size:     13px;
+  font-weight:   600;
+  color:         var(--red);
+  display:       none;
+}
+
+.err.show { display: block; }
+
+.info {
+  background:    var(--accent-glow);
+  border:        1px solid var(--accent)44;
+  border-radius: 8px;
+  padding:       10px 14px;
+  font-size:     13px;
+  font-weight:   600;
+  color:         var(--accent);
+  display:       none;
+}
+
+.info.show { display: block; }
+
+
+/* ─────────────────────────────────────────────
+   TLAČÍTKA
+───────────────────────────────────────────── */
+
+/* Primární tlačítko */
+.btn-p {
+  width:         100%;
+  padding:       14px;
+  background:    var(--accent);
+  border:        none;
+  border-radius: 12px;
+  color:         #fff;
+  font-family:   var(--fh);
+  font-weight:   700;
+  font-size:     15px;
+  cursor:        pointer;
+  transition:    all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-p:hover  { filter: brightness(1.15); transform: translateY(-1px); }
+.btn-p:active { transform: translateY(0); opacity: .9; }
+
+/* Sekundární tlačítko */
+.btn-s {
+  width:         100%;
+  padding:       14px;
+  background:    var(--surface);
+  border:        1px solid var(--border2);
+  border-radius: 12px;
+  color:         var(--text);
+  font-family:   var(--fh);
+  font-weight:   600;
+  font-size:     15px;
+  cursor:        pointer;
+  transition:    all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-s:hover  { border-color: var(--accent)66; }
+.btn-s:active { opacity: .85; }
+
+/* Zpět tlačítko */
+.back-btn {
+  background:  none;
+  border:      none;
+  color:       var(--muted2);
+  font-family: var(--fh);
+  font-size:   13px;
+  font-weight: 600;
+  cursor:      pointer;
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+  padding:     4px 0;
+  align-self:  flex-start;
+  transition:  color .15s;
+}
+
+.back-btn:hover { color: var(--text); }
+
+
+/* ─────────────────────────────────────────────
+   BADGE + PILL
+───────────────────────────────────────────── */
+
+.badge {
+  font-size:     8px;
+  font-weight:   800;
+  background:    var(--accent-glow);
+  color:         var(--accent);
+  border:        1px solid var(--accent)44;
+  border-radius: 4px;
+  padding:       1px 5px;
+  flex-shrink:   0;
+}
+
+.pill {
+  background:    var(--surface);
+  border:        1px solid var(--border2);
+  border-radius: 20px;
+  padding:       4px 12px;
+  font-size:     11px;
+  font-weight:   600;
+  color:         var(--muted2);
+}
