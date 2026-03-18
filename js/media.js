@@ -73,10 +73,11 @@ async function _sendFile(file, target) {
 
     MEDIA.transfers[sigId] = {
       pc, dc, file, target,
-      isOfferer: true,
-      unsub:     null,
-      timeout:   null,
-      failed:    false,
+      isOfferer:   true,
+      unsub:       null,
+      timeout:     null,
+      failed:      false,
+      allSent:     false,   // true po odeslání všech chunků
     };
 
     dc.onopen = () => {
@@ -96,7 +97,7 @@ async function _sendFile(file, target) {
     dc.onerror = err => {
       console.warn('[MEDIA] DC error (sender):', err);
       const t = MEDIA.transfers[sigId];
-      if (t && !t.failed) {
+      if (t && !t.failed && !t.allSent) {
         t.failed = true;
         toast('Chyba přenosu — zkus znovu', 'err');
         _cleanup(sigId);
@@ -105,6 +106,7 @@ async function _sendFile(file, target) {
 
     dc.onclose = () => {
       console.log('[MEDIA] DC closed (sender)');
+      // Pokud jsou všechny chunky odeslané a čekáme na ACK — to je normální
     };
 
     pc.onicecandidate = async e => {
@@ -390,6 +392,7 @@ async function acceptMediaTransfer(sigId) {
     const t = {
       pc, dc: null, isOfferer: false,
       chunks: [], meta: null, failed: false,
+      ackSent: false,   // true po odeslání ACK
       fromUsername: sig.fromUsername,
       fromColor:    sig.fromColor,
       fromSlotId:   sig.from,
@@ -407,13 +410,17 @@ async function acceptMediaTransfer(sigId) {
       dc.onmessage = ev => _handleChunk(sigId, ev.data, dc);
       dc.onerror   = err => {
         console.warn('[MEDIA] Receiver DC error:', err);
-        if (!t.failed) {
-          t.failed = true;
-          toast('Chyba při příjmu — zkus znovu', 'err');
-          _cleanup(sigId);
-        }
+        const tr = MEDIA.transfers[sigId];
+        // Pokud byl ACK odeslán → přenos proběhl, ignoruj chybu
+        if (!tr || tr.ackSent || tr.failed) return;
+        tr.failed = true;
+        toast('Chyba při příjmu — zkus znovu', 'err');
+        _cleanup(sigId);
       };
-      dc.onclose = () => console.log('[MEDIA] Receiver DC closed');
+      dc.onclose = () => {
+        console.log('[MEDIA] Receiver DC closed');
+        // Normální po dokončení přenosu
+      };
     };
 
     pc.onconnectionstatechange = () => {
@@ -542,7 +549,9 @@ function _assemble(sigId, dc) {
   const blobUrl = URL.createObjectURL(blob);
   MEDIA.blobUrls.push(blobUrl);
 
-  // Potvrď příjem
+  // Potvrď příjem — nastav flag před odesláním
+  const tr = MEDIA.transfers[sigId];
+  if (tr) tr.ackSent = true;
   try { dc.send('ACK'); } catch {}
 
   // Zobraz v chatu
