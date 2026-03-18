@@ -315,6 +315,12 @@ function _assemble(sigId, dc) {
 }
 
 function _showInChat(blobUrl, meta, fromUsername, fromColor) {
+  // Voice zpráva → speciální přehrávač
+  if (meta.isVoice && typeof showVoiceBubble === 'function') {
+    showVoiceBubble(blobUrl, meta, fromUsername, fromColor, false);
+    return;
+  }
+
   const box = document.getElementById('msgs');
   if (!box) return;
 
