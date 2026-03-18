@@ -342,15 +342,6 @@ function playNotifSound() {
 // ─────────────────────────────────────────────
 
 /**
- * Vrátí true pokud je aktivní režim Nerušit.
- * DnD je uložen jako timestamp konce v localStorage.
- * @returns {boolean}
- */
-function isDnd() {
-  return Date.now() < parseInt(localStorage.getItem('rc_dnd') || '0', 10);
-}
-
-/**
  * Nastaví nebo zruší režim Nerušit.
  * @param {number} ms - délka DnD v ms (0 = zrušit)
  */
