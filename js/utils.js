@@ -361,33 +361,6 @@ const closeLightbox = () => {
 
 
 // ─────────────────────────────────────────────
-// ZVUK
-// ─────────────────────────────────────────────
-
-/**
- * Přehraje krátký notifikační pípnutí přes Web Audio API.
- * Tiché pokud je zapnutý DnD — kontrolu DnD dělá notifications.js.
- */
-const playNotifSound = () => {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 800;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.25);
-  } catch {
-    // Web Audio API není dostupné — ignorujeme
-  }
-};
-
-
-// ─────────────────────────────────────────────
 // DEBOUNCE
 // ─────────────────────────────────────────────
 
