@@ -308,6 +308,17 @@ function _buildActionsHtml() {
 
   let html = '';
 
+  // ── Pozvat ──
+  html += `
+    <button class="sb-act-btn"
+      onclick="openInviteModal();closeMobSidebar()">
+      <span class="ico">📨</span>
+      <span class="lbl">Pozvat do místnosti
+        <span class="sub">QR kód · odkaz · individuální</span>
+      </span>
+    </button>
+  `;
+
   // ── Admin sekce ──
   if (S.isAdmin) {
     html += `
