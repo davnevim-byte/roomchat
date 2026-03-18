@@ -71,6 +71,7 @@ function enterChat() {
   _updateLockBanner();
   _setupSwipeSidebar();
   setupMentions();
+  if (typeof setupDmListeners === 'function') setupDmListeners();
   resetActivityTimer();
 
   // ── Notifikace + push ──
