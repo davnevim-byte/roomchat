@@ -404,3 +404,17 @@ const debounce = (fn, delay) => {
     timer = setTimeout(() => fn(...args), delay);
   };
 };
+
+// ─────────────────────────────────────────────
+// EARLY FALLBACKS
+// Definovány zde brzy aby byly dostupné ihned.
+// Plné verze jsou přepsány v notifications.js
+// ─────────────────────────────────────────────
+
+/**
+ * Vrátí true pokud je aktivní režim Nerušit.
+ * @returns {boolean}
+ */
+function isDnd() {
+  return Date.now() < parseInt(localStorage.getItem('rc_dnd') || '0', 10);
+}
