@@ -266,18 +266,48 @@ async function showRoomSwitcher() {
     '<div style="color:var(--muted2);font-size:12px;text-align:center;padding:16px">Načítám…</div>';
 
   try {
-    // Načti místnosti kde je uložen ADMIN_HASH (všechny RC místnosti admina)
-    const [snap1, snap2] = await Promise.all([
-      db.collection('rooms').where('adminKey', '==', ADMIN_HASH).get(),
-      db.collection('rooms').where('adminSession', '==', S.sid).get(),
-    ]);
-
-    // Deduplikace
     const seen = new Set();
     const docs = [];
-    [...snap1.docs, ...snap2.docs].forEach(d => {
-      if (!seen.has(d.id)) { seen.add(d.id); docs.push(d); }
-    });
+
+    // Query 1: adminKey — funguje cross-device (stejný hash všude)
+    try {
+      const snap = await db.collection('rooms')
+        .where('adminKey', '==', ADMIN_HASH).get();
+      snap.docs.forEach(d => {
+        if (!seen.has(d.id)) { seen.add(d.id); docs.push(d); }
+      });
+    } catch (e) {
+      console.warn('[Rooms] adminKey query failed:', e.message);
+    }
+
+    // Query 2: adminSession — pro toto zařízení
+    try {
+      const snap = await db.collection('rooms')
+        .where('adminSession', '==', S.sid).get();
+      snap.docs.forEach(d => {
+        if (!seen.has(d.id)) { seen.add(d.id); docs.push(d); }
+      });
+    } catch (e) {
+      console.warn('[Rooms] adminSession query failed:', e.message);
+    }
+
+    // Query 3: záloha z localStorage — načti roomId ze storage a ověř v Firestore
+    // Toto zachytí místnosti které nejsou v query výsledcích (jiné zařízení, starší formát)
+    const storedRooms = getRoomList();
+    for (const stored of storedRooms) {
+      if (seen.has(stored.roomId)) continue;
+      try {
+        const snap = await db.collection('rooms').doc(stored.roomId).get();
+        if (snap.exists) {
+          const d = snap.data();
+          // Ověř že jde o admin místnost
+          if (d.adminKey === ADMIN_HASH || d.adminSession === S.sid) {
+            seen.add(stored.roomId);
+            docs.push(snap);
+          }
+        }
+      } catch {}
+    }
 
     // Seřaď od nejnovější
     docs.sort((a, b) =>
