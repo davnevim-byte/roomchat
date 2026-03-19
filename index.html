@@ -170,6 +170,29 @@
   <div class="rooms-header">
     <div class="rooms-title">Moje místnosti</div>
   </div>
+
+  <!-- Ruční přidání místnosti pro admin -->
+  <div style="width:100%;max-width:420px;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--muted2);margin-bottom:8px;font-weight:600">
+      Místnost není vidět? Zadej kód:
+    </div>
+    <div style="display:flex;gap:8px">
+      <input id="admin-room-search"
+        class="fi"
+        placeholder="KÓD MÍSTNOSTI"
+        maxlength="6"
+        style="text-transform:uppercase;letter-spacing:3px;font-size:16px;text-align:center;flex:1"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')adminFindRoom()">
+      <button onclick="adminFindRoom()"
+        style="padding:13px 16px;border-radius:10px;background:var(--accent);
+               border:none;color:#fff;font-family:var(--fh);font-weight:700;
+               font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        Najít →
+      </button>
+    </div>
+    <div id="admin-room-search-err" class="err" style="margin-top:6px"></div>
+  </div>
   <div class="rooms-list" id="rooms-list"></div>
   <button class="rooms-new-btn" onclick="show('s-create')">
     + Vytvořit novou místnost
