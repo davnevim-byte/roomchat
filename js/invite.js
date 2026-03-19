@@ -82,7 +82,7 @@ function _renderInviteModal() {
         <div id="qr-canvas-wrap"
           style="background:#fff;border-radius:12px;padding:16px;
                  display:inline-block;box-shadow:0 4px 20px #0004">
-          <canvas id="qr-canvas"></canvas>
+          <div id="qr-div"></div>
         </div>
         <div style="display:flex;gap:8px">
           <button onclick="downloadQR()"
@@ -139,30 +139,24 @@ function _renderInviteModal() {
  * @param {string} url - URL pro QR kód
  */
 function _generateQR(url) {
-  const canvas = document.getElementById('qr-canvas');
-  if (!canvas) return;
+  const wrap = document.getElementById('qr-canvas-wrap');
+  if (!wrap) return;
 
-  // Zkontroluj jestli je QRCode knihovna načtena
   if (typeof QRCode === 'undefined') {
-    // Fallback: zobraz loading a načti knihovnu
     _loadQRLib(() => _generateQR(url));
     return;
   }
 
   try {
-    QRCode.toCanvas(canvas, url, {
-      width:            200,
-      margin:           2,
-      color: {
-        dark:  '#000000',
-        light: '#ffffff',
-      },
-      errorCorrectionLevel: 'M',
-    }, err => {
-      if (err) {
-        console.error('[QR] Generation error:', err);
-        _showQRFallback(url);
-      }
+    // qrcodejs API — vytváří div s img/canvas uvnitř
+    wrap.innerHTML = '<div id="qr-div"></div>';
+    new QRCode(document.getElementById('qr-div'), {
+      text:         url,
+      width:        200,
+      height:       200,
+      colorDark:    '#000000',
+      colorLight:   '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
     });
   } catch (e) {
     console.error('[QR] Error:', e);
@@ -178,21 +172,16 @@ function _loadQRLib(cb) {
   if (typeof QRCode !== 'undefined') { cb(); return; }
 
   const wrap = document.getElementById('qr-canvas-wrap');
-  if (wrap) wrap.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:12px">Načítám…</div>';
+  if (wrap) wrap.innerHTML = '<div style="padding:20px;color:#666;font-size:12px;text-align:center">Načítám QR…</div>';
 
-  const script = document.createElement('script');
-  script.src   = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-  script.onload = () => {
-    // Obnov canvas element
+  const script   = document.createElement('script');
+  script.src     = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  script.onload  = () => {
     const wrap2 = document.getElementById('qr-canvas-wrap');
-    if (wrap2) {
-      wrap2.innerHTML = '<canvas id="qr-canvas"></canvas>';
-    }
+    if (wrap2) wrap2.innerHTML = '<div id="qr-div"></div>';
     cb();
   };
-  script.onerror = () => {
-    _showQRFallback('');
-  };
+  script.onerror = () => _showQRFallback('');
   document.head.appendChild(script);
 }
 
@@ -228,49 +217,58 @@ function copyInviteUrl() {
  * Stáhne QR kód jako PNG soubor.
  */
 function downloadQR() {
-  const canvas = document.getElementById('qr-canvas');
-  if (!canvas) { toast('QR kód není dostupný', 'err'); return; }
+  // qrcodejs generuje <img> nebo <canvas> uvnitř #qr-div
+  const qrDiv  = document.getElementById('qr-div');
+  const qrImg  = qrDiv?.querySelector('img');
+  const qrCvs  = qrDiv?.querySelector('canvas');
+
+  if (!qrImg && !qrCvs) {
+    toast('QR kód není dostupný', 'err');
+    return;
+  }
 
   try {
-    // Vytvoř nový canvas s bílým pozadím a okrajem
-    const size   = 240;
-    const pad    = 20;
-    const out    = document.createElement('canvas');
-    out.width    = size + pad * 2;
-    out.height   = size + pad * 2;
-    const ctx    = out.getContext('2d');
+    const out  = document.createElement('canvas');
+    const size = 240;
+    const pad  = 20;
+    out.width  = size + pad * 2;
+    out.height = size + pad * 2 + 20;
+    const ctx  = out.getContext('2d');
 
     // Bílé pozadí
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, out.width, out.height);
 
-    // QR kód
-    ctx.drawImage(canvas, pad, pad, size, size);
+    // Nakresli QR
+    const drawAndSave = src => {
+      const tmpImg    = new Image();
+      tmpImg.onload   = () => {
+        ctx.drawImage(tmpImg, pad, pad, size, size);
+        // Text s kódem
+        ctx.fillStyle = '#333333';
+        ctx.font      = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('RoomChat · ' + S.roomId, out.width / 2, out.height - 6);
+        // Stáhni
+        const a    = document.createElement('a');
+        a.href     = out.toDataURL('image/png');
+        a.download = 'roomchat-' + S.roomId + '-qr.png';
+        a.click();
+        toast('QR kód stažen 💾', 'ok');
+      };
+      tmpImg.onerror = () => toast('Stažení selhalo', 'err');
+      tmpImg.src     = src;
+    };
 
-    // Text s kódem místnosti
-    ctx.fillStyle = '#333333';
-    ctx.font      = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('RoomChat · ' + S.roomId, out.width / 2, out.height - 6);
-
-    // Stáhni
-    const a    = document.createElement('a');
-    a.href     = out.toDataURL('image/png');
-    a.download = 'roomchat-' + S.roomId + '-qr.png';
-    a.click();
-
-    toast('QR kód stažen 💾', 'ok');
-  } catch (e) {
-    // Fallback — stáhni přímo canvas
-    try {
-      const a    = document.createElement('a');
-      a.href     = canvas.toDataURL('image/png');
-      a.download = 'roomchat-qr.png';
-      a.click();
-      toast('QR kód stažen 💾', 'ok');
-    } catch {
-      toast('Stažení selhalo — poddrž QR kód pro uložení', 'err');
+    if (qrImg) {
+      drawAndSave(qrImg.src);
+    } else {
+      drawAndSave(qrCvs.toDataURL('image/png'));
     }
+
+  } catch (e) {
+    console.error('[QR] download error:', e);
+    toast('Poddrž QR kód pro uložení obrázku', 'err');
   }
 }
 
@@ -282,21 +280,22 @@ async function shareInvite() {
   const text = `Připoj se do místnosti "${S.roomData?.name || S.roomId}" na RoomChat!`;
 
   try {
-    // Zkus sdílet i s QR obrázkem
-    const canvas = document.getElementById('qr-canvas');
-    if (canvas && navigator.canShare) {
-      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const qrDiv = document.getElementById('qr-div');
+    const qrImg = qrDiv?.querySelector('img');
+    const qrCvs = qrDiv?.querySelector('canvas');
+
+    if ((qrImg || qrCvs) && navigator.canShare) {
+      const src  = qrImg ? qrImg.src : qrCvs.toDataURL('image/png');
+      const res  = await fetch(src);
+      const blob = await res.blob();
       const file = new File([blob], 'roomchat-qr.png', { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({ title: 'RoomChat pozvánka', text, url, files: [file] });
         return;
       }
     }
-    // Fallback — sdílej jen odkaz
     await navigator.share({ title: 'RoomChat pozvánka', text, url });
   } catch (e) {
-    if (e.name !== 'AbortError') {
-      copyInviteUrl();
-    }
+    if (e.name !== 'AbortError') copyInviteUrl();
   }
 }
