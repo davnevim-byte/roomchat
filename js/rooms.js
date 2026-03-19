@@ -516,6 +516,47 @@ function goToRooms() {
  * Prodlouží expiraci aktuální místnosti o 30 dní.
  * Volá se z expiry banneru.
  */
+async function adminFindRoom() {
+  const inp  = $('admin-room-search');
+  const err  = $('admin-room-search-err');
+  const code = inp?.value.trim().toUpperCase();
+
+  if (err) err.classList.remove('show');
+  if (!code || code.length < 4) {
+    if (err) { err.textContent = 'Zadej kód místnosti'; err.classList.add('show'); }
+    return;
+  }
+
+  try {
+    const snap = await db.collection('rooms').doc(code).get();
+
+    if (!snap.exists) {
+      if (err) { err.textContent = 'Místnost nenalezena'; err.classList.add('show'); }
+      return;
+    }
+
+    const data = snap.data();
+
+    if (data.adminKey !== ADMIN_HASH) {
+      if (err) { err.textContent = 'Tato místnost není tvoje'; err.classList.add('show'); }
+      return;
+    }
+
+    if (Date.now() > data.expiresAt.toDate().getTime()) {
+      if (err) { err.textContent = 'Místnost vypršela'; err.classList.add('show'); }
+      return;
+    }
+
+    addToRoomList(code, null, data.name);
+    if (inp) inp.value = '';
+    toast(`Vstupuji do "${data.name}"…`);
+    await _adminEnterRoom(code, data);
+
+  } catch (e) {
+    if (err) { err.textContent = 'Chyba: ' + e.message; err.classList.add('show'); }
+  }
+}
+
 async function extendRoom() {
   const rid = S.roomId ||
     new URLSearchParams(window.location.search).get('room')?.toUpperCase();
